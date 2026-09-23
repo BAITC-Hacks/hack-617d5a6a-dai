@@ -1,20 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { topQuery } from '@/lib/graph-data'
 
-export const Route = createFileRoute('/')({ component: HomePage })
-
-function HomePage() {
-  return (
-    <Card className="max-w-md">
-      <CardHeader>
-        <CardTitle>Стек готов</CardTitle>
-        <CardDescription>React 19.3 · Vite 8 · Tailwind 4 · shadcn · TanStack · Hey API</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button onClick={() => toast.success('Работает')}>Проверить</Button>
-      </CardContent>
-    </Card>
-  )
-}
+// Стартовый экран — первый узел топ-листа. Если бэкенд не ответил, ошибку покажет errorComponent корня.
+export const Route = createFileRoute('/')({
+  loader: async ({ context: { queryClient } }) => {
+    const top = await queryClient.ensureQueryData(topQuery())
+    throw redirect({ to: '/nodes/$gid', params: { gid: top.items[0].gid } })
+  },
+})

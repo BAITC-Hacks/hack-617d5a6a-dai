@@ -39,7 +39,8 @@ export const DEFAULT_VIEW: GraphView = {
   clusters: null,
   showIsolated: true,
   hideTrunc: false,
-  flow: 'dash',
+  // При «уменьшить движение» в ОС — стрелки вместо бегущего пунктира
+  flow: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'arrows' : 'dash',
   labelZoom: 1.6,
   nodeScale: 1,
   edgeScale: 1,

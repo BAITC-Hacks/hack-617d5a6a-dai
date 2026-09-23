@@ -33,7 +33,7 @@ async function enableMocks() {
 enableMocks().catch((error) => console.warn('[MSW] моки не запущены', error)).then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ThemeProvider attribute="class" forcedTheme="light" disableTransitionOnChange>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
           <Toaster richColors />

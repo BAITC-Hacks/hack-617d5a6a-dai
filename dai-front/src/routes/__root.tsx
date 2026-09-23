@@ -1,21 +1,15 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
+import { getErrorMessage } from '@/lib/api-error'
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  component: RootLayout,
-})
-
-function RootLayout() {
-  return (
-    <div className="min-h-svh">
-      <header className="flex items-center gap-4 border-b px-6 py-3">
-        <Link to="/" className="font-heading font-semibold">
-          App
-        </Link>
-      </header>
-      <main className="mx-auto w-full max-w-5xl p-6">
-        <Outlet />
-      </main>
+  component: Outlet,
+  errorComponent: ({ error }) => (
+    <div className="grid h-svh place-items-center p-6 text-center">
+      <div className="space-y-2">
+        <p className="text-lg font-semibold">{getErrorMessage(error)}</p>
+        <p className="text-muted-foreground">Проверьте, что бэкенд запущен на localhost:8000, и обновите страницу.</p>
+      </div>
     </div>
-  )
-}
+  ),
+})

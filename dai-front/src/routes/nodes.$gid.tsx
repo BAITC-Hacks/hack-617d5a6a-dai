@@ -1,47 +1,38 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
-import { getNodeOptions, getNodeSubgraphOptions } from '@/client/@tanstack/react-query.gen'
-import { getErrorMessage } from '@/lib/api-error'
+import { AppHeader } from '@/components/app-header'
+import { GidSearch } from '@/components/gid-search'
+import { GraphPanel } from '@/components/graph/graph-panel'
+import { NodeCard } from '@/components/node-card'
+import { TopList } from '@/components/top-list'
+import { graphQuery, metaQuery, nodeQuery, topQuery } from '@/lib/graph-data'
 
 // gid — в пути, а не в ?search: роутер разбирает search через JSON.parse, и 18 цифр потеряли бы точность.
-// silent: ошибку (404, бэкенд недоступен) показывает сам экран, без глобального тоста.
-const nodeQuery = (gid: string) => ({ ...getNodeOptions({ path: { gid } }), meta: { silent: true } })
-const subgraphQuery = (gid: string, radius: number) => ({
-  ...getNodeSubgraphOptions({ path: { gid }, query: { radius } }),
-  meta: { silent: true },
-})
-
+// Загрузчик не ждёт ответов: каркас экрана виден сразу, каждая колонка сама показывает загрузку, 404 и «сервер недоступен».
 export const Route = createFileRoute('/nodes/$gid')({
-  validateSearch: z.object({ radius: z.number().int().min(1).max(3).default(1).catch(1) }),
-  loaderDeps: ({ search }) => ({ radius: search.radius }),
-  loader: ({ context: { queryClient }, params: { gid }, deps: { radius } }) =>
-    Promise.all([
-      queryClient.ensureQueryData(nodeQuery(gid)),
-      queryClient.ensureQueryData(subgraphQuery(gid, radius)),
-    ]),
-  errorComponent: ({ error }) => <p className="text-destructive">{getErrorMessage(error)}</p>,
+  loader: ({ context: { queryClient }, params: { gid } }) => {
+    void queryClient.prefetchQuery(metaQuery())
+    void queryClient.prefetchQuery(topQuery())
+    void queryClient.prefetchQuery(graphQuery())
+    void queryClient.prefetchQuery(nodeQuery(gid))
+  },
   component: NodePage,
 })
 
-// Заглушка до макета: проверяет, что карточка и окрестность доходят до экрана.
 function NodePage() {
   const { gid } = Route.useParams()
-  const { radius } = Route.useSearch()
-  const { data: card } = useSuspenseQuery(nodeQuery(gid))
-  const { data: subgraph } = useSuspenseQuery(subgraphQuery(gid, radius))
-
   return (
-    <div className="space-y-2">
-      <h1 className="font-mono text-lg">{card.node.gid}</h1>
-      <p>
-        {card.node.role} · приоритет {card.node.priority_score}
-      </p>
-      <p className="text-muted-foreground">{card.node.evidence}</p>
-      <p className="text-sm text-muted-foreground">
-        Окрестность, радиус {radius}: {subgraph.meta.n_nodes} узлов, {subgraph.meta.n_edges} рёбер · переводов:{' '}
-        {card.transfers.length}
-      </p>
+    <div className="flex h-svh min-h-[880px] min-w-[1440px] flex-col">
+      <AppHeader />
+      <div className="grid min-h-0 flex-1 grid-cols-[344px_minmax(0,1fr)_440px]">
+        <aside className="flex min-h-0 flex-col border-r bg-background">
+          <GidSearch />
+          <TopList activeGid={gid} />
+        </aside>
+        <GraphPanel gid={gid} />
+        <aside className="min-h-0 overflow-auto border-l bg-background">
+          <NodeCard gid={gid} />
+        </aside>
+      </div>
     </div>
   )
 }
