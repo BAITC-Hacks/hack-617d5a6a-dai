@@ -28,6 +28,8 @@ function Workspace() {
     if (!gid) return
     const onKey = (e: KeyboardEvent) => {
       const el = document.activeElement
+      // открытое окно (справочник) закрывается своим Esc — карточку при этом не трогаем
+      if (document.querySelector('[role="dialog"]')) return
       if (e.key === 'Escape' && !(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) void navigate({ to: '/' })
     }
     window.addEventListener('keydown', onKey)

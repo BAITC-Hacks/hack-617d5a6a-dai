@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { LegendEntry } from '@/components/role-legend'
+import { useState } from 'react'
+import { LegendEntry, LegendSheet, type LegendItem } from '@/components/role-legend'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDayLong, formatInt, formatKztCompact } from '@/lib/format'
 import { metaQuery } from '@/lib/graph-data'
@@ -15,6 +16,7 @@ function formatPeriod(start: string, end: string) {
 
 export function AppHeader() {
   const { data: meta } = useQuery(metaQuery())
+  const [legendItem, setLegendItem] = useState<LegendItem | null>(null)
 
   const stats = meta
     ? [
@@ -54,12 +56,13 @@ export function AppHeader() {
       <div className="flex min-h-11 flex-none flex-wrap items-center gap-[18px] border-b bg-muted/40 px-5 py-1.5">
         <div className="flex flex-wrap items-center gap-4">
           {ROLE_ORDER.map((role) => (
-            <LegendEntry key={role} item={role} />
+            <LegendEntry key={role} item={role} onOpen={setLegendItem} />
           ))}
         </div>
         <span className="h-5 w-px bg-border" />
-        <LegendEntry item="seed" />
-        <LegendEntry item="boundary" />
+        <LegendEntry item="seed" onOpen={setLegendItem} />
+        <LegendEntry item="boundary" onOpen={setLegendItem} />
+        <LegendSheet item={legendItem} onClose={() => setLegendItem(null)} />
         {meta?.mock && (
           // Статус данных, а не элемент темы — поэтому янтарные утилиты.
           <div className="ml-auto flex h-[30px] items-center gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 pr-3 pl-1">

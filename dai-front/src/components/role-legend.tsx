@@ -1,8 +1,10 @@
-import type { ReactElement } from 'react'
+import { useEffect, useRef, type ReactElement } from 'react'
 import { RoleIcon } from '@/components/role-icon'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRoleInfo } from '@/lib/graph-data'
-import type { Role } from '@/lib/roles'
+import { ROLE_ORDER, type Role } from '@/lib/roles'
+import { cn } from '@/lib/utils'
 
 export type LegendItem = Role | 'seed' | 'boundary'
 
@@ -77,19 +79,78 @@ export function LegendTooltip({ item, children }: { item: LegendItem; children: 
   )
 }
 
-/** Пункт легенды в шапке: значок + подпись, подсказка по наведению и фокусу. */
-export function LegendEntry({ item }: { item: LegendItem }) {
+/** Пункт легенды в шапке: значок + подпись, подсказка по наведению и фокусу, клик открывает справочник. */
+export function LegendEntry({ item, onOpen }: { item: LegendItem; onOpen: (item: LegendItem) => void }) {
   const roleInfo = useRoleInfo()
   const label = isRole(item) ? roleInfo(item).title : LEGEND[item].title
   return (
     <LegendTooltip item={item}>
       <button
         type="button"
-        className="flex cursor-help items-center gap-[7px] rounded-sm text-[13.5px] font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        onClick={() => onOpen(item)}
+        className="flex cursor-pointer items-center gap-[7px] rounded-sm text-[13.5px] font-medium whitespace-nowrap outline-none hover:text-foreground/75 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <LegendIcon item={item} />
         {label}
       </button>
     </LegendTooltip>
+  )
+}
+
+/** Справочник узлов: все роли и отметки с пояснениями, выезжает справа. `item` — пункт, по которому кликнули: подсвечен и прокручен в видимую область. */
+export function LegendSheet({ item, onClose }: { item: LegendItem | null; onClose: () => void }) {
+  const roleInfo = useRoleInfo()
+  const active = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (item) requestAnimationFrame(() => active.current?.scrollIntoView({ block: 'nearest' }))
+  }, [item])
+
+  const entry = (it: LegendItem) => {
+    const { hint, graph } = LEGEND[it]
+    const { title, description } = isRole(it) ? roleInfo(it) : { title: LEGEND[it].title, description: '' }
+    const on = it === item
+    return (
+      <div key={it} ref={on ? active : undefined} className={cn('flex gap-3 rounded-xl px-3 py-3', on && 'bg-muted')}>
+        <span className="flex h-6 items-center">
+          <LegendIcon item={it} />
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className="text-[15px] font-semibold">{title}</div>
+          {description && <p className="text-[13.5px] leading-snug">{description}</p>}
+          <p className="text-[13px] leading-snug text-muted-foreground">
+            {isRole(it) && <span className="font-medium text-foreground/80">Как читать: </span>}
+            {hint}
+          </p>
+          <p className="text-xs text-muted-foreground">На графе — {graph}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <Sheet open={item !== null} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="right" className="w-[440px] gap-0 data-[side=right]:sm:max-w-[440px]">
+        <SheetHeader className="border-b">
+          <SheetTitle className="text-lg">Справочник узлов</SheetTitle>
+          <SheetDescription>Роли — гипотезы по правилам с порогами, а не выводы о клиенте. Пороги конкретного узла — в его карточке.</SheetDescription>
+        </SheetHeader>
+        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-auto p-3">
+          <div className="px-3 pt-1 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Роли</div>
+          {ROLE_ORDER.map(entry)}
+          <div className="px-3 pt-4 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Отметки</div>
+          {entry('seed')}
+          {entry('boundary')}
+          <div className="px-3 pt-4 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Связи</div>
+          <div className="flex flex-col gap-2 px-3 py-2 text-[13.5px] leading-snug">
+            <p>
+              <span className="font-semibold">Стрелка</span> — направление перевода: от отправителя к получателю. Толщина — сумма за июль.
+            </p>
+            <p>
+              <span className="font-semibold">Размер узла</span> — приоритет проверки (<span className="font-mono">priority_score</span>).
+            </p>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   )
 }
