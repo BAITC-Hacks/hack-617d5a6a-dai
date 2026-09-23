@@ -23,6 +23,8 @@ CLUSTER_COLS = ["cluster_id", "n_nodes", "n_seed", "sum_kzt_internal", "top_gids
 TOP_COLS = ["rank", "gid", "role", "priority_score", "why"]
 MIN_TOP = 20
 EVIDENCE_MAX = 200
+ROLE_SCORE_MIN_UNIQUE = 5      # role_score «не константа» внутри роли: столько разных значений
+ROLE_SCORE_MIN_ROLES = 3       # ... хотя бы у стольких ролей
 
 
 class _Report:
@@ -224,6 +226,50 @@ def _check_method(rep: _Report, roles: pd.DataFrame, out_dir: Path, method: str)
         rep.add(f"evidence без префикса v0: (метод {method})", v0.empty, int(v0.size), 0, _examples(v0))
 
 
+def _read_meta(out_dir: Path) -> dict:
+    try:
+        return json.loads((out_dir / "run_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _check_v1(rep: _Report, roles: pd.DataFrame, top: pd.DataFrame, out_dir: Path) -> None:
+    """Проверки v1: role_score различает узлы внутри ролей, очередь in_queue сходится с run_meta."""
+    rs = pd.to_numeric(roles.role_score, errors="coerce")
+    nun = rs.groupby(roles.role).nunique().sort_index()
+    varied = [r for r, n in nun.items() if n >= ROLE_SCORE_MIN_UNIQUE]
+    rep.add(f"nodes_roles: role_score не константа (≥{ROLE_SCORE_MIN_UNIQUE} значений) в ≥{ROLE_SCORE_MIN_ROLES} ролях",
+            len(varied) >= ROLE_SCORE_MIN_ROLES, len(varied), f"≥{ROLE_SCORE_MIN_ROLES}",
+            "уникальных: " + ", ".join(f"{r} {n}" for r, n in nun.items()))
+
+    for name, df in (("nodes_roles", roles), ("top_nodes", top)):
+        if "in_queue" not in df.columns:
+            rep.add(f"{name}: in_queue ∈ {{0,1}}", False, "нет колонки", "0/1")
+            continue
+        q = pd.to_numeric(df.in_queue, errors="coerce")
+        bad = df.gid[~q.isin([0, 1])]
+        rep.add(f"{name}: in_queue ∈ {{0,1}}", bad.empty, int(bad.size), 0, _examples(bad))
+
+    meta = _read_meta(out_dir)
+    if "in_queue" in roles.columns and "n_terms_above_p95" in roles.columns:
+        k = int(meta.get("queue_min_terms_above_p95", 2))
+        nt = pd.to_numeric(roles.n_terms_above_p95, errors="coerce")
+        q = pd.to_numeric(roles.in_queue, errors="coerce")
+        bad = roles.gid[q != (nt >= k).astype(int)]
+        rep.add(f"nodes_roles: in_queue = (n_terms_above_p95 ≥ {k})", bad.empty, int(bad.size), 0, _examples(bad))
+    if "in_queue" in roles.columns and "in_queue" in top.columns:
+        q_of = roles.set_index("gid").in_queue
+        present = top[top.gid.isin(q_of.index)]
+        mism = present.gid[pd.to_numeric(present.in_queue, errors="coerce").to_numpy()
+                           != pd.to_numeric(q_of.loc[present.gid], errors="coerce").to_numpy()]
+        rep.add("top_nodes: in_queue = nodes_roles", mism.empty, int(mism.size), 0, _examples(mism))
+
+    n_meta = meta.get("n_in_queue")
+    n_csv = int(pd.to_numeric(roles.in_queue, errors="coerce").fillna(0).sum()) if "in_queue" in roles.columns else None
+    rep.add("run_meta.json: n_in_queue = Σ in_queue", n_meta is not None and n_meta == n_csv,
+            n_meta, n_csv, "queue_rule: " + str(meta.get("queue_rule", "нет"))[:60])
+
+
 def check_outputs(data_dir, out_dir, require_method: str | None = None) -> list[dict]:
     """Проверяет три CSV в out_dir против parquet в data_dir. Возвращает список проверок."""
     data_dir, out_dir = Path(data_dir), Path(out_dir)
@@ -260,6 +306,9 @@ def check_outputs(data_dir, out_dir, require_method: str | None = None) -> list[
         _check_top(rep, top, roles)
         if require_method:
             _check_method(rep, roles, out_dir, require_method)
+        # v1-проверки: по --require-method v1 или по run_meta.json.method (прогон из pipeline.run)
+        if (require_method or _read_meta(out_dir).get("method")) == "v1":
+            _check_v1(rep, roles, top, out_dir)
     return rep.rows
 
 

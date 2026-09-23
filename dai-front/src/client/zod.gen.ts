@@ -88,7 +88,9 @@ export const zNodeOut = z.object({
     n_seed_upstream: z.int().optional().default(0),
     betweenness: z.number().optional().default(0),
     next_request: z.string().optional().default(''),
-    limitations: z.string().optional().default('')
+    limitations: z.string().optional().default(''),
+    n_terms_above_p95: z.int().optional().default(0),
+    in_queue: z.boolean().optional().default(false)
 });
 
 /**
@@ -150,7 +152,9 @@ export const zMetaResponse = z.object({
     method: z.string().optional().default('mock'),
     threshold_score: z.number().nullish(),
     threshold_raw: z.number().nullish(),
-    elapsed_s: z.number().nullish()
+    elapsed_s: z.number().nullish(),
+    n_in_queue: z.int().nullish(),
+    queue_rule: z.string().nullish()
 });
 
 /**
@@ -176,7 +180,8 @@ export const zTopNode = z.object({
         'peripheral'
     ]),
     priority_score: z.number(),
-    why: z.string()
+    why: z.string(),
+    in_queue: z.boolean().optional().default(false)
 });
 
 /**

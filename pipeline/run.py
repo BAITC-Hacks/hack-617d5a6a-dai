@@ -20,7 +20,8 @@ import pandas as pd
 
 from . import clusters as clusters_mod
 from . import evidence, export, features, load, priority, roles_v0, roles_v1
-from .rules import FAST_TRANSIT, PRIORITY_THRESHOLD_RAW, ROLE_ORDER, ROLES, THRESHOLDS, TOP_N
+from .rules import (FAST_TRANSIT, PRIORITY_THRESHOLD_RAW, QUEUE_MIN_TERMS_ABOVE_P95, ROLE_ORDER, ROLES,
+                    THRESHOLDS, TOP_N)
 
 try:
     from . import temporal
@@ -137,6 +138,9 @@ def run(data_dir: Path, out_dir: Path, method: str = "v1", seed: int = 42) -> di
     if method == "v1":
         assert not ((df.role == "terminal") & df.is_seed).any(), "terminal у seed"
         assert not df.evidence.str.startswith("v0:").any()
+        assert df.in_queue.isin([0, 1]).all()
+        assert (df.in_queue == (df.n_terms_above_p95 >= QUEUE_MIN_TERMS_ABOVE_P95).astype(int)).all()
+        assert df.role_score.between(0, 1).all()
 
     meta = {
         "method": method,
@@ -168,7 +172,9 @@ def run(data_dir: Path, out_dir: Path, method: str = "v1", seed: int = 42) -> di
     print("роли: " + ", ".join(f"{k}={v}" for k, v in meta["role_counts"].items()))
     print(f"кластеров: {len(cl)}")
     if method == "v1":
-        print(f"порог priority_raw {PRIORITY_THRESHOLD_RAW:g}: узлов выше {meta['n_above_threshold']}; "
+        print(f"очередь проверки: {meta['n_in_queue']} узлов ({meta['queue_rule']}); "
+              f"n_terms_above_p95: {meta['n_terms_above_p95_dist']}")
+        print(f"справочно: priority_raw ≥ {PRIORITY_THRESHOLD_RAW:g} у {meta['n_above_threshold']} узлов; "
               f"max_priority_raw {meta['max_priority_raw']}; threshold_score {meta['threshold_score']}")
     return meta
 

@@ -3,6 +3,8 @@
 v1: для слагаемого j p_j(x) = доля узлов со значением ≥ x (равные включаются), вклад c_j = −ln p_j;
 нулевое значение даёт p = 1 и вклад 0. У граничных узлов глубины 4 вклады out_kzt, out_deg, pass_kzt = 0.
 priority_raw = Σ c_j + FAST_TRANSIT_WEIGHT · fast_transit_flag; priority_score = priority_raw / max.
+Очередь проверки: n_terms_above_p95 = число слагаемых с c_j ≥ TERM_P95_CONTRIBUTION (признак в верхних 5 %),
+in_queue = n_terms_above_p95 ≥ QUEUE_MIN_TERMS_ABOVE_P95. Ранжирование от очереди не зависит.
 """
 
 from __future__ import annotations
@@ -12,8 +14,9 @@ import math
 import numpy as np
 import pandas as pd
 
-from .rules import (BOUNDARY_ZERO_TERMS, FAST_TRANSIT_WEIGHT, PRIORITY_THRESHOLD_RAW, SCORE_TERMS,
-                    SCORE_WEIGHTS, THRESHOLDS as T)
+from .rules import (BOUNDARY_ZERO_TERMS, FAST_TRANSIT_WEIGHT, PRIORITY_THRESHOLD_RAW, QUEUE_MIN_TERMS_ABOVE_P95,
+                    SCORE_TERMS, SCORE_WEIGHTS, TERM_P95_CONTRIBUTION, TERM_P95_TOL, THRESHOLDS as T,
+                    queue_rule_text)
 
 
 def v0(df: pd.DataFrame) -> pd.Series:
@@ -50,7 +53,7 @@ def pct_label(p: float) -> int:
 
 
 def v1(df: pd.DataFrame) -> pd.DataFrame:
-    """Добавляет p_<term>, c_<term>, priority_raw, priority_score, score_terms."""
+    """Добавляет p_<term>, c_<term>, priority_raw, priority_score, score_terms, n_terms_above_p95, in_queue."""
     df = df.copy()
     boundary = df.depth4_boundary.astype(bool).to_numpy()
     total = np.zeros(len(df))
@@ -70,6 +73,9 @@ def v1(df: pd.DataFrame) -> pd.DataFrame:
     mx = float(df.priority_raw.max())
     df["priority_score"] = (df.priority_raw / mx).clip(0, 1).round(4) if mx > 0 else 0.0
     df["score_terms"] = [_score_terms(r) for r in df.itertuples(index=False)]
+    c_all = df[[f"c_{t}" for t in SCORE_TERMS]].to_numpy(float)
+    df["n_terms_above_p95"] = (c_all >= TERM_P95_CONTRIBUTION - TERM_P95_TOL).sum(axis=1).astype(int)
+    df["in_queue"] = (df.n_terms_above_p95 >= QUEUE_MIN_TERMS_ABOVE_P95).astype(int)
     return df
 
 
@@ -92,10 +98,17 @@ def meta_v1(df: pd.DataFrame) -> dict:
         "threshold_raw": PRIORITY_THRESHOLD_RAW,
         "threshold_score": round(PRIORITY_THRESHOLD_RAW / mx, 6) if mx > 0 else None,
         "max_priority_raw": round(mx, 4),
+        # справочно: сумма ≥ порога; это НЕ очередь (слагаемые коррелируют, см. rules.py)
         "n_above_threshold": int((df.priority_raw >= PRIORITY_THRESHOLD_RAW).sum()),
-        # справочно: узлы, где ≥2 слагаемых выше P95 (c ≥ −ln 0,05) — буквальное прочтение порога
+        # справочно (исторический ключ): ≥2 слагаемых с c ≥ −ln 0,05; совпадает с n_in_queue
         "n_two_terms_above_p95": int(((df[[f"c_{t}" for t in SCORE_TERMS]] >= -math.log(0.05) - 1e-9)
                                       .sum(axis=1) >= 2).sum()),
+        "queue_rule": queue_rule_text(),
+        "queue_min_terms_above_p95": QUEUE_MIN_TERMS_ABOVE_P95,
+        "term_p95_contribution": round(TERM_P95_CONTRIBUTION, 6),
+        "n_in_queue": int(df.in_queue.sum()),
+        "n_terms_above_p95_dist": {str(k): int(v) for k, v in
+                                   df.n_terms_above_p95.value_counts().sort_index().items()},
         "weights": {**SCORE_WEIGHTS, "fast_transit_flag": FAST_TRANSIT_WEIGHT},
         "boundary_zero_terms": BOUNDARY_ZERO_TERMS,
     }

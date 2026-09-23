@@ -746,6 +746,30 @@
             ],
             "title": "Elapsed S",
             "description": "Время прогона пайплайна, с"
+          },
+          "n_in_queue": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N In Queue",
+            "description": "Сколько узлов в очереди проверки (run_meta.json)"
+          },
+          "queue_rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Rule",
+            "description": "Правило очереди проверки текстом (run_meta.json)"
           }
         },
         "type": "object",
@@ -952,6 +976,18 @@
             "title": "Limitations",
             "description": "Ограничения данных по узлу через «; »; пусто, если их нет",
             "default": ""
+          },
+          "n_terms_above_p95": {
+            "type": "integer",
+            "title": "N Terms Above P95",
+            "description": "Сколько из 7 признаков скора в верхних 5 % (вклад ≥ −ln 0,05)",
+            "default": 0
+          },
+          "in_queue": {
+            "type": "boolean",
+            "title": "In Queue",
+            "description": "В очереди проверки: не меньше двух признаков в верхних 5 %",
+            "default": false
           }
         },
         "type": "object",
@@ -1082,6 +1118,12 @@
             "type": "string",
             "title": "Why",
             "description": "Обоснование текстом"
+          },
+          "in_queue": {
+            "type": "boolean",
+            "title": "In Queue",
+            "description": "В очереди проверки: не меньше двух признаков в верхних 5 %",
+            "default": false
           }
         },
         "type": "object",

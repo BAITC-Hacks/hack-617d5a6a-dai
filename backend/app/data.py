@@ -52,6 +52,8 @@ EXTRA_NODE_DEFAULTS: dict[str, object] = {
     "betweenness": 0.0,
     "next_request": "",
     "limitations": "",
+    "n_terms_above_p95": 0,
+    "in_queue": False,
 }
 
 
@@ -202,6 +204,7 @@ def _load_outputs(out_dir: Path, feat: pd.DataFrame):
     top = pd.read_csv(out_dir / "top_nodes.csv", dtype={"gid": "int64"})
     top["gid"] = top.gid.astype(str)
     top["why"] = top.why.fillna("").astype(str)
+    top["in_queue"] = (top.in_queue.fillna(0).astype(int).astype(bool) if "in_queue" in top.columns else False)
     return df, clusters, top
 
 
@@ -252,6 +255,7 @@ def load_store(data_dir: Path = DATA_DIR, out_dir: Path = OUTPUTS_DIR) -> Store:
         df, clusters, top = _mock_outputs(feat, g, edges)
         mock, source = True, "mock"
         run_meta = {}
+        top = top.assign(in_queue=False)   # у заглушки очереди нет
 
     df = _apply_extra_defaults(df)
     df = df[NODE_COLUMNS + list(EXTRA_NODE_DEFAULTS)].set_index("gid", drop=False)

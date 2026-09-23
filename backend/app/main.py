@@ -103,6 +103,8 @@ def get_meta() -> s.MetaResponse:
         method=str(rm.get("method") or ("mock" if st.mock else "v0")),
         threshold_score=_num("threshold_score"), threshold_raw=_num("threshold_raw"),
         elapsed_s=_num("elapsed_s"),
+        n_in_queue=int(rm["n_in_queue"]) if isinstance(rm.get("n_in_queue"), int) else None,
+        queue_rule=str(rm["queue_rule"]) if rm.get("queue_rule") else None,
     )
 
 
@@ -190,7 +192,7 @@ def get_top_nodes(limit: int = Query(default=20, ge=1, le=2248)) -> s.TopRespons
     rows = st.top.head(limit)
     return s.TopResponse(items=[
         s.TopNode(rank=int(r.rank), gid=str(r.gid), role=str(r.role),
-                  priority_score=float(r.priority_score), why=str(r.why))
+                  priority_score=float(r.priority_score), why=str(r.why), in_queue=bool(r.in_queue))
         for r in rows.itertuples(index=False)
     ])
 

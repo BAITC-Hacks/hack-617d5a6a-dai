@@ -227,6 +227,18 @@ export type MetaResponse = {
      * Время прогона пайплайна, с
      */
     elapsed_s?: number | null;
+    /**
+     * N In Queue
+     *
+     * Сколько узлов в очереди проверки (run_meta.json)
+     */
+    n_in_queue?: number | null;
+    /**
+     * Queue Rule
+     *
+     * Правило очереди проверки текстом (run_meta.json)
+     */
+    queue_rule?: string | null;
 };
 
 /**
@@ -402,6 +414,18 @@ export type NodeOut = {
      * Ограничения данных по узлу через «; »; пусто, если их нет
      */
     limitations?: string;
+    /**
+     * N Terms Above P95
+     *
+     * Сколько из 7 признаков скора в верхних 5 % (вклад ≥ −ln 0,05)
+     */
+    n_terms_above_p95?: number;
+    /**
+     * In Queue
+     *
+     * В очереди проверки: не меньше двух признаков в верхних 5 %
+     */
+    in_queue?: boolean;
 };
 
 /**
@@ -482,6 +506,12 @@ export type TopNode = {
      * Обоснование текстом
      */
     why: string;
+    /**
+     * In Queue
+     *
+     * В очереди проверки: не меньше двух признаков в верхних 5 %
+     */
+    in_queue?: boolean;
 };
 
 /**

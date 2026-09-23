@@ -15,11 +15,12 @@ NODE_EXTRA = ["is_seed", "depth", "in_deg", "out_deg", "in_kzt", "out_kzt", "in_
               "active_days", "first_date", "last_date", "truncated_by_depth", "flags"]
 # I2 (v1): при v0 заполняются умолчаниями, чтобы схема CSV не зависела от метода
 NODE_V1 = {"fast_transit_pairs": 0, "fast_transit_flag": 0, "priority_raw": 0.0, "score_terms": "",
-           "role_checks": "", "next_request": "", "limitations": "", "method": ""}
+           "role_checks": "", "next_request": "", "limitations": "", "method": "",
+           "n_terms_above_p95": 0, "in_queue": 0}
 CLUSTER_REQUIRED = ["cluster_id", "n_nodes", "n_seed", "sum_kzt_internal", "top_gids", "hypothesis"]
 CLUSTER_EXTRA = ["n_edges_internal", "share_depth4"]
 TOP_REQUIRED = ["rank", "gid", "role", "priority_score", "why"]
-TOP_EXTRA = ["cluster_id", "priority_raw", "score_terms"]
+TOP_EXTRA = ["cluster_id", "priority_raw", "score_terms", "in_queue"]
 
 
 def _atomic_text(path: Path, text: str) -> None:
@@ -52,6 +53,8 @@ def nodes_frame(df: pd.DataFrame) -> pd.DataFrame:
     out["fast_transit_pairs"] = out.fast_transit_pairs.astype(int)
     out["fast_transit_flag"] = out.fast_transit_flag.astype(bool).astype(int)
     out["priority_raw"] = out.priority_raw.astype(float).round(4)
+    out["n_terms_above_p95"] = out.n_terms_above_p95.astype(int)
+    out["in_queue"] = out.in_queue.astype(bool).astype(int)
     out["gid"] = out.gid.astype("int64")
     out["cluster_id"] = out.cluster_id.astype(int)
     out["role_score"] = out.role_score.round(4)
@@ -73,6 +76,7 @@ def write_all(out_dir: Path, nodes: pd.DataFrame, clusters: pd.DataFrame, top: p
     _atomic_csv(c, paths[1])
     t = _with_v1_defaults(top)[TOP_REQUIRED + TOP_EXTRA].copy()
     t["gid"] = t.gid.astype("int64")
+    t["in_queue"] = t.in_queue.astype(bool).astype(int)
     _atomic_csv(t, paths[2])
     meta = dict(meta)
     if "stages_s" in meta:

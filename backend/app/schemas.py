@@ -41,6 +41,8 @@ class NodeOut(BaseModel):
     betweenness: float = Field(default=0, description="Посредничество в графе выгрузки")
     next_request: str = Field(default="", description="Какой запрос данных закрыл бы главный пробел по узлу")
     limitations: str = Field(default="", description="Ограничения данных по узлу через «; »; пусто, если их нет")
+    n_terms_above_p95: int = Field(default=0, description="Сколько из 7 признаков скора в верхних 5 % (вклад ≥ −ln 0,05)")
+    in_queue: bool = Field(default=False, description="В очереди проверки: не меньше двух признаков в верхних 5 %")
 
 
 class EdgeOut(BaseModel):
@@ -116,6 +118,7 @@ class TopNode(BaseModel):
     role: Role
     priority_score: float
     why: str = Field(description="Обоснование текстом")
+    in_queue: bool = Field(default=False, description="В очереди проверки: не меньше двух признаков в верхних 5 %")
 
 
 class TopResponse(BaseModel):
@@ -162,6 +165,8 @@ class MetaResponse(BaseModel):
     threshold_score: float | None = Field(default=None, description="Порог приоритета на шкале priority_score 0–1")
     threshold_raw: float | None = Field(default=None, description="Порог приоритета на сырой шкале priority_raw")
     elapsed_s: float | None = Field(default=None, description="Время прогона пайплайна, с")
+    n_in_queue: int | None = Field(default=None, description="Сколько узлов в очереди проверки (run_meta.json)")
+    queue_rule: str | None = Field(default=None, description="Правило очереди проверки текстом (run_meta.json)")
 
 
 class HealthResponse(BaseModel):

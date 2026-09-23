@@ -126,14 +126,24 @@ def _num1(v: float) -> str:
     return f"{v:.1f}".replace(".", ",")
 
 
+def queue_fragment(r) -> str:
+    """«скор 41,2; выше P95 по 2 фактам[; в очереди проверки]» — очередь по числу признаков, не по сумме."""
+    n = int(getattr(r, "n_terms_above_p95", 0))
+    above = f"выше P95 по {plural(n, 'факту', 'фактам', 'фактам')}" if n > 0 else "фактов выше P95 нет"
+    s = f"скор {_num1(r.priority_raw)}; {above}"
+    if int(getattr(r, "in_queue", 0)):
+        s += "; в очереди проверки"
+    return s
+
+
 def node_evidence_v1(r) -> str:
     from .priority import pct_label, top_terms
-    from .rules import PRIORITY_THRESHOLD_RAW, ROLE_RU, ROLE_TYPOLOGY
+    from .rules import ROLE_RU, ROLE_TYPOLOGY
 
     head = f"{ROLE_RU[r.role]} ({ROLE_TYPOLOGY[r.role]})"
     facts = [f"{TERM_FACT[t](v)} (P{pct_label(p)})" for t, v, p, _ in top_terms(r)]
     first = head + (": " + ", ".join(facts) if facts else "")
-    parts = [first, f"скор {_num1(r.priority_raw)} (порог {_num1(PRIORITY_THRESHOLD_RAW)})"]
+    parts = [first, queue_fragment(r)]
     n_ft = int(getattr(r, "fast_transit_pairs", 0))
     if n_ft > 0:
         parts.append(f"быстрый транзит: {plural(n_ft, 'пара', 'пары', 'пар')} за 0–2 дня")
