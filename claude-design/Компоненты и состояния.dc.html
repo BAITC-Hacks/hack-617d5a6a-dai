@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0c0f;color:#eceef2;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#cfd3da;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div style="min-width:1440px;padding:32px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;gap:14px">
+    <span style="font-size:28px;font-weight:600">Компоненты, состояния и ключевые решения</span>
+    <span style="font-size:14px;color:#aab0ba">Граф денег · тёмная тема · IBM Plex Sans / Mono</span>
+  </div>
+
+  <section id="8a" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px"><span style="font:600 12px 'IBM Plex Mono';background:#eceef2;color:#0e1014;padding:2px 7px;border-radius:4px">A</span><span style="font-size:15px;font-weight:600">Ключевые решения</span></div>
+    <div style="padding:20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:17px;font-weight:600">Направление потока</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:14px;background:#0e1014;border-radius:8px">
+        <span style="width:20px;height:20px;border-radius:50%;background:#f5c542;border:3px solid #fff"></span><span style="flex:1;height:5px;background:#b4bac4;position:relative"><span style="position:absolute;left:40%;top:-2px;width:9px;height:9px;border-radius:50%;background:#fff"></span></span><span style="color:#b4bac4">▶</span>
+        <span style="width:30px;height:30px;border-radius:50%;background:#ff6b6b"></span><span style="flex:1;height:2px;background:#b4bac4"></span><span style="color:#b4bac4">▶</span>
+        <span style="width:22px;height:22px;border-radius:50%;background:#2a2e35;border:2px dashed #b8bec8"></span>
+      </div>
+      <div style="font-size:14px;line-height:1.6;color:#c9cdd4">Схема окружения разложена слоями слева направо по колену: seed всегда слева, дальше по потоку — ближе к кандидатам в организаторы. Направление дублируется тремя способами: порядком колонок с подписями «Колено 0–4», стрелками на концах рёбер и частицами, которые бегут от плательщика к получателю по выбранным рёбрам. Толщина ребра — сумма; подпись суммы видна на рёбрах выбранного узла и при наведении.</div>
+    </div>
+    <div style="padding:20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:17px;font-weight:600">«Конечный получатель» ≠ «обрыв выборки»</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="padding:12px;background:#0e1014;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px"><span style="width:34px;height:34px;border-radius:50%;background:#5aa9ff;display:grid;place-items:center;color:#0e1014;font-weight:700">П</span><span style="font-size:13px;font-weight:600;color:#5aa9ff">Конечный получатель</span><span style="font-size:12px;color:#aab0ba;text-align:center">колено 0–3, исходящие прослежены и их нет</span></div>
+        <div style="padding:12px;background:#0e1014;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px"><span style="width:34px;height:34px;border-radius:50%;background:#2a2e35;border:2px dashed #b8bec8"></span><span style="font-size:13px;font-weight:600;color:#e3e6eb">обрыв выборки</span><span style="font-size:12px;color:#aab0ba;text-align:center">колено 4, исходящие не загружались</span></div>
+      </div>
+      <div style="font-size:14px;line-height:1.6;color:#c9cdd4">Конечный получатель — сплошной синий узел с глифом «П». Узел с обрывом — полый, с пунктирной обводкой, и роль «Конечный получатель» ему не присваивается. Колено 4 на схеме лежит в заштрихованной полосе «исходящие не прослежены», в очереди и карточке у него бейдж «обрыв выборки», а на Sankey оно показано пунктирным блоком.</div>
+    </div>
+    <div style="padding:20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:17px;font-weight:600">Факт · правило · гипотеза</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13.5px;color:#e3e6eb;line-height:1.5">Факт: вход <span style="font:500 12.5px 'IBM Plex Mono';padding:1px 6px;border-radius:4px;background:#232730;border:1px solid #30353e">4 215 000 ₸</span> от <span style="font:500 12.5px 'IBM Plex Mono';padding:1px 6px;border-radius:4px;background:#232730;border:1px solid #30353e">11</span> плательщиков</div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 16px;gap:8px;padding:7px 10px;border:1px solid #262a31;border-radius:6px;font-size:13px"><span style="color:#c3c8d0">Правило: доля пропуска</span><span style="font-family:'IBM Plex Mono'">0.03 ≤ 0.20</span><span style="color:#6fd39b">✓</span></div>
+        <div style="padding:8px 10px;border-left:3px solid #3fd6e0;background:#10252a;border-radius:0 6px 6px 0;font-size:13px;color:#dff7f9"><b style="font:600 10.5px 'IBM Plex Mono';color:#8fe6ec;letter-spacing:.06em">ГИПОТЕЗА · AI</b><br>Возможен вывод средств вне банка</div>
+      </div>
+      <div style="font-size:14px;line-height:1.6;color:#c9cdd4">Факты — обычный текст, каждое число и gid в нём является чипом-ссылкой на метрику или узел. Правила — таблица с порогами и ✓/✕, её считает пайплайн. Всё, что написал AI, помечено значком AI и подписью «требует проверки». Гипотезы выделены бирюзовой полосой, уровнем уверенности и блоками «что подтвердит / что опровергнет».</div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px"><span style="font:600 12px 'IBM Plex Mono';background:#eceef2;color:#0e1014;padding:2px 7px;border-radius:4px">B</span><span style="font-size:15px;font-weight:600">Базовые элементы</span></div>
+
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:10px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">БЕЙДЖ РОЛИ</div>
+      <sc-for list="{{ roles }}" as="r" hint-placeholder-count="6">
+        <span style="align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px 0 4px;border-radius:5px;background:{{ r.bg }};color:{{ r.c }};font-size:13px;font-weight:600"><span style="width:16px;height:16px;border-radius:3px;background:{{ r.c }};color:#0e1014;font:700 11px/16px 'IBM Plex Sans';text-align:center">{{ r.g }}</span>{{ r.l }}</span>
+      </sc-for>
+      <div style="display:flex;gap:8px">
+        <span style="height:22px;padding:0 7px;border:1.5px solid #fff;border-radius:11px;font:700 11px/19px 'IBM Plex Mono'">SEED</span>
+        <span style="height:22px;padding:0 7px;border:1.5px dashed #b8bec8;border-radius:5px;font-size:12px;line-height:19px;color:#e3e6eb">обрыв выборки</span>
+      </div>
+    </div>
+
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ИНДИКАТОР SCORE</div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="font:600 22px 'IBM Plex Mono'">0.94</span><span style="flex:1;height:5px;border-radius:3px;background:#2a2e36"><span style="display:block;width:94%;height:100%;border-radius:3px;background:#eceef2"></span></span></div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="font:600 15px 'IBM Plex Mono'">0.42</span><span style="width:42px;height:4px;border-radius:2px;background:#2a2e36"><span style="display:block;width:42%;height:100%;background:#eceef2"></span></span><span style="font-size:12px;color:#8a909b">компактный, в очереди</span></div>
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b;margin-top:6px">ЧЕК-ЛИСТ ПРАВИЛА</div>
+      <div style="border:1px solid #262a31;border-radius:7px;font-size:13px">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 16px;gap:8px;padding:7px 10px;border-bottom:1px solid #1d2026"><span style="color:#c3c8d0">Плательщиков</span><span style="font-family:'IBM Plex Mono'">11 ≥ 5</span><span style="color:#6fd39b">✓</span></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 16px;gap:8px;padding:7px 10px;border-bottom:1px solid #1d2026"><span style="color:#c3c8d0">Плательщиков</span><span style="font-family:'IBM Plex Mono'">1 &lt; 5</span><span style="color:#ff8a8a">✕</span></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 16px;gap:8px;padding:7px 10px"><span style="color:#c3c8d0">Нет исходящих</span><span style="font-family:'IBM Plex Mono';color:#8a909b">не применяется</span><span style="color:#8a909b">—</span></div>
+      </div>
+    </div>
+
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:10px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ФЛАГ КАЧЕСТВА ДАННЫХ</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span style="padding:2px 8px;border-radius:4px;background:#2a2412;color:#f1dc9a;font-size:12px">⚠ неполный баланс</span>
+        <span style="padding:2px 8px;border-radius:4px;background:#2a2412;color:#f1dc9a;font-size:12px">⚠ вход seed занижен</span>
+        <span style="padding:2px 8px;border-radius:4px;background:#2a2412;color:#f1dc9a;font-size:12px">⚠ seed без исходящих</span>
+      </div>
+      <div style="padding:10px 12px;border:1px solid #4a4222;background:#1a1810;border-radius:7px;font-size:13px;line-height:1.5;color:#efe3bd"><b>Неполный баланс.</b> Узел отдал 1,2 млн ₸, получил по данным 0,4 млн ₸. Коэффициент пропуска ненадёжен.</div>
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b;margin-top:4px">ЦЕПОЧКА ПУТИ</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;font:500 12.5px 'IBM Plex Mono'"><span style="padding:2px 6px;border:1.5px solid #fff;border-radius:10px">100017</span><span style="color:#8a909b">—630 000→</span><span style="padding:2px 6px;border-radius:4px;background:#2b2a1c;color:#f5c542">150903</span><span style="color:#8a909b">—612 000→</span><span style="padding:2px 6px;border-radius:4px;background:rgba(255,107,107,.18);color:#ff8a8a">100482</span></div>
+    </div>
+
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:10px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ЧИП GID</div>
+      <div style="font-size:13.5px;line-height:1.7">в тексте: узел <span style="font:500 12.5px 'IBM Plex Mono';padding:1px 6px;border-radius:4px;background:rgba(255,107,107,.16);border:1px solid rgba(255,107,107,.35);color:#ffb0b0">● 100482</span> получает…</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 4px 0 8px;border-radius:12px;background:#1d2127;border:1px solid #333842;font:500 12.5px 'IBM Plex Mono'"><span style="width:8px;height:8px;border-radius:50%;background:#ff6b6b"></span>100482<span style="font:500 11.5px 'IBM Plex Sans';color:#aab0ba">Консолидация</span><span style="width:16px;text-align:center;color:#8a909b">×</span></span>
+        <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:12px;background:#1d2127;border:1px solid #333842;font:500 12.5px 'IBM Plex Mono'">▣ cluster:3</span>
+      </div>
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b;margin-top:4px">ПОИСК GID</div>
+      <div style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:7px;border:1px solid #2c3038;color:#8a909b;font:500 13.5px 'IBM Plex Mono'">⌕ Найти gid</div>
+      <div style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:7px;border:1px solid #5a606b;color:#fff;font:500 13.5px 'IBM Plex Mono'">⌕ 999999</div>
+      <div style="font-size:12.5px;color:#c3c8d0;line-height:1.45;padding:8px 10px;background:#181b21;border-radius:6px">gid 999999 не найден в выборке</div>
+      <div style="font-size:12.5px;color:#f1dc9a;line-height:1.45;padding:8px 10px;background:#1f1d14;border:1px solid #4a4222;border-radius:6px">420115 вне крупнейшей компоненты — схема переключена на компоненту 2</div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px">
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">СТИЛИ УЗЛА · РОЛЬ × СОСТОЯНИЕ</div>
+      <div style="display:grid;grid-template-columns:130px repeat(6,minmax(0,1fr));gap:10px 8px;align-items:center;background:#0e1014;border-radius:8px;padding:14px">
+        <span></span>
+        <span style="font-size:12px;color:#8a909b;text-align:center">обычный</span><span style="font-size:12px;color:#8a909b;text-align:center">seed</span><span style="font-size:12px;color:#8a909b;text-align:center">выбран</span><span style="font-size:12px;color:#8a909b;text-align:center">в чате</span><span style="font-size:12px;color:#8a909b;text-align:center">приглушён</span><span style="font-size:12px;color:#8a909b;text-align:center">обрыв</span>
+        <sc-for list="{{ roles }}" as="r" hint-placeholder-count="6">
+          <span style="font-size:13px;color:{{ r.c }};font-weight:600">{{ r.l }}</span>
+          <span style="justify-self:center;width:28px;height:28px;border-radius:50%;background:{{ r.c }};border:2px solid #0e1014;display:grid;place-items:center;color:#0e1014;font-weight:700;font-size:13px">{{ r.g }}</span>
+          <span style="justify-self:center;width:28px;height:28px;border-radius:50%;background:{{ r.c }};border:3px solid #fff;display:grid;place-items:center;color:#0e1014;font-weight:700;font-size:12px">{{ r.g }}</span>
+          <span style="justify-self:center;width:28px;height:28px;border-radius:50%;background:{{ r.c }};box-shadow:0 0 0 4px #0e1014,0 0 0 6px #fff,0 0 18px 6px rgba(255,255,255,.12);display:grid;place-items:center;color:#0e1014;font-weight:700;font-size:13px">{{ r.g }}</span>
+          <span style="justify-self:center;width:28px;height:28px;border-radius:50%;background:{{ r.c }};outline:2px dashed #3fd6e0;outline-offset:3px;display:grid;place-items:center;color:#0e1014;font-weight:700;font-size:13px">{{ r.g }}</span>
+          <span style="justify-self:center;width:28px;height:28px;border-radius:50%;background:{{ r.c }};opacity:.15"></span>
+          <span style="justify-self:center;width:28px;height:28px;border-radius:50%;background:#2a2e35;border:2px dashed #b8bec8;display:grid;place-items:center;color:#c3c8d0;font-weight:700;font-size:13px">{{ r.g }}</span>
+        </sc-for>
+      </div>
+      <div style="font-size:12.5px;color:#aab0ba">Размер узла — priority_score (r = 7 + 17·p). Глиф роли внутри узла от r ≥ 12.</div>
+    </div>
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">СТИЛИ РЁБЕР</div>
+      <div style="display:flex;flex-direction:column;gap:14px;background:#0e1014;border-radius:8px;padding:16px">
+        <sc-for list="{{ edges }}" as="e" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:center">
+            <span style="font-size:13px;color:#c3c8d0">{{ e.l }}</span>
+            <div style="position:relative;display:flex;align-items:center;opacity:{{ e.o }}">
+              <span style="flex:1;height:{{ e.w }};background:{{ e.c }};border-radius:2px"></span><span style="color:{{ e.c }};font-size:12px;margin-left:-2px">▶</span>
+              <sc-if value="{{ e.dot }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:30%;width:8px;height:8px;border-radius:50%;background:#fff"></span><span style="position:absolute;left:65%;width:8px;height:8px;border-radius:50%;background:#fff"></span></sc-if>
+              <sc-if value="{{ e.lbl }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:40%;top:-20px;font:500 12.5px 'IBM Plex Mono';color:#d3d7dd">612 000</span></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:12.5px;color:#aab0ba">Толщина 1–7 px ∝ √суммы. Тултип ребра: сумма, число транзакций, даты.</div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px"><span style="font:600 12px 'IBM Plex Mono';background:#eceef2;color:#0e1014;padding:2px 7px;border-radius:4px">C</span><span style="font-size:15px;font-weight:600">AI, чат и навигация</span></div>
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">AI-БЛОК · СОСТОЯНИЯ</div>
+      <div style="padding:10px 12px;border:1px solid #1f4a50;border-radius:8px;background:#0f1a1d;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:center"><span style="font:700 10px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 5px">AI</span><span style="font-size:12px;color:#8fe6ec">Нарратив · требует проверки</span></div>
+        <div style="font-size:13px;color:#e8f4f5">Узел получает средства от 11 плательщиков…</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:11.5px;color:#c3c8d0"><span style="padding:3px 7px;border:1px solid #2c3038;border-radius:5px">↻ Перегенерировать</span><span style="padding:3px 7px;border:1px solid #2c3038;border-radius:5px">Редактировать</span><span style="padding:3px 7px;border:1px solid #1f5a60;border-radius:5px;color:#9beef3">Принять в справку</span><span style="padding:3px 7px;border:1px solid #2c3038;border-radius:5px">Отклонить</span></div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid #262a31;border-radius:8px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12.5px;color:#8a909b">Агент думает</div>
+        <div style="font-size:13px;color:#c3c8d0">✓ ищу пути от seed</div>
+        <div style="font-size:13px;color:#fff">◐ считаю потоки…</div>
+        <div style="font-size:13px;color:#5f656f">○ формулирую ответ</div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid #4a4222;background:#1a1810;border-radius:8px;font-size:13px;line-height:1.5;color:#efe3bd"><b>Данных недостаточно.</b> Получатели 203117 лежат на колене 4 — их исходящие не прослежены, поэтому я не могу сказать, кто собирает деньги дальше.</div>
+      <div style="padding:10px 12px;border:1px solid #262a31;background:#15171b;border-radius:8px;font-size:13px;color:#aab0ba"><span style="font:700 10px 'IBM Plex Mono';color:#8a909b;border:1px solid #4a505a;border-radius:3px;padding:0 4px;margin-right:6px">AI</span>AI недоступен, показано шаблонное обоснование</div>
+    </div>
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">TOAST · FAB · МЕНЮ</div>
+      <div style="align-self:flex-start;display:flex;align-items:center;gap:10px;padding:9px 14px;background:#eceef2;color:#0e1014;border-radius:8px;font-size:13.5px;font-weight:500"><b>✓</b>100482 добавлен в чат</div>
+      <div style="align-self:flex-start;display:flex;align-items:center;gap:10px;padding:7px 7px 7px 12px;background:#eceef2;color:#0e1014;border-radius:9px"><span style="font-size:13px;font-weight:600">Выбрано 5</span><span style="display:flex;align-items:center;gap:6px;background:#0e1014;color:#fff;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:6px"><span style="font:700 9px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 4px">AI</span>Спросить AI о выбранных (5)</span></div>
+      <div style="width:260px;padding:5px;background:#1b1e24;border:1px solid #363b45;border-radius:9px;font-size:13px">
+        <sc-for list="{{ menu }}" as="m" hint-placeholder-count="5"><div style="display:flex;padding:7px 9px;border-radius:5px;color:#e3e6eb">{{ m.l }}<span style="margin-left:auto;font:500 11px 'IBM Plex Mono';color:#8a909b">{{ m.k }}</span></div></sc-for>
+      </div>
+    </div>
+    <div style="padding:18px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ИСТОЧНИКИ · КАРТОЧКА КЛАСТЕРА · РЕЖИМ ВИДА</div>
+      <div style="padding:9px 11px;border:1px solid #262a31;border-radius:7px;display:flex;flex-wrap:wrap;gap:5px;font:500 11.5px 'IBM Plex Mono';color:#c3c8d0"><span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">edges: 3 ребра</span><span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">rule: consolidator</span><span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">seed_paths</span></div>
+      <div style="padding:12px;border:1px solid #262a31;border-radius:8px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#f472b6"></span><span style="font:600 15px 'IBM Plex Mono'">К3</span><span style="margin-left:auto;font:500 12.5px 'IBM Plex Mono';color:#aab0ba">214 · 7 seed · 18,6 млн ₸</span></div>
+        <div style="display:flex;height:8px;border-radius:3px;overflow:hidden"><span style="width:1%;background:#ff6b6b"></span><span style="width:2%;background:#ff9f43"></span><span style="width:11%;background:#f5c542"></span><span style="width:7%;background:#5aa9ff"></span><span style="width:79%;background:#5a606b"></span></div>
+        <div style="font-size:12.5px;color:#aab0ba">сбор с 7 seed, консолидация на 2 узлах</div>
+      </div>
+      <div style="align-self:flex-start;display:flex;padding:2px;border-radius:7px;background:#181b21;border:1px solid #262a31;font-size:12.5px"><span style="padding:5px 10px;border-radius:5px;color:#a0a6b1">Вся сеть</span><span style="padding:5px 10px;border-radius:5px;color:#a0a6b1">Кластер</span><span style="padding:5px 10px;border-radius:5px;background:#2a2e37;color:#fff">Окружение</span></div>
+    </div>
+  </section>
+
+  <section id="hk" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+    <div style="padding:20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:17px;font-weight:600">Шпаргалка хоткеев <span style="font:500 12px 'IBM Plex Mono';color:#8a909b;border:1px solid #30353e;border-radius:4px;padding:1px 6px;margin-left:6px">?</span></div>
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:10px 16px;align-items:center">
+        <sc-for list="{{ hotkeys }}" as="k" hint-placeholder-count="9">
+          <span style="font:500 13px 'IBM Plex Mono';color:#fff;padding:3px 8px;border:1px solid #363b45;border-bottom-width:2px;border-radius:5px;text-align:center;background:#1f2228">{{ k.k }}</span>
+          <span style="font-size:14px;color:#d3d7dd">{{ k.d }}</span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="padding:20px;background:#16150f;border:1px solid #4a4222;border-radius:10px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:17px;font-weight:600;color:#f3e6bd">Допущения по данным · проверить с ТЗ</div>
+      <div style="font-size:14px;line-height:1.6;color:#e6d8ae">· 19 seed без рёбер не входят ни в одну из 16 компонент: 1 877 + 270 + 14 мелких = 2 229 узлов, остальные 19 — изолированные seed. В макете мелкие компоненты суммарно 82 узла.</div>
+      <div style="font-size:14px;line-height:1.6;color:#e6d8ae">· Из-за обхода «только исходящие» все узлы достижимы от seed. Формулировку «7 из 11 связаны с seed» читаем как «7 плательщиков получают деньги напрямую от seed», 4 остальных — через 2–3 перевода.</div>
+      <div style="font-size:14px;line-height:1.6;color:#e6d8ae">· Число кластеров (30), разбивка оборота по коленам и ролям — mock, заменить выгрузкой clusters.csv и агрегатом по edges.</div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const R = [['Координатор', 'К', '#b392ff'], ['Консолидация', 'С', '#ff6b6b'], ['Распределитель', 'Р', '#ff9f43'], ['Транзит', 'Т', '#f5c542'], ['Конечный получатель', 'П', '#5aa9ff'], ['Периферия', '·', '#8a909b']];
+    return {
+      roles: R.map(r => ({ l: r[0], g: r[1], c: r[2], bg: r[2] + '26' })),
+      edges: [['Обычное', '2px', '#5a606b', 1], ['Выделенное', '5px', '#b4bac4', 1, 1], ['С подписью суммы', '4px', '#b4bac4', 1, 0, 1], ['Ответ AI', '4px', '#3fd6e0', 1, 1], ['Приглушённое', '3px', '#5a606b', .15]].map(e => ({ l: e[0], w: e[1], c: e[2], o: e[3], dot: !!e[4], lbl: !!e[5] })),
+      menu: [['Добавить в чат', 'A'], ['Спросить AI об этом узле', ''], ['Кто собирает деньги с этого узла?', ''], ['Найти путь до…', ''], ['Добавить в перечень', 'P']].map(m => ({ l: m[0], k: m[1] })),
+      hotkeys: [['/ · Ctrl+J', 'Ассистент'], ['A', 'Добавить выбранное в чат'], ['⇧ клик · ⇧ drag', 'Мультивыбор, лассо'], ['Ctrl+K', 'Командная палитра'], ['F', 'Фокус на выбранном'], ['E', 'Окружение узла'], ['P', 'В перечень на проверку'], ['Esc', 'Снять выделение и подсветку'], ['?', 'Шпаргалка']].map(k => ({ k: k[0], d: k[1] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

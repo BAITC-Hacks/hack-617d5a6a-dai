@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DAI — Атлас связей</title>
+<link rel="stylesheet" href="explorer.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script defer src="dai-api.js"></script><script defer src="money-graph.js"></script><script defer src="explorer.js"></script>
+</head>
+<body>
+<header><a class="brand" href="index.html"><span class="mark">◈</span> DAI <span>Атлас связей</span></a><span class="demo">Демонстрационные данные</span><a href="Граф денег.dc.html">Исходный интерфейс ↗</a></header>
+<div class="workspace">
+<aside class="library"><div class="section-head"><h1>Сеть переводов</h1><span>Исследование</span></div>
+<label class="search">Поиск узла<input id="search" placeholder="Введите gid…" autocomplete="off" type="search"></label>
+<div class="list-caption">Узлы по приоритету <span id="total"></span></div><div id="node-list" class="node-list"></div>
+<details class="exports"><summary>Все макеты из архива</summary><nav id="exports"></nav></details>
+</aside>
+<main><div class="toolbar"><div class="segments" aria-label="Режим просмотра"><button id="overview" aria-pressed="true">Вся сеть</button><button id="local" aria-pressed="false">Окрестность</button></div><label>Раскладка <select id="layout"><option value="force">Свободная</option><option value="layers">По слоям</option></select></label><label>Глубина <select id="depth"><option>1</option><option selected>2</option><option>3</option></select></label></div>
+<div class="stage"><div id="graph"></div><div id="status" role="status">Загружаем сеть…</div><div class="graph-caption"><span class="live-dot"></span><span id="counts"></span></div><div class="camera"><button id="zoom-in" aria-label="Приблизить">+</button><button id="zoom-out" aria-label="Отдалить">−</button><button id="fit" aria-label="Вместить граф">⊡</button></div><div class="hint">Прокрутка — масштаб · Перетаскивание — движение · Клик — связи узла</div></div>
+<footer><div id="legend"></div><label><input id="motion" type="checkbox" checked> Потоки</label><label><input id="clusters" type="checkbox"> Кластеры</label></footer></main>
+<aside class="inspector"><div class="section-head"><h2>Инспектор узла</h2><span id="selection-state">Ничего не выбрано</span></div><div id="card"><div class="empty-symbol">⌾</div><p>Выберите узел на графе или в списке.</p><p class="muted">Подсветка покажет его соседей, а карточка — роль и объём переводов.</p></div><div class="settings"><h2>Физика сети</h2><label>Отталкивание <input id="charge" type="range" min="20" max="220" value="80"></label><label>Длина связей <input id="distance" type="range" min="20" max="140" value="55"></label><p class="muted">Размер узла отражает приоритет проверки. Роли — гипотезы для аналитика.</p></div></aside>
+</div></body></html>

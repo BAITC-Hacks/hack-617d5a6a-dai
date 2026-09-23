@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e1014;color:#eceef2;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#cfd3da;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+button,nav a{white-space:nowrap;font-family:inherit}
+</style>
+</helmet>
+<div style="min-width:1440px;min-height:100vh;display:flex;flex-direction:column">
+  <div style="height:52px;flex:none;display:flex;align-items:center;gap:18px;padding:0 16px;border-bottom:1px solid #23262d;background:#121418">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:24px;height:24px;border-radius:6px;background:#eceef2;display:grid;place-items:center;color:#0e1014;font:700 13px 'IBM Plex Mono'">₸</div>
+      <div style="font-weight:600;font-size:15px">Граф денег</div>
+      <div style="font:400 12px 'IBM Plex Mono';color:#8a909b;white-space:nowrap">01.07–31.07.2026</div>
+    </div>
+    <nav style="display:flex;gap:2px">
+      <a href="Обзор сети.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#fff;background:#20242c">Обзор</a>
+      <a href="Рабочее место.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Рабочее место</a>
+      <a href="Кластеры.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Кластеры</a>
+      <a href="Запуск и устойчивость.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Устойчивость</a>
+      <a href="Перечень на проверку.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Перечень</a>
+    </nav>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;height:34px;width:360px;padding:0 10px;border-radius:7px;background:#0e1014;border:1px solid #2c3038;color:#8a909b;font:500 14px 'IBM Plex Mono'">⌕ Найти gid<span style="margin-left:auto;font-size:11px;border:1px solid #30353e;border-radius:4px;padding:1px 5px">/</span></div>
+  </div>
+
+  <div style="padding:24px 28px 40px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:flex-end;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:26px;font-weight:600;letter-spacing:-.01em">Обзор сети</div>
+        <div style="font-size:14px;color:#aab0ba">От 81 seed-клиента прослежены исходящие внутрибанковские переводы на 4 колена · 01.07–31.07.2026 · переводы от 5 000 ₸</div>
+      </div>
+      <a href="Рабочее место.dc.html" style="margin-left:auto;height:40px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:8px;background:#eceef2;color:#0e1014;font-size:14px;font-weight:600;white-space:nowrap">Открыть очередь приоритетов →</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+        <div style="padding:14px 16px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;color:#8a909b">{{ k.l }}</span>
+          <span style="font:600 34px 'IBM Plex Mono';letter-spacing:-.02em;white-space:nowrap">{{ k.v }}</span>
+          <span style="font-size:12.5px;color:#aab0ba">{{ k.s }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px">
+      <div style="padding:18px 20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:baseline;gap:12px">
+          <div style="font-size:16px;font-weight:600">Куда уходят деньги</div>
+          <div style="font-size:13px;color:#aab0ba">сумма переводов между коленами, млн ₸ · цвет — роль отправителя и получателя</div>
+        </div>
+        <div style="height:470px">{{ sankey }}</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#c3c8d0">
+          <sc-for list="{{ roles }}" as="r" hint-placeholder-count="6">
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:3px;background:{{ r.c }};color:#0e1014;font:700 9px/14px 'IBM Plex Sans';text-align:center">{{ r.g }}</span>{{ r.l }}</span>
+          </sc-for>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:3px;border:1.5px dashed #b8bec8"></span>обрыв выборки</span>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px;background:#16150f;border:1px solid #4a4222;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:16px;font-weight:600;color:#f3e6bd">Ограничения данных</div>
+        <div style="font-size:13px;color:#cdbf95;line-height:1.45">Учитываются в ролях и приоритетах, отмечены на каждом узле.</div>
+        <sc-for list="{{ limits }}" as="l" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;padding-top:11px;border-top:1px solid #3a3420">
+            <span style="font:600 20px 'IBM Plex Mono';color:#fff;white-space:nowrap">{{ l.n }}</span>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:14px;font-weight:600;color:#f3e6bd">{{ l.t }}</span>
+              <span style="font-size:12.5px;line-height:1.45;color:#d6c9a2">{{ l.d }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr);gap:16px">
+      <div style="padding:18px 20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:16px;font-weight:600">Роли</div>
+        <sc-for list="{{ roleDist }}" as="r" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 56px;gap:10px;align-items:center">
+            <span style="display:flex;align-items:center;gap:7px;font-size:13.5px"><span style="width:16px;height:16px;border-radius:3px;background:{{ r.c }};color:#0e1014;font:700 10px/16px 'IBM Plex Sans';text-align:center">{{ r.g }}</span>{{ r.l }}</span>
+            <span style="height:10px;border-radius:3px;background:#1f2228"><span style="display:block;height:100%;border-radius:3px;width:{{ r.w }};background:{{ r.c }}"></span></span>
+            <span style="font:600 15px 'IBM Plex Mono';text-align:right">{{ r.n }}</span>
+          </div>
+        </sc-for>
+        <div style="font-size:12.5px;color:#aab0ba;line-height:1.45">Узлам колена 4 роль «Конечный получатель» не присваивается: их исходящие не прослежены.</div>
+      </div>
+      <div style="padding:18px 20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:16px;font-weight:600">Колена</div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:end;min-height:190px">
+          <sc-for list="{{ depths }}" as="d" hint-placeholder-count="5">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
+              <span style="font:600 16px 'IBM Plex Mono'">{{ d.n }}</span>
+              <span style="width:100%;height:{{ d.h }};border-radius:4px 4px 0 0;background:{{ d.bg }};border:{{ d.bd }}"></span>
+              <span style="font-size:12.5px;color:#aab0ba;white-space:nowrap">{{ d.l }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:18px 20px;background:#121418;border:1px solid #23262d;border-radius:10px;display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:baseline;padding-bottom:8px"><span style="font-size:16px;font-weight:600">Топ-5 приоритетов</span><a href="Рабочее место.dc.html" style="margin-left:auto;font-size:13px;color:#cfd3da">все 20 в рабочем месте →</a></div>
+        <sc-for list="{{ top }}" as="t" hint-placeholder-count="5">
+          <a href="Рабочее место.dc.html" style="display:grid;grid-template-columns:24px 78px 150px minmax(0,1fr) 44px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #1d2026;color:#eceef2">
+            <span style="font:600 13px 'IBM Plex Mono';color:#8a909b">{{ t.r }}</span>
+            <span style="font:600 15px 'IBM Plex Mono'">{{ t.g }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:{{ t.c }}"><span style="width:14px;height:14px;border-radius:3px;background:{{ t.c }};color:#0e1014;font:700 9px/14px 'IBM Plex Sans';text-align:center">{{ t.gl }}</span>{{ t.l }}</span>
+            <span style="font-size:12.5px;color:#aab0ba;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.w }}</span>
+            <span style="font:600 15px 'IBM Plex Mono';text-align:right">{{ t.p }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ROLES = {
+  coordinator: { l: 'Координатор', g: 'К', c: '#b392ff' }, consolidator: { l: 'Консолидация', g: 'С', c: '#ff6b6b' },
+  distributor: { l: 'Распределитель', g: 'Р', c: '#ff9f43' }, transit: { l: 'Транзит', g: 'Т', c: '#f5c542' },
+  terminal: { l: 'Конечный получатель', g: 'П', c: '#5aa9ff' }, peripheral: { l: 'Периферия', g: '·', c: '#8a909b' },
+};
+const ORDER = ['coordinator', 'consolidator', 'distributor', 'transit', 'terminal', 'peripheral'];
+const COLS = [
+  { label: 'Seed · 81', inn: { transit: 94.0, peripheral: 43.9, distributor: 13.3 }, out: { transit: 94.0, peripheral: 43.9, distributor: 13.3 } },
+  { label: 'Колено 1 · 472', inn: { consolidator: 22.6, distributor: 15.1, transit: 78.4, terminal: 11.8, peripheral: 23.3 }, out: { consolidator: 1.9, distributor: 14.2, transit: 74.1, peripheral: 14.4 } },
+  { label: 'Колено 2 · 462', inn: { coordinator: 6.8, consolidator: 34.8, distributor: 14.6, transit: 31.5, terminal: 7.4, peripheral: 9.5 }, out: { coordinator: 6.5, consolidator: 12.4, distributor: 14.1, transit: 30.2, peripheral: 8.3 } },
+  { label: 'Колено 3 · 789', inn: { coordinator: 9.8, consolidator: 12.1, distributor: 21.4, transit: 11.3, terminal: 11.2, peripheral: 5.7 }, out: { coordinator: 6.4, distributor: 20.6, transit: 10.9, peripheral: 0.7 } },
+  { label: 'Колено 4 · 444', inn: { cut: 38.6 }, out: {} },
+];
+const FLOW = [151.2, 104.6, 71.5, 38.6];
+
+class Component extends DCLogic {
+  sankey() {
+    const h = React.createElement; const W = 1000, H = 470, k = 2.35, bw = 20, top = 50;
+    const xs = [30, 250, 470, 690, 910];
+    const els = [h('defs', { key: 'd' }, h('pattern', { id: 'hs', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: '#b8bec8', strokeOpacity: .35, strokeWidth: 3 })))];
+    const segs = COLS.map((c, ci) => {
+      let y = top; const list = [];
+      const keys = ci === 4 ? ['cut'] : ORDER.filter(r => c.inn[r]);
+      keys.forEach(r => { const hgt = c.inn[r] * k; list.push({ r, y, h: hgt }); y += hgt + 4; });
+      return list;
+    });
+    for (let ci = 0; ci < 4; ci++) {
+      let ty = top; const x1 = xs[ci] + bw, x2 = xs[ci + 1];
+      segs[ci].forEach(s => {
+        const o = (COLS[ci].out[s.r] || 0) * k; if (!o) return;
+        const sy = s.y, mx = (x1 + x2) / 2;
+        const d = `M${x1},${sy} C${mx},${sy} ${mx},${ty} ${x2},${ty} L${x2},${ty + o} C${mx},${ty + o} ${mx},${sy + o} ${x1},${sy + o} Z`;
+        els.push(h('path', { key: `l${ci}${s.r}`, d, fill: ROLES[s.r].c, fillOpacity: .28 }));
+        ty += o;
+      });
+      els.push(h('text', { key: 'f' + ci, x: (x1 + x2) / 2, y: top - 14, textAnchor: 'middle', fill: '#fff', fontSize: 17, fontWeight: 600, fontFamily: 'IBM Plex Mono' }, FLOW[ci].toString().replace('.', ',') + ' млн ₸ →'));
+    }
+    segs.forEach((list, ci) => {
+      list.forEach(s => {
+        if (s.r === 'cut') els.push(h('rect', { key: `s${ci}`, x: xs[ci], y: s.y, width: bw + 30, height: s.h, rx: 3, fill: 'url(#hs)', stroke: '#b8bec8', strokeDasharray: '5 4', strokeWidth: 1.5 }));
+        else els.push(h('rect', { key: `s${ci}${s.r}`, x: xs[ci], y: s.y, width: bw, height: s.h, rx: 2, fill: ROLES[s.r].c }));
+      });
+      const last = list[list.length - 1]; const yb = last.y + last.h;
+      els.push(h('text', { key: 'c' + ci, x: xs[ci] + (ci === 4 ? 25 : bw / 2), y: yb + 26, textAnchor: 'middle', fill: '#d3d7dd', fontSize: 14, fontWeight: 600, fontFamily: 'IBM Plex Sans' }, COLS[ci].label));
+      const inSum = Object.values(COLS[ci].inn).reduce((a, b) => a + b, 0), outSum = Object.values(COLS[ci].out).reduce((a, b) => a + b, 0);
+      const note = ci === 0 ? 'вход seed извне не виден' : ci === 4 ? 'обрыв выборки' : `не переведено дальше: ${(inSum - outSum).toFixed(1).replace('.', ',')}`;
+      els.push(h('text', { key: 'n' + ci, x: xs[ci] + (ci === 4 ? 25 : bw / 2), y: yb + 46, textAnchor: 'middle', fill: '#aab0ba', fontSize: 12.5, fontFamily: 'IBM Plex Sans' }, note));
+    });
+    return h('svg', { viewBox: `0 0 ${W} ${H}`, style: { width: '100%', height: '100%', display: 'block' } }, ...els);
+  }
+  renderVals() {
+    const dist = { coordinator: 9, consolidator: 38, distributor: 57, transit: 214, terminal: 186, peripheral: 1744 };
+    const depths = [81, 472, 462, 789, 444];
+    return {
+      kpis: [['Узлов', '2 248', 'клиенты в выборке'], ['Seed', '81', 'из них 31 без исходящих'], ['Рёбер', '3 119', '4 840 транзакций'], ['Оборот', '365,9 млн ₸', '365 890 012 ₸'], ['Компонент', '16', 'крупнейшая — 1 877 узлов'], ['Кластеров', '30', '14 в компоненте 1']].map(k => ({ l: k[0], v: k[1], s: k[2] })),
+      sankey: this.sankey(),
+      roles: ORDER.map(r => ROLES[r]),
+      limits: [
+        ['444', 'Обрыв на 4-м колене', 'Нет исходящих из-за границы обхода. Это не конечные получатели.'],
+        ['81', 'Занижен вход seed', 'Деньги, полученные seed извне выборки, отсутствуют. Баланс seed некорректен.'],
+        ['354', 'Неполный баланс', 'Узлы отдали больше, чем получили по данным.'],
+        ['31', 'Seed без исходящих', '19 отсутствуют в рёбрах, 12 только получают. Показаны в очереди.'],
+        ['5 000 ₸', 'Порог транзакций', 'Переводы ниже порога отброшены — дробление не видно.'],
+        ['16', 'Несвязные компоненты', 'Фильтр и индикатор компоненты у каждого узла.'],
+      ].map(l => ({ n: l[0], t: l[1], d: l[2] })),
+      roleDist: ORDER.map(r => ({ ...ROLES[r], n: dist[r].toLocaleString('ru-RU'), w: Math.max(1.5, dist[r] / 1744 * 100) + '%' })),
+      depths: depths.map((n, i) => ({ n: n.toLocaleString('ru-RU'), h: n / 789 * 150 + 'px', l: i === 0 ? 'seed' : i === 4 ? '4 · обрыв' : String(i), bg: i === 0 ? '#eceef2' : i === 4 ? 'repeating-linear-gradient(45deg,#2a2e35 0 4px,#1a1d22 4px 8px)' : '#4a505a', bd: i === 4 ? '1.5px dashed #b8bec8' : '0' })),
+      top: [[1, '100482', 'consolidator', .94, 'получает от 11 разных плательщиков, передаёт дальше 3%'], [2, '203117', 'distributor', .88, 'рассылает 86 получателям'], [3, '207755', 'coordinator', .84, 'получает от 3 узлов консолидации'], [4, '104630', 'consolidator', .81, '9 плательщиков из 5 seed-цепочек'], [5, '211408', 'consolidator', .77, 'вход 3,1 млн ₸ — выше P90']].map(t => ({ r: t[0], g: t[1], l: ROLES[t[2]].l, c: ROLES[t[2]].c, gl: ROLES[t[2]].g, p: t[3].toFixed(2), w: t[4] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

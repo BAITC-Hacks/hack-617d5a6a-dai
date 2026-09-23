@@ -1,0 +1,84 @@
+<style>
+.fl{stroke-dasharray:3 9}
+@media (prefers-reduced-motion: no-preference){.fl{animation:mv 1.1s linear infinite}}
+@keyframes mv{to{stroke-dashoffset:-12}}
+.paused .fl{animation-play-state:paused}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);margin:0 12px 6px 0}
+.dt{width:10px;height:10px;border-radius:50%;display:inline-block}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+<h2 class="sr-only">Послойная схема потока денег от seed-клиентов через четыре колена, цвет узла — роль, толщина ребра — сумма.</h2>
+<div id="legend" style="padding:0.5rem 0 0"></div>
+<div id="wrap"><svg id="g" width="100%" viewBox="0 0 680 370" role="img"><title>Поток денег по коленам</title><desc>Seed-клиенты слева, деньги идут вправо через колена 1–4 к консолидации и распределителю.</desc></svg></div>
+<div style="display:flex;align-items:center;gap:16px;font-size:13px;color:var(--text-secondary);margin:4px 0 12px">
+<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="anim" checked> Анимация потока</label>
+<button id="reset">Показать всю сеть</button>
+</div>
+<div id="info" style="background:var(--surface-1);border-radius:12px;padding:1rem 1.25rem;font-size:13px;line-height:1.6"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const R={coordinator:['Координатор','#7F77DD'],consolidator:['Консолидация','#E24B4A'],distributor:['Распределитель','#D85A30'],transit:['Транзит','#EF9F27'],terminal:['Конечный','#378ADD'],peripheral:['Периферия','#888780']};
+const N=[[900101,0,'peripheral',.3,1],[900102,0,'peripheral',.3,1],[900103,0,'transit',.45,1],[900104,0,'peripheral',.3,1],[900105,0,'peripheral',.25,1],[900106,0,'transit',.4,1],[900107,0,'peripheral',.2,1],
+[150903,1,'transit',.71],[150211,1,'transit',.66],[150777,1,'transit',.6],[151044,1,'peripheral',.3],
+[100482,2,'consolidator',.94],[100915,2,'transit',.58],
+[250600,3,'coordinator',.81],[203117,3,'distributor',.88],
+[311540,4,'peripheral',.35],[311622,4,'peripheral',.3],[311700,4,'peripheral',.3],[311845,4,'peripheral',.3],[312001,4,'peripheral',.4]
+].map(a=>({id:a[0],d:a[1],role:a[2],p:a[3],seed:!!a[4],cut:a[1]===4}));
+const E=[[900101,150903,420e3,4],[900102,150903,380e3,3],[900103,150211,510e3,5],[900104,150211,290e3,2],[900105,151044,150e3,2],[900106,150777,610e3,6],[900103,150777,200e3,2],
+[150903,100482,780e3,6],[150211,100482,760e3,5],[150777,100482,640e3,4],[151044,100915,140e3,2],[150777,100915,150e3,2],
+[100482,250600,60e3,1],[100915,250600,100e3,1],[100915,203117,170e3,2],
+[203117,311540,45e3,1],[203117,311622,40e3,1],[203117,311700,50e3,1],[203117,311845,35e3,1],[250600,312001,140e3,2]
+].map(a=>({s:a[0],t:a[1],v:a[2],n:a[3]}));
+const byId=new Map(N.map(n=>[n.id,n]));
+const W=680,H=370,T=40,B=24,cols=['Seed','Колено 1','Колено 2','Колено 3','Колено 4'];
+N.forEach(n=>{n.r=5+n.p*9;n.x=50+n.d*145;n.in=0;n.out=0;n.cin=0;n.cout=0});
+d3.groups(N,n=>n.d).forEach(([d,arr])=>arr.forEach((n,i)=>n.y=T+(i+.5)*(H-T-B)/arr.length));
+E.forEach(e=>{const s=byId.get(e.s),t=byId.get(e.t);s.out+=e.v;s.cout+=e.n;t.in+=e.v;t.cin+=e.n});
+const fmt=v=>v>=1e6?(v/1e6).toFixed(1).replace('.',',')+' млн ₸':Math.round(v/1e3)+' тыс ₸';
+const w=d3.scaleSqrt().domain([0,d3.max(E,e=>e.v)]).range([.8,7]);
+const svg=d3.select('#g');
+svg.append('defs').html('<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>');
+svg.selectAll('.ch').data(cols).join('text').attr('x',(d,i)=>50+i*145).attr('y',16).attr('text-anchor','middle').style('font-size','12px').style('fill','var(--text-secondary)').text(d=>d);
+const path=e=>{const s=byId.get(e.s),t=byId.get(e.t),x1=s.x+s.r+2,x2=t.x-t.r-5,m=(x1+x2)/2;return `M${x1},${s.y}C${m},${s.y} ${m},${t.y} ${x2},${t.y}`};
+const eg=svg.append('g').selectAll('g').data(E).join('g');
+eg.append('path').attr('d',path).attr('fill','none').attr('stroke','#888780').attr('stroke-opacity',.35).attr('stroke-width',e=>w(e.v)).attr('marker-end','url(#arrow)')
+ .append('title').text(e=>`${e.s} → ${e.t}: ${fmt(e.v)}, ${e.n} тр.`);
+eg.append('path').attr('class','fl').attr('d',path).attr('fill','none').attr('stroke',e=>R[byId.get(e.s).role][1]).attr('stroke-width',e=>Math.max(1.4,w(e.v)*.6)).style('pointer-events','none');
+const ng=svg.append('g').selectAll('g').data(N).join('g').attr('transform',n=>`translate(${n.x},${n.y})`).style('cursor','pointer').on('click',(ev,n)=>{ev.stopPropagation();select(n.id)});
+ng.append('circle').attr('r',n=>n.r).attr('fill',n=>R[n.role][1]).attr('fill-opacity',n=>n.cut?.55:1)
+ .attr('stroke',n=>n.seed?'var(--text-primary)':n.cut?'#888780':'none').attr('stroke-width',n=>n.seed?2.2:1.4).attr('stroke-dasharray',n=>n.cut?'3 2':null);
+ng.append('text').attr('y',n=>n.r+12).attr('text-anchor','middle').style('font-family','var(--font-mono)').style('font-size','11px').style('fill','var(--text-secondary)').text(n=>n.id);
+svg.on('click',()=>select(null));
+const lg=document.getElementById('legend');
+lg.innerHTML=Object.values(R).map(([l,c])=>`<span class="lg"><span class="dt" style="background:${c}"></span>${l}</span>`).join('')+
+`<span class="lg"><span class="dt" style="border:2px solid var(--text-primary)"></span>Seed</span><span class="lg"><span class="dt" style="border:1.5px dashed #888780"></span>Обрыв выборки</span>`;
+function walk(id,dir){const seen=new Set([id]),q=[id];while(q.length){const c=q.shift();E.forEach(e=>{const a=dir>0?e.s:e.t,b=dir>0?e.t:e.s;if(a===c&&!seen.has(b)){seen.add(b);q.push(b)}})}return seen}
+function select(id){
+ if(id===null){ng.style('opacity',1);eg.style('opacity',1);info(null);return}
+ const up=walk(id,-1),dn=walk(id,1),on=new Set([...up,...dn]);
+ ng.style('opacity',n=>on.has(n.id)?1:.15);
+ eg.style('opacity',e=>(up.has(e.s)&&up.has(e.t))||(dn.has(e.s)&&dn.has(e.t))?1:.08);
+ info(byId.get(id),up);
+}
+function info(n,up){
+ const el=document.getElementById('info');
+ if(!n){el.innerHTML=`<span style="color:var(--text-secondary)">Нажмите на узел, чтобы увидеть его цепочку: откуда пришли деньги и куда ушли. Оборот в примере: ${fmt(d3.sum(E,e=>e.v))}, ${N.length} узлов, ${E.length} рёбер.</span>`;return}
+ const seeds=[...up].filter(i=>byId.get(i).seed&&i!==n.id).length;
+ const ratio=n.in?(n.out/n.in).toFixed(2):'—';
+ const flags=[];
+ if(n.seed)flags.push('Seed: входящие занижены, поступления извне выборки не видны');
+ if(n.seed&&!n.cout)flags.push('Seed без исходящих переводов');
+ if(n.cut)flags.push('Обрыв выборки: исходящие за 4-м коленом не прослеживались, это не конечный получатель');
+ if(!n.seed&&n.out>n.in)flags.push('Отдал больше, чем получил по данным: баланс неполный');
+ const [lbl,c]=R[n.role];
+ el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-family:var(--font-mono);font-size:16px;font-weight:500">${n.id}</span>
+ <span style="background:${c};color:#fff;border-radius:var(--radius);padding:1px 8px;font-size:12px">${lbl}</span>
+ <span style="color:var(--text-secondary)">${cols[n.d]} · приоритет ${n.p.toFixed(2)}</span></div>
+ <div>Вход: ${n.in?fmt(n.in):'—'} (${n.cin} тр.) · Выход: ${n.out?fmt(n.out):'—'} (${n.cout} тр.) · Пропуск: ${ratio}</div>
+ ${n.seed?'':`<div>Деньги от ${seeds} seed-клиентов сходятся в этот узел</div>`}
+ ${flags.map(f=>`<div style="color:var(--text-warning)">${f}</div>`).join('')}`;
+}
+document.getElementById('anim').onchange=e=>document.getElementById('wrap').classList.toggle('paused',!e.target.checked);
+document.getElementById('reset').onclick=()=>select(null);
+select(100482);
+</script>

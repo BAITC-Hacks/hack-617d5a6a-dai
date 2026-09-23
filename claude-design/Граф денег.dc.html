@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="./dai-api.js"></script>
+<script src="./money-graph.js"></script>
+<style>
+body{margin:0;background:oklch(0.985 0 0);color:oklch(0.145 0 0);font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+*{box-sizing:border-box}
+a{color:oklch(0.205 0 0);text-underline-offset:3px}a:hover{color:oklch(0.145 0 0)}
+input::placeholder{color:oklch(0.708 0 0)}
+button{font-family:inherit}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:oklch(0.87 0 0);border-radius:5px;border:2px solid #fff}
+</style>
+</helmet>
+<div style="min-width:1440px;height:100vh;min-height:880px;display:flex;flex-direction:column">
+  <sc-if value="{{ showScenarios }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:none;display:flex;align-items:center;gap:6px;padding:7px 20px;background:oklch(0.205 0 0);flex-wrap:wrap">
+      <span style="font:500 11px 'Geist Mono';letter-spacing:.08em;color:oklch(0.708 0 0);margin-right:6px;white-space:nowrap">МАКЕТ · СЦЕНАРИЙ</span>
+      <sc-for list="{{ scenarios }}" as="s" hint-placeholder-count="11">
+        <button onClick="{{ s.go }}" style="height:26px;padding:0 10px;border-radius:6px;border:1px solid {{ s.bd }};background:{{ s.bg }};color:{{ s.fg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <header style="flex:none;height:56px;display:flex;align-items:center;gap:24px;padding:0 20px;background:#fff;border-bottom:1px solid oklch(0.922 0 0)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:7px;background:oklch(0.205 0 0);color:#fff;display:grid;place-items:center;font:600 15px Geist">₸</div>
+      <div style="font:600 17px Geist;letter-spacing:-.01em;white-space:nowrap">Граф денег</div>
+    </div>
+    <nav style="display:flex;gap:4px">
+      <a href="Граф денег.dc.html" style="height:32px;display:flex;align-items:center;padding:0 12px;border-radius:7px;background:oklch(0.97 0 0);font:600 14px Geist;text-decoration:none;color:oklch(0.145 0 0)">Узел</a>
+      <a href="Граф денег · кластеры.dc.html" style="height:32px;display:flex;align-items:center;padding:0 12px;border-radius:7px;font:500 14px Geist;text-decoration:none;color:oklch(0.45 0 0)">Кластеры</a>
+      <a href="Граф денег · компоненты.dc.html" style="height:32px;display:flex;align-items:center;padding:0 12px;border-radius:7px;font:500 14px Geist;text-decoration:none;color:oklch(0.45 0 0)">Компоненты</a>
+    </nav>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:18px">
+      <sc-for list="{{ metaStats }}" as="m" hint-placeholder-count="6">
+        <div style="display:flex;align-items:baseline;gap:5px;white-space:nowrap"><span style="font:600 15px 'Geist Mono'">{{ m.v }}</span><span style="font:400 13px Geist;color:oklch(0.5 0 0)">{{ m.l }}</span></div>
+      </sc-for>
+    </div>
+  </header>
+
+  <div style="flex:none;min-height:44px;display:flex;align-items:center;gap:18px;padding:6px 20px;background:oklch(0.985 0 0);border-bottom:1px solid oklch(0.922 0 0);flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <sc-for list="{{ legend }}" as="r" hint-placeholder-count="6">
+        <span title="{{ r.desc }}" style="display:flex;align-items:center;gap:7px;font:500 13.5px Geist;white-space:nowrap;cursor:help"><span style="width:12px;height:12px;border-radius:50%;background:{{ r.color }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)"></span>{{ r.title }}</span>
+      </sc-for>
+    </div>
+    <span style="width:1px;height:20px;background:oklch(0.87 0 0)"></span>
+    <span style="display:flex;align-items:center;gap:7px;font:500 13.5px Geist;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;border:3.5px double oklch(0.205 0 0)"></span>seed — известный клиент</span>
+    <span style="display:flex;align-items:center;gap:7px;font:500 13.5px Geist;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;border:2px dashed oklch(0.3 0 0)"></span>граница выгрузки</span>
+    <sc-if value="{{ isMock }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px;height:30px;padding:0 12px 0 4px;border-radius:8px;background:oklch(0.97 0.03 95);border:1px solid oklch(0.88 0.06 95)">
+        <span style="height:22px;display:flex;align-items:center;padding:0 8px;border-radius:5px;background:oklch(0.32 0.04 80);color:#fff;font:600 12px Geist;letter-spacing:.02em;white-space:nowrap">Демо-данные</span>
+        <span style="font:500 13px Geist;color:oklch(0.35 0.05 80);white-space:nowrap">Роли и приоритеты — заглушка по простым порогам, не результат анализа</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:344px minmax(0,1fr) 440px">
+    <aside style="display:flex;flex-direction:column;min-height:0;background:#fff;border-right:1px solid oklch(0.922 0 0)">
+      <div style="padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid oklch(0.922 0 0)">
+        <label style="font:500 13px Geist;color:oklch(0.45 0 0)">Перейти к клиенту по gid</label>
+        <div style="position:relative">
+          <div style="display:flex;align-items:center;gap:8px;height:48px;padding:0 12px;border-radius:10px;background:#fff;border:1px solid {{ qBd }};box-shadow:{{ qRing }}">
+            <input ref="{{ inpRef }}" value="{{ q }}" onChange="{{ onQ }}" onFocus="{{ onQFocus }}" onBlur="{{ onQBlur }}" onKeyDown="{{ onQKey }}" placeholder="100000003684369100" inputMode="numeric" spellCheck="false" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:oklch(0.145 0 0);font:500 17px 'Geist Mono';letter-spacing:.01em">
+            <span style="font:500 12px 'Geist Mono';color:oklch(0.5 0 0);border:1px solid oklch(0.87 0 0);border-radius:5px;padding:1px 6px">/</span>
+          </div>
+          <sc-if value="{{ qErr }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:6px;font:500 13px Geist;color:oklch(0.5 0.17 27)">gid состоит только из цифр — 18 знаков</div>
+          </sc-if>
+          <sc-if value="{{ sOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:54px;left:0;width:420px;z-index:40;background:#fff;border:1px solid oklch(0.922 0 0);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.14);padding:6px;display:flex;flex-direction:column">
+              <sc-if value="{{ sHint }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:10px 10px 12px;font:14px/1.5 Geist;color:oklch(0.35 0 0)">Поиск идёт по началу gid. Все 2 248 клиентов начинаются с <span style="font-family:'Geist Mono';font-weight:600">10000000</span>, поэтому подсказки появятся с 9–10 цифр.</div>
+              </sc-if>
+              <sc-if value="{{ sLoading }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px;padding:6px">
+                  <div style="height:40px;border-radius:8px;background:oklch(0.97 0 0)"></div>
+                  <div style="height:40px;border-radius:8px;background:oklch(0.97 0 0)"></div>
+                  <div style="height:40px;border-radius:8px;background:oklch(0.97 0 0)"></div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ sHasItems }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;justify-content:space-between;padding:6px 10px 4px;font:500 12.5px Geist;color:oklch(0.5 0 0)"><span>Совпадения по началу gid</span><span style="font-family:'Geist Mono'">{{ sCount }}</span></div>
+                <sc-for list="{{ sItems }}" as="s" hint-placeholder-count="3">
+                  <div onMouseDown="{{ s.pick }}" style="display:flex;flex-direction:column;gap:5px;padding:9px 10px;border-radius:8px;cursor:pointer;background:{{ s.bg }}" style-hover="background:oklch(0.97 0 0)">
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                      <span style="font:500 15px 'Geist Mono'"><span style="color:oklch(0.6 0 0)">{{ s.pre }}</span><span style="font-weight:700">{{ s.mid }}</span><span style="color:oklch(0.6 0 0)">{{ s.suf }}</span></span>
+                      <sc-if value="{{ s.exact }}" hint-placeholder-val="{{ false }}"><span style="font:600 11px Geist;color:oklch(0.35 0 0);border:1px solid oklch(0.87 0 0);border-radius:4px;padding:0 5px">точное</span></sc-if>
+                      <span style="margin-left:auto;font:600 14px 'Geist Mono'">{{ s.score }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font:500 13px Geist">
+                      <span style="display:flex;align-items:center;gap:6px;color:{{ s.ink }}"><span style="width:10px;height:10px;border-radius:50%;background:{{ s.color }}"></span>{{ s.title }}</span>
+                      <sc-if value="{{ s.seed }}" hint-placeholder-val="{{ false }}"><span style="font:600 11px 'Geist Mono';border:1.5px solid oklch(0.205 0 0);border-radius:9px;padding:0 6px">SEED</span></sc-if>
+                      <sc-if value="{{ s.trunc }}" hint-placeholder-val="{{ false }}"><span style="font:500 11.5px Geist;color:oklch(0.35 0 0);border:1.5px dashed oklch(0.55 0 0);border-radius:4px;padding:0 5px">граница выгрузки</span></sc-if>
+                      <span style="margin-left:auto;font:400 12px Geist;color:oklch(0.5 0 0)">приоритет</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ sNone }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:12px 10px;display:flex;flex-direction:column;gap:4px">
+                  <div style="font:600 15px Geist">Клиент с таким gid не найден в выгрузке</div>
+                  <div style="font:13.5px/1.45 Geist;color:oklch(0.45 0 0)">Нет gid, начинающихся с <span style="font-family:'Geist Mono';color:oklch(0.145 0 0)">{{ q }}</span>. В выгрузке 2 248 клиентов на четыре колена от 81 seed.</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ sDown }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:12px 10px;display:flex;flex-direction:column;gap:4px">
+                  <div style="font:600 15px Geist">Сервер анализа недоступен</div>
+                  <div style="font:13.5px/1.45 Geist;color:oklch(0.45 0 0)">Поиск не выполнен. Это не значит, что клиента нет в выгрузке.</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      <div style="padding:14px 16px 10px;display:flex;align-items:baseline;gap:8px">
+        <div style="font:600 15px Geist;white-space:nowrap">Топ-20 на проверку</div>
+        <div style="margin-left:auto;font:400 12.5px Geist;color:oklch(0.5 0 0);white-space:nowrap">по priority_score</div>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto;border-top:1px solid oklch(0.922 0 0)">
+        <sc-for list="{{ top }}" as="t" hint-placeholder-count="8">
+          <div onClick="{{ t.go }}" style="display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:4px 10px;padding:11px 16px 12px;border-bottom:1px solid oklch(0.95 0 0);cursor:pointer;background:{{ t.bg }};box-shadow:{{ t.bar }}" style-hover="background:oklch(0.975 0 0)">
+            <div style="font:600 14px 'Geist Mono';color:oklch(0.55 0 0);padding-top:1px">{{ t.rank }}</div>
+            <div style="font:500 15px 'Geist Mono';white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:oklch(0.62 0 0)">{{ t.pre }}</span><span style="font-weight:700">{{ t.mid }}</span><span style="color:oklch(0.62 0 0)">{{ t.suf }}</span></div>
+            <div style="font:700 15px 'Geist Mono';text-align:right">{{ t.score }}</div>
+            <div></div>
+            <div style="grid-column:span 2;display:flex;align-items:center;gap:8px">
+              <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px 0 6px;border-radius:6px;background:{{ t.tint }};color:{{ t.ink }};font:600 12.5px Geist;white-space:nowrap"><span style="width:9px;height:9px;border-radius:50%;background:{{ t.color }}"></span>{{ t.title }}</span>
+              <sc-if value="{{ t.seed }}" hint-placeholder-val="{{ false }}"><span style="font:600 11px 'Geist Mono';border:1.5px solid oklch(0.205 0 0);border-radius:9px;padding:0 6px">SEED</span></sc-if>
+              <span style="margin-left:auto;width:64px;height:4px;border-radius:2px;background:oklch(0.94 0 0);overflow:hidden"><span style="display:block;height:100%;width:{{ t.w }};background:oklch(0.3 0 0)"></span></span>
+            </div>
+            <div></div>
+            <div style="grid-column:span 2;font:400 12px/1.45 'Geist Mono';color:oklch(0.5 0 0);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ t.why }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+
+    <main style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;background:#161618;color:#ececf0">
+      <div style="flex:none;display:flex;align-items:center;gap:8px 10px;padding:8px 12px;border-bottom:1px solid #2a2a2e;background:#1b1b1e;flex-wrap:wrap">
+        <div style="display:flex;padding:2px;border-radius:8px;background:#232327;border:1px solid #2e2e33">
+            <sc-for list="{{ modeSeg }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.go }}" style="height:26px;padding:0 10px;border:0;border-radius:6px;background:{{ o.bg }};color:{{ o.fg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap">{{ o.label }}</button></sc-for>
+          </div>
+        <sc-if value="{{ isLocal }}" hint-placeholder-val="{{ true }}">
+          <div style="order:3;flex-basis:100%;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;border-radius:8px;background:#232327;border:1px solid #2e2e33;font:500 12.5px Geist;color:#d4d4d8;white-space:nowrap">Глубина <input type="range" min="1" max="4" step="1" value="{{ depth }}" onChange="{{ setDepth }}" style="width:70px;accent-color:#e4e4e7"><span style="font:600 13px 'Geist Mono';color:#fff">{{ depthLabel }}</span></label>
+            <sc-for list="{{ dirChips }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.go }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 10px;border-radius:8px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap"><span style="width:12px;height:12px;border-radius:3px;border:1.5px solid {{ c.fg }};display:grid;place-items:center;font:700 9px Geist;background:{{ c.boxBg }};color:#161618">{{ c.check }}</span>{{ c.label }}</button>
+            </sc-for>
+            <div style="display:flex;padding:2px;border-radius:8px;background:#232327;border:1px solid #2e2e33">
+            <sc-for list="{{ layoutSeg }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.go }}" style="height:26px;padding:0 10px;border:0;border-radius:6px;background:{{ o.bg }};color:{{ o.fg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap">{{ o.label }}</button></sc-for>
+          </div>
+          </div>
+        </sc-if>
+        <div style="order:2;margin-left:auto;display:flex;align-items:center;gap:8px">
+          <span style="font:400 12.5px Geist;color:#a1a1aa;white-space:nowrap">{{ gCounts }}</span>
+          <button onClick="{{ fit }}" style="height:30px;padding:0 10px;border-radius:8px;border:1px solid #2e2e33;background:#232327;color:#ececf0;font:500 12.5px Geist;cursor:pointer;white-space:nowrap" style-hover="background:#2b2b30">Вписать</button>
+          <button onClick="{{ toggleSettings }}" style="height:30px;padding:0 10px;border-radius:8px;border:1px solid {{ setBd }};background:{{ setBg }};color:{{ setFg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap">Настройки графа</button>
+        </div>
+      </div>
+      <div style="position:relative;flex:1;min-height:0">
+        <div ref="{{ graphRef }}" style="position:absolute;inset:0"></div>
+
+        <sc-if value="{{ graphBoot }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;display:grid;place-items:center;background:#161618;font:500 13.5px Geist;color:#a1a1aa">Загружаем сеть…</div>
+        </sc-if>
+        <sc-if value="{{ is404 }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(22,22,24,.92)">
+            <div style="max-width:420px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center">
+              <div style="font:500 12.5px 'Geist Mono';color:#a1a1aa">404</div>
+              <div style="font:600 22px Geist;color:#fff">{{ detail }}</div>
+              <div style="font:14.5px/1.5 Geist;color:#c4c4cc">Такого клиента нет в выгрузке. Проверьте gid: 18 цифр, начинается с 10000000.</div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isDown }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(22,22,24,.92)">
+            <div style="max-width:420px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center">
+              <div style="width:40px;height:40px;border-radius:50%;border:2px solid #e4e4e7;display:grid;place-items:center;font:700 18px Geist;color:#fff">!</div>
+              <div style="font:600 22px Geist;color:#fff">Сервер анализа недоступен</div>
+              <div style="font:14.5px/1.5 Geist;color:#c4c4cc">Запрос не дошёл до сервера. Данные о клиенте не проверены — это не означает, что его нет в выгрузке.</div>
+              <button onClick="{{ retry }}" style="margin-top:4px;height:38px;padding:0 18px;border-radius:8px;border:0;background:#fff;color:#161618;font:600 14px Geist;cursor:pointer">Повторить запрос</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showNodataGraph }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(22,22,24,.92)">
+            <div style="max-width:440px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center">
+              <div style="font:600 19px Geist;color:#fff">В демо-пакете нет окрестности этого клиента</div>
+              <div style="font:14.5px/1.5 Geist;color:#c4c4cc">Для макета выгружены ответы API по нескольким gid. Переключитесь на «Общий вид», чтобы увидеть загруженную часть сети.</div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isIsolated }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:50%;top:16px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:10px;background:#232327;border:1px solid #34343a;white-space:nowrap">
+            <span style="font:600 14.5px Geist;color:#fff">Связей в выгрузке нет</span>
+            <span style="font:13.5px Geist;color:#c4c4cc">клиент — seed, в результате он остаётся</span>
+          </div>
+        </sc-if>
+
+        <div style="position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:10px;background:rgba(27,27,30,.9);border:1px solid #2a2a2e;font:500 12px Geist;color:#c4c4cc;pointer-events:none">
+          <div style="display:flex;align-items:center;gap:8px"><span style="display:flex;align-items:center;gap:3px;width:34px"><span style="width:5px;height:5px;border-radius:50%;background:#8a8a90"></span><span style="width:12px;height:12px;border-radius:50%;background:#8a8a90"></span></span>размер — приоритет проверки</div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:34px;display:flex"><span style="width:12px;height:12px;border-radius:50%;border:2px solid #fff;background:#5a5a60"></span></span>seed · <span style="width:12px;height:12px;border-radius:50%;border:1.5px dashed #d4d4d8;background:#5a5a60"></span>граница выгрузки</div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:34px;height:0;border-top:2px dashed #e4e4e7"></span>{{ flowLegend }}</div>
+        </div>
+
+        <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:10px;right:10px;bottom:10px;width:300px;overflow:auto;border-radius:12px;background:#1d1d20;border:1px solid #303036;box-shadow:0 16px 48px rgba(0,0,0,.45);display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid #2a2a2e"><span style="font:600 14px Geist;color:#fff">Настройки графа</span><button onClick="{{ toggleSettings }}" style="margin-left:auto;width:26px;height:26px;border-radius:6px;border:0;background:#2a2a2e;color:#e4e4e7;font:500 14px Geist;cursor:pointer">×</button></div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #2a2a2e">
+              <div style="font:600 11.5px Geist;letter-spacing:.06em;color:#a1a1aa">ФИЛЬТРЫ</div>
+              <div style="font:500 12.5px Geist;color:#d4d4d8">Роли</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ roleChips }}" as="c" hint-placeholder-count="6">
+                  <button onClick="{{ c.go }}" style="height:26px;display:flex;align-items:center;gap:6px;padding:0 9px;border-radius:13px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:500 12px Geist;cursor:pointer;white-space:nowrap"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.color }};opacity:{{ c.op }}"></span>{{ c.title }}</button>
+                </sc-for>
+              </div>
+              <div style="font:500 12.5px Geist;color:#d4d4d8">Кластеры</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ clusterChips }}" as="c" hint-placeholder-count="4">
+                  <button onClick="{{ c.go }}" style="height:26px;padding:0 9px;border-radius:13px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:500 12px Geist;cursor:pointer;white-space:nowrap">{{ c.label }}</button>
+                </sc-for>
+              </div>
+              <sc-for list="{{ switches }}" as="w" hint-placeholder-count="2">
+                <button onClick="{{ w.go }}" style="display:flex;align-items:center;gap:10px;padding:2px 0;border:0;background:transparent;color:#e4e4e7;font:500 13px Geist;cursor:pointer;text-align:left">
+                  <span style="width:30px;height:18px;border-radius:9px;background:{{ w.track }};position:relative;flex:none"><span style="position:absolute;top:2px;left:{{ w.knob }};width:14px;height:14px;border-radius:50%;background:#fff"></span></span>{{ w.label }}
+                </button>
+              </sc-for>
+              <div style="font:12px/1.4 Geist;color:#a1a1aa">Кластер в заглушке — связная компонента, отдельный фильтр «компонента» совпал бы с ним.</div>
+            </div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #2a2a2e">
+              <div style="font:600 11.5px Geist;letter-spacing:.06em;color:#a1a1aa">ОТОБРАЖЕНИЕ</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font:500 12.5px Geist;color:#d4d4d8">Направление</span><div style="display:flex;padding:2px;border-radius:8px;background:#232327;border:1px solid #2e2e33">
+            <sc-for list="{{ flowSeg }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.go }}" style="height:26px;padding:0 10px;border:0;border-radius:6px;background:{{ o.bg }};color:{{ o.fg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap">{{ o.label }}</button></sc-for>
+          </div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font:500 12.5px Geist;color:#d4d4d8">Раскраска</span><div style="display:flex;padding:2px;border-radius:8px;background:#232327;border:1px solid #2e2e33">
+            <sc-for list="{{ colorSeg }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.go }}" style="height:26px;padding:0 10px;border:0;border-radius:6px;background:{{ o.bg }};color:{{ o.fg }};font:500 12.5px Geist;cursor:pointer;white-space:nowrap">{{ o.label }}</button></sc-for>
+          </div></div>
+              <sc-for list="{{ dispSliders }}" as="s" hint-placeholder-count="3">
+                <label style="display:flex;flex-direction:column;gap:4px">
+                  <span style="display:flex;justify-content:space-between;font:500 12.5px Geist;color:#d4d4d8"><span>{{ s.label }}</span><span style="font-family:'Geist Mono';color:#a1a1aa">{{ s.shown }}</span></span>
+                  <input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.value }}" onChange="{{ s.set }}" style="width:100%;accent-color:#e4e4e7">
+                </label>
+              </sc-for>
+            </div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+              <div style="font:600 11.5px Geist;letter-spacing:.06em;color:#a1a1aa">FORCES</div>
+              <sc-for list="{{ forceSliders }}" as="s" hint-placeholder-count="3">
+                <label style="display:flex;flex-direction:column;gap:4px">
+                  <span style="display:flex;justify-content:space-between;font:500 12.5px Geist;color:#d4d4d8"><span>{{ s.label }}</span><span style="font-family:'Geist Mono';color:#a1a1aa">{{ s.shown }}</span></span>
+                  <input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.value }}" onChange="{{ s.set }}" style="width:100%;accent-color:#e4e4e7">
+                </label>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:none;display:flex;flex-direction:column;gap:6px;padding:8px 12px 10px;background:#1b1b1e;border-top:1px solid #2a2a2e">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onClick="{{ togglePlay }}" title="Проиграть июль по дням" style="width:30px;height:30px;border-radius:8px;border:0;background:#ececf0;color:#161618;font:600 12px Geist;cursor:pointer">{{ playIcon }}</button>
+          <span style="font:600 13px Geist;color:#fff;white-space:nowrap">Таймлапс</span>
+          <span style="font:500 13px 'Geist Mono';color:#e4e4e7;white-space:nowrap">{{ tlLabel }}</span>
+          <sc-if value="{{ tlActive }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tlReset }}" style="height:24px;padding:0 8px;border-radius:6px;border:1px solid #34343a;background:transparent;color:#d4d4d8;font:500 12px Geist;cursor:pointer">Сбросить</button></sc-if>
+          <span style="margin-left:auto;font:400 12px Geist;color:#a1a1aa;white-space:nowrap">{{ tlNote }}</span>
+        </div>
+        <div onMouseLeave="{{ histUp }}" title="Протяните по гистограмме, чтобы выбрать диапазон дат" style="display:grid;grid-template-columns:repeat(31,minmax(0,1fr));gap:2px;height:40px;align-items:end;cursor:crosshair;user-select:none">
+          <sc-for list="{{ hist }}" as="d" hint-placeholder-count="31">
+            <div onMouseDown="{{ d.down }}" onMouseEnter="{{ d.enter }}" onMouseUp="{{ histUp }}" title="{{ d.title }}" style="height:100%;display:flex;align-items:flex-end;border-radius:2px;background:{{ d.bgc }}"><div style="width:100%;height:{{ d.h }};border-radius:2px 2px 0 0;background:{{ d.fill }}"></div></div>
+          </sc-for>
+        </div>
+        <input type="range" min="1" max="31" step="1" value="{{ playVal }}" onChange="{{ scrub }}" style="width:100%;margin:0;accent-color:#ececf0">
+        <div style="display:flex;justify-content:space-between;font:500 11px 'Geist Mono';color:#a1a1aa"><span>01.07</span><span>08.07</span><span>15.07</span><span>22.07</span><span>31.07.2026</span></div>
+      </div>
+    </main>
+
+    <aside style="min-height:0;overflow:auto;background:#fff;border-left:1px solid oklch(0.922 0 0)">
+      <sc-if value="{{ cardLoading }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+          <div style="height:30px;width:300px;border-radius:6px;background:oklch(0.95 0 0)"></div>
+          <div style="height:22px;width:180px;border-radius:6px;background:oklch(0.96 0 0)"></div>
+          <div style="height:72px;border-radius:10px;background:oklch(0.97 0 0)"></div>
+          <div style="height:130px;border-radius:10px;background:oklch(0.97 0 0)"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="height:90px;border-radius:10px;background:oklch(0.97 0 0)"></div><div style="height:90px;border-radius:10px;background:oklch(0.97 0 0)"></div></div>
+          <div style="height:220px;border-radius:10px;background:oklch(0.975 0 0)"></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ cardError }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 20px;display:flex;flex-direction:column;gap:6px">
+          <div style="font:600 15px Geist">Карточка не загружена</div>
+          <div style="font:14px/1.5 Geist;color:oklch(0.45 0 0)">{{ cardErrorText }}</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showCard }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 20px 28px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font:500 12.5px Geist;color:oklch(0.5 0 0)">Клиент</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font:500 25px 'Geist Mono';letter-spacing:-.01em;white-space:nowrap"><span style="color:oklch(0.62 0 0)">{{ g.pre }}</span><span style="font-weight:700">{{ g.mid }}</span><span style="color:oklch(0.62 0 0)">{{ g.suf }}</span></span>
+              <button onClick="{{ copy }}" title="Скопировать gid" style="margin-left:auto;height:32px;padding:0 10px;border-radius:8px;border:1px solid oklch(0.922 0 0);background:#fff;font:500 13px Geist;cursor:pointer;white-space:nowrap" style-hover="background:oklch(0.97 0 0)">{{ copyLabel }}</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px 0 10px;border-radius:8px;background:{{ r.tint }};color:{{ r.ink }};font:600 15px Geist"><span style="width:12px;height:12px;border-radius:50%;background:{{ r.color }}"></span>{{ r.title }}</span>
+              <sc-if value="{{ n.seed }}" hint-placeholder-val="{{ false }}"><span style="height:26px;display:flex;align-items:center;font:600 12px 'Geist Mono';border:1.5px solid oklch(0.205 0 0);border-radius:13px;padding:0 9px">SEED</span></sc-if>
+              <sc-if value="{{ n.trunc }}" hint-placeholder-val="{{ false }}"><span style="height:26px;display:flex;align-items:center;font:600 12.5px Geist;border:1.5px dashed oklch(0.4 0 0);border-radius:6px;padding:0 9px">граница выгрузки</span></sc-if>
+              <sc-if value="{{ n.hasTop }}" hint-placeholder-val="{{ false }}"><span style="height:26px;display:flex;align-items:center;font:500 12.5px Geist;background:oklch(0.97 0 0);border-radius:6px;padding:0 9px;white-space:nowrap">№ {{ n.rank }} в топ-20</span></sc-if>
+            </div>
+            <div style="font:13.5px Geist;color:oklch(0.45 0 0)">{{ r.desc }}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.1fr 1fr;border:1px solid oklch(0.922 0 0);border-radius:12px;overflow:hidden">
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid oklch(0.922 0 0)">
+              <div style="font:500 12.5px Geist;color:oklch(0.45 0 0)">Приоритет проверки</div>
+              <div style="font:700 34px/1 'Geist Mono'">{{ n.prio }}</div>
+              <span style="height:5px;border-radius:3px;background:oklch(0.94 0 0);overflow:hidden"><span style="display:block;height:100%;width:{{ n.prioW }};background:oklch(0.205 0 0)"></span></span>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+              <div style="font:500 12.5px Geist;color:oklch(0.45 0 0);white-space:nowrap">Соответствие правилу роли</div>
+              <div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 24px/1.2 'Geist Mono'">{{ n.rs }}</span><span style="font:400 13px Geist;color:oklch(0.5 0 0)">из 1</span></div>
+              <div style="font:400 12px/1.35 Geist;color:oklch(0.5 0 0)">насколько данные поддерживают правило, не вероятность</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font:500 12.5px Geist;color:oklch(0.45 0 0)">Основание роли</div>
+            <div style="min-height:118px;padding:14px 16px;border-radius:12px;background:oklch(0.97 0 0);font:500 16.5px/1.5 Geist;text-wrap:pretty;overflow-wrap:anywhere">{{ n.evidence }}</div>
+            <div style="display:flex;gap:16px;font:13.5px Geist;color:oklch(0.35 0 0);flex-wrap:wrap">
+              <span>{{ n.depthLabel }}</span>
+              <sc-if value="{{ hasCluster }}" hint-placeholder-val="{{ false }}"><a href="Граф денег · кластеры.dc.html?cluster={{ clusterId }}" style="white-space:nowrap">кластер {{ clusterId }}</a></sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{ isPartial }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:10px 12px;border-radius:10px;border:1px dashed oklch(0.8 0 0);font:13px/1.45 Geist;color:oklch(0.4 0 0)">Макет: полного ответа <span style="font-family:'Geist Mono'">/nodes</span> для этого gid в демо-пакете нет. Карточка собрана из других файлов, списки контрагентов и переводов неполные.</div>
+          </sc-if>
+          <sc-if value="{{ isNodata }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:10px 12px;border-radius:10px;border:1px dashed oklch(0.8 0 0);font:13px/1.45 Geist;color:oklch(0.4 0 0)">Макет: показаны только поля из <span style="font-family:'Geist Mono'">/top</span>. Контрагенты и переводы появятся из <span style="font-family:'Geist Mono'">/nodes/{gid}</span>.</div>
+          </sc-if>
+
+          <sc-if value="{{ showFull }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="padding:12px 14px;border:1px solid oklch(0.922 0 0);border-radius:12px;display:flex;flex-direction:column;gap:4px">
+                  <div style="font:500 12.5px Geist;color:oklch(0.45 0 0)">← Входящие</div>
+                  <div style="font:700 19px 'Geist Mono';white-space:nowrap">{{ st.inKzt }}</div>
+                  <div style="font:13.5px Geist;color:oklch(0.3 0 0)">{{ st.inDeg }}</div>
+                  <div style="font:13.5px Geist;color:oklch(0.45 0 0)">{{ st.inTx }}</div>
+                </div>
+                <div style="padding:12px 14px;border:1px {{ st.outBs }} oklch(0.8 0 0);border-radius:12px;display:flex;flex-direction:column;gap:4px">
+                  <div style="font:500 12.5px Geist;color:oklch(0.45 0 0)">Исходящие →</div>
+                  <sc-if value="{{ n.trunc }}" hint-placeholder-val="{{ false }}">
+                    <div style="font:600 15px/1.35 Geist">Исходящие переводы не выгружены</div>
+                    <div style="font:13px Geist;color:oklch(0.45 0 0)">4-е колено — последнее в выгрузке</div>
+                  </sc-if>
+                  <sc-if value="{{ n.notTrunc }}" hint-placeholder-val="{{ true }}">
+                    <div style="font:700 19px 'Geist Mono';white-space:nowrap">{{ st.outKzt }}</div>
+                    <div style="font:13.5px Geist;color:oklch(0.3 0 0)">{{ st.outDeg }}</div>
+                    <div style="font:13.5px Geist;color:oklch(0.45 0 0)">{{ st.outTx }}</div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <sc-if value="{{ showFuture }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div style="padding:12px 14px;border:1.5px dashed oklch(0.85 0 0);border-radius:12px;display:flex;flex-direction:column;gap:4px;color:oklch(0.5 0 0)">
+                    <div style="font:600 13px Geist">Риск-скор</div>
+                    <div style="font:12.5px/1.4 Geist">появится рядом с приоритетом; место под расшифровку баллов</div>
+                  </div>
+                  <div style="padding:12px 14px;border:1.5px dashed oklch(0.85 0 0);border-radius:12px;display:flex;flex-direction:column;gap:4px;color:oklch(0.5 0 0)">
+                    <div style="font:600 13px Geist">Пары «вход → выход»</div>
+                    <div style="font:12.5px/1.4 Geist">даты, суммы, лаг в днях, статус хронологии</div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:22px 16px;border-radius:12px;background:oklch(0.97 0 0);display:flex;flex-direction:column;gap:4px">
+                  <div style="font:600 16px Geist">Связей в выгрузке нет</div>
+                  <div style="font:14px/1.5 Geist;color:oklch(0.4 0 0)">За 1–31 июля 2026 у клиента нет ни входящих, ни исходящих переводов в выгрузке. Как seed он остаётся в результате.</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ hasLinks }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;padding:3px;border-radius:10px;background:oklch(0.97 0 0)">
+                    <button onClick="{{ tabCp }}" style="flex:1;height:34px;border:0;border-radius:8px;background:{{ tCpBg }};box-shadow:{{ tCpSh }};font:600 14px Geist;color:oklch(0.145 0 0);cursor:pointer">Контрагенты · {{ cpCount }}</button>
+                    <button onClick="{{ tabTx }}" style="flex:1;height:34px;border:0;border-radius:8px;background:{{ tTxBg }};box-shadow:{{ tTxSh }};font:600 14px Geist;color:oklch(0.145 0 0);cursor:pointer">Переводы · {{ txCount }}</button>
+                  </div>
+
+                  <sc-if value="{{ isCp }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:16px">
+                      <sc-if value="{{ hasIn }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex;flex-direction:column">
+                          <div style="display:flex;align-items:baseline;padding:0 2px 6px;border-bottom:1px solid oklch(0.922 0 0)"><span style="font:600 14px Geist">← Отправители</span><span style="margin-left:auto;font:400 12.5px Geist;color:oklch(0.5 0 0)">сумма за месяц · переводов</span></div>
+                          <sc-for list="{{ inList }}" as="c" hint-placeholder-count="4">
+                            <div onClick="{{ c.go }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 2px;border-bottom:1px solid oklch(0.95 0 0);cursor:pointer" style-hover="background:oklch(0.98 0 0)">
+                              <span style="font:500 14px 'Geist Mono';white-space:nowrap"><span style="color:oklch(0.62 0 0)">{{ c.pre }}</span><span style="font-weight:700">{{ c.mid }}</span><span style="color:oklch(0.62 0 0)">{{ c.suf }}</span></span>
+                              <span style="font:600 14px 'Geist Mono';text-align:right;white-space:nowrap">{{ c.sum }}</span>
+                              <span style="display:flex;align-items:center;gap:6px;font:500 12.5px Geist;color:{{ c.ink }}"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.color }}"></span>{{ c.title }}<sc-if value="{{ c.seed }}" hint-placeholder-val="{{ false }}"><span style="font:600 10.5px 'Geist Mono';color:oklch(0.205 0 0);border:1.5px solid oklch(0.205 0 0);border-radius:8px;padding:0 5px">SEED</span></sc-if><sc-if value="{{ c.both }}" hint-placeholder-val="{{ false }}"><span style="font:500 12px Geist;color:oklch(0.35 0 0)">⇄ встречные переводы</span></sc-if></span>
+                              <span style="font:400 12.5px Geist;color:oklch(0.5 0 0);text-align:right">{{ c.ntx }}</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ hasOut }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex;flex-direction:column">
+                          <div style="display:flex;align-items:baseline;padding:0 2px 6px;border-bottom:1px solid oklch(0.922 0 0)"><span style="font:600 14px Geist">Получатели →</span><span style="margin-left:auto;font:400 12.5px Geist;color:oklch(0.5 0 0)">сумма за месяц · переводов</span></div>
+                          <sc-for list="{{ outList }}" as="c" hint-placeholder-count="4">
+                            <div onClick="{{ c.go }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 2px;border-bottom:1px solid oklch(0.95 0 0);cursor:pointer" style-hover="background:oklch(0.98 0 0)">
+                              <span style="font:500 14px 'Geist Mono';white-space:nowrap"><span style="color:oklch(0.62 0 0)">{{ c.pre }}</span><span style="font-weight:700">{{ c.mid }}</span><span style="color:oklch(0.62 0 0)">{{ c.suf }}</span></span>
+                              <span style="font:600 14px 'Geist Mono';text-align:right;white-space:nowrap">{{ c.sum }}</span>
+                              <span style="display:flex;align-items:center;gap:6px;font:500 12.5px Geist;color:{{ c.ink }}"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.color }}"></span>{{ c.title }}<sc-if value="{{ c.seed }}" hint-placeholder-val="{{ false }}"><span style="font:600 10.5px 'Geist Mono';color:oklch(0.205 0 0);border:1.5px solid oklch(0.205 0 0);border-radius:8px;padding:0 5px">SEED</span></sc-if><sc-if value="{{ c.both }}" hint-placeholder-val="{{ false }}"><span style="font:500 12px Geist;color:oklch(0.35 0 0)">⇄ встречные переводы</span></sc-if></span>
+                              <span style="font:400 12.5px Geist;color:oklch(0.5 0 0);text-align:right">{{ c.ntx }}</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ n.trunc }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding:12px 14px;border:1.5px dashed oklch(0.7 0 0);border-radius:10px;font:14px/1.45 Geist;color:oklch(0.3 0 0)">Исходящие переводы не выгружены (4-е колено). Это граница выгрузки, а не вывод о том, что деньги остались у клиента.</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ isTx }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                      <div style="display:flex;flex-direction:column;gap:6px;padding:12px 12px 10px;border:1px solid oklch(0.922 0 0);border-radius:12px">
+                        <div style="display:flex;align-items:baseline;gap:8px;font:500 12.5px Geist;color:oklch(0.45 0 0)"><span>Июль 2026 · входы сверху, выходы снизу</span></div>
+                        <div style="display:grid;grid-template-columns:repeat(31,minmax(0,1fr));gap:2px;height:104px">
+                          <sc-for list="{{ tl }}" as="d" hint-placeholder-count="31">
+                            <div title="{{ d.title }}" style="display:grid;grid-template-rows:1fr 1fr;border-radius:3px;background:{{ d.bg }}">
+                              <div style="display:flex;align-items:flex-end;border-bottom:1px solid oklch(0.8 0 0)"><div style="width:100%;height:{{ d.inH }};background:oklch(0.3 0 0);border-radius:2px 2px 0 0"></div></div>
+                              <div style="display:flex;align-items:flex-start"><div style="width:100%;height:{{ d.outH }};border:{{ d.outB }};border-top:0;background:#fff;border-radius:0 0 2px 2px"></div></div>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(31,minmax(0,1fr));gap:2px">
+                          <sc-for list="{{ tl }}" as="d" hint-placeholder-count="31"><div style="font:500 10.5px 'Geist Mono';color:oklch(0.5 0 0);text-align:center">{{ d.tick }}</div></sc-for>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font:13px Geist;color:oklch(0.3 0 0);padding-top:4px">
+                          <span>{{ firstIn }}</span><span>{{ firstOut }}</span>
+                          <span style="display:flex;align-items:center;gap:6px;color:oklch(0.45 0 0)"><span style="width:12px;height:12px;border-radius:3px;background:oklch(0.9 0 0)"></span>вход и выход в один день</span>
+                        </div>
+                      </div>
+                      <sc-for list="{{ days }}" as="d" hint-placeholder-count="3">
+                        <div style="display:flex;flex-direction:column">
+                          <div style="display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid oklch(0.922 0 0);flex-wrap:wrap">
+                            <span style="font:600 15px Geist">{{ d.label }}</span>
+                            <span style="font:400 12.5px Geist;color:oklch(0.5 0 0)">{{ d.count }}</span>
+                            <sc-if value="{{ d.same }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;height:22px;display:flex;align-items:center;padding:0 8px;border-radius:6px;background:oklch(0.93 0 0);font:500 12.5px Geist;color:oklch(0.25 0 0)">тот же день, порядок неизвестен</span></sc-if>
+                          </div>
+                          <sc-for list="{{ d.rows }}" as="t" hint-placeholder-count="2">
+                            <div onClick="{{ t.go }}" style="display:grid;grid-template-columns:74px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid oklch(0.96 0 0);cursor:pointer" style-hover="background:oklch(0.98 0 0)">
+                              <span style="display:flex;align-items:center;gap:6px;font:600 13px Geist"><span style="width:10px;height:10px;border-radius:2px;background:{{ t.mBg }};border:1.5px solid oklch(0.3 0 0)"></span>{{ t.dir }}</span>
+                              <span style="font:500 13.5px 'Geist Mono';white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:oklch(0.55 0 0)">{{ t.arrow }} </span><span style="color:oklch(0.62 0 0)">{{ t.pre }}</span><span style="font-weight:700">{{ t.mid }}</span><span style="color:oklch(0.62 0 0)">{{ t.suf }}</span></span>
+                              <span style="font:600 14px 'Geist Mono';white-space:nowrap">{{ t.sum }}</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-for>
+                      <div style="font:12.5px/1.45 Geist;color:oklch(0.5 0 0)">Даты с точностью до дня. Внутри одного дня порядок переводов по данным не определяется.</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showScenarios&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Макет&quot;},&quot;showFuture&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Макет&quot;}}">
+class Component extends DCLogic {
+  state = { D: null, status: 'boot', gid: null, card: null, sub: null, detail: '', q: '', qFocus: false, sg: null, tab: 'cp', copied: false, scen: 'c05',
+    gv: { mode: 'local', depth: 1, dirIn: true, dirOut: true, between: true, layout: 'layers', colorBy: 'role', roles: null, clusters: null, showIsolated: true, hideTrunc: false, flow: 'dash', labelZoom: 1.6, nodeScale: 1, edgeScale: 1, charge: 60, linkDist: 40, clusterPull: 0.2 },
+    settingsOpen: false, play: null, playing: false, range: null, counts: null };
+  _seq = 0; _sq = 0;
+  componentDidMount() {
+    const boot = () => {
+      if (!window.DAI || !window.DAIGraph || !window.d3) return setTimeout(boot, 40);
+      DAI.load().then((D) => {
+        this.setState({ D });
+        const g = new URLSearchParams(location.search).get('gid');
+        this.go(g || D.top.items[0].gid, false);
+      }).catch(() => this.setState({ status: 'down' }));
+    };
+    boot();
+    this._key = (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); this.inp && this.inp.focus(); }
+      if (e.key === 'Escape') this.inp && this.inp.blur();
+    };
+    this._up = () => { this._drag = null; };
+    window.addEventListener('keydown', this._key);
+    window.addEventListener('mouseup', this._up);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._key); window.removeEventListener('mouseup', this._up); clearInterval(this._pt); this.G && this.G.destroy(); }
+  componentDidUpdate() {
+    const S = this.state;
+    if (!S.D || !this.gEl) return;
+    if (!this.G || this._gEl !== this.gEl) {
+      this._gEl = this.gEl;
+      this.G = DAIGraph.create(this.gEl, { onSelect: (g) => { if (g !== this.state.gid) this.go(g); } });
+      this.G.setData({ nodes: [...DAI.nodes.values()], edges: [...DAI.edges.values()], transfers: DAI.transfers(), clusters: S.D.clusters.items, top: S.D.top.items.map((t) => t.gid) });
+    }
+    const focus = S.status === 'ok' || S.status === 'nodata' ? S.gid : (this._focus || null);
+    if (!focus && S.gv.mode === 'local' && !this._vk) return;
+    const view = Object.assign({}, S.gv, { focus, play: S.play, range: S.range });
+    const key = JSON.stringify(view);
+    if (key === this._vk) return;
+    const prev = this._vk ? JSON.parse(this._vk) : {};
+    this._vk = key; this._focus = focus;
+    const modeChanged = prev.mode !== view.mode, focusChanged = prev.focus !== view.focus;
+    const res = this.G.setView(view, { fit: (view.mode === 'local' && (focusChanged || modeChanged)) || (view.mode === 'overview' && modeChanged) });
+    if (view.mode === 'overview' && focusChanged && !modeChanged && focus) this.G.flyTo(focus);
+    const c = this.G.counts();
+    if (!S.counts || S.counts.n !== c.n || S.counts.e !== c.e) this.setState({ counts: c });
+  }
+  setGv(p) { this.setState((s) => ({ gv: Object.assign({}, s.gv, p) })); }
+  go(gid, push = true) {
+    const seq = ++this._seq;
+    this.setState({ gid, status: 'loading', card: null, sub: null, tab: 'cp', q: '', sg: null });
+    if (push) { try { const u = new URL(location.href); u.searchParams.set('gid', gid); history.replaceState(null, '', u); } catch (e) {} }
+    Promise.all([DAI.api.node(gid), DAI.api.subgraph(gid)]).then(([n, s]) => {
+      if (seq !== this._seq) return;
+      if (n.status === 404) return this.setState({ status: '404', detail: n.body.detail });
+      this.setState({ status: n.body.nodata ? 'nodata' : 'ok', card: n.body, sub: n.body.nodata ? null : s.body });
+    }).catch(() => { if (seq === this._seq) this.setState({ status: 'down' }); });
+  }
+  runSearch(v) {
+    if (!v || /\D/.test(v) || v.length < 9) { this.setState({ sg: null }); return; }
+    const seq = ++this._sq;
+    this.setState({ sg: { st: 'loading' } });
+    DAI.api.search(v, 5).then((r) => { if (seq === this._sq) this.setState({ sg: { st: 'ok', items: r.body.items, total: r.body.total } }); })
+      .catch(() => { if (seq === this._sq) this.setState({ sg: { st: 'down' } }); });
+  }
+  togglePlay() {
+    if (this.state.playing) { clearInterval(this._pt); this.setState({ playing: false }); return; }
+    const start = this.state.play == null || this.state.play >= 31 ? 1 : this.state.play;
+    this.setState({ playing: true, play: start, range: null });
+    clearInterval(this._pt);
+    this._pt = setInterval(() => {
+      const p = (this.state.play || 0) + 1;
+      if (p > 31) { clearInterval(this._pt); this.setState({ playing: false }); return; }
+      this.setState({ play: p });
+    }, 420);
+  }
+  scenario(id) {
+    const D = this.state.D; if (!D) return;
+    DAI.api.mode = 'ok';
+    clearInterval(this._pt);
+    this.G && this.G.hover(null);
+    const top1 = D.top.items[0].gid;
+    const G = { c05: top1, c07: '100000004135268100', c09: '100000003037476100', c10: '100000000456947100', e404: '123' };
+    this.setState({ scen: id, playing: false });
+    if (G[id]) return this.go(G[id]);
+    if (id === 'down') { DAI.api.mode = 'down'; return this.go(this.state.gid || top1); }
+    if (id === 'hang') { DAI.api.mode = 'hang'; return this.go(this.state.gid || top1); }
+    const base = { depth: 1, dirIn: true, dirOut: true, between: true, layout: 'layers' };
+    if (id === 'gOver') { this.setState({ settingsOpen: false, play: null, range: null }); this.setGv({ ...base, mode: 'overview' }); if (this.state.gid !== top1) this.go(top1); return; }
+    if (id === 'gHover') { this.setState({ settingsOpen: false, play: null, range: null }); this.setGv({ mode: 'overview' }); if (this.state.gid !== top1) this.go(top1); setTimeout(() => this.G && this.G.hover(top1), 1300); return; }
+    if (id === 'gLocal') { this.setState({ settingsOpen: false, play: null, range: null }); this.setGv({ mode: 'local', depth: 2, dirIn: true, dirOut: false, between: false, layout: 'layers' }); if (this.state.gid !== top1) this.go(top1); return; }
+    if (id === 'gPlay') { this.setState({ settingsOpen: false, play: 15, range: null }); this.setGv({ mode: 'overview' }); return; }
+    if (id === 'gSet') { this.setState({ settingsOpen: true }); return; }
+    const Q = { sPre: '1000000003', sNone: '100000009999999', sShort: '1000' }[id];
+    if (Q != null) { this.setState({ q: Q, qFocus: true }); this.runSearch(Q); setTimeout(() => this.inp && this.inp.focus(), 30); }
+  }
+  renderVals() {
+    const S = this.state, D = S.D, st = S.status, gv = S.gv;
+    const R = (role) => { const r = role ? DAI.role(role) : (window.DAI ? DAI.UNKNOWN : {}); const m = D && D.meta.roles.find((x) => x.role === role); return { color: r.light, dark: r.dark || '#5a5a60', ink: r.ink, tint: r.tint, title: m ? m.title : r.title, desc: m ? m.description : '' }; };
+    const gp = (g) => (window.DAI ? DAI.gidParts(g) : { pre: '', mid: g, suf: '' });
+    const pl = (n, a, b, c) => n + ' ' + DAI.plural(n, a, b, c);
+    const segOpt = (label, on, go) => ({ label, go, bg: on ? '#ececf0' : 'transparent', fg: on ? '#161618' : '#d4d4d8' });
+
+    const scenList = [['c05', 'Координатор · топ-1'], ['c07', 'Транзит'], ['c09', 'Граница выгрузки'], ['c10', 'Seed без связей'], ['e404', '404'], ['down', 'Сервер недоступен'], ['hang', 'Загрузка'], ['sPre', 'Поиск: 6 совпадений'], ['sShort', 'Поиск: короткий ввод'], ['sNone', 'Поиск: не найдено'], ['gOver', 'Граф: общий вид'], ['gHover', 'Граф: hover'], ['gLocal', 'Граф: откуда · 2 хопа'], ['gPlay', 'Граф: таймлапс 15.07'], ['gSet', 'Граф: настройки']];
+    const scenarios = scenList.map(([id, label]) => ({ label, go: () => this.scenario(id), bg: S.scen === id ? '#fff' : 'transparent', fg: S.scen === id ? 'oklch(0.145 0 0)' : 'oklch(0.85 0 0)', bd: S.scen === id ? '#fff' : 'oklch(0.4 0 0)' }));
+
+    const m = D && D.meta;
+    const metaStats = m ? [
+      { v: DAI.groups(m.n_nodes), l: 'клиентов' }, { v: DAI.groups(m.n_edges), l: 'связей' }, { v: DAI.groups(m.n_transactions), l: 'переводов' },
+      { v: m.n_seed, l: 'seed' }, { v: m.n_clusters, l: 'кластеров' }, { v: DAI.kztShort(m.total_kzt), l: '· 1–31 июля 2026' },
+    ] : [];
+    const legend = m ? DAI.ROLE_ORDER.map((k) => { const x = R(k); return { title: x.title, color: x.color, desc: x.desc }; }) : [];
+
+    const q = S.q, sg = S.sg, digits = /^\d*$/.test(q);
+    const sOpen = S.qFocus && !!q && digits;
+    const sItems = sg && sg.st === 'ok' ? sg.items.map((n) => { const p = gp(n.gid), r = R(n.role); return { ...p, color: r.color, ink: r.ink, title: r.title, seed: !!n.is_seed, trunc: !!n.truncated_by_depth, exact: n.gid === q, score: DAI.score(n.priority_score), bg: n.gid === q ? 'oklch(0.975 0 0)' : 'transparent', pick: () => this.go(n.gid) }; }) : [];
+
+    const top = D ? D.top.items.map((t) => { const p = gp(t.gid), r = R(t.role), on = t.gid === S.gid; return { ...p, rank: t.rank, color: r.color, ink: r.ink, tint: r.tint, title: r.title, seed: /seed=1/.test(t.why), score: DAI.score(t.priority_score), w: Math.round(t.priority_score * 100) + '%', why: t.why, bg: on ? 'oklch(0.97 0 0)' : '#fff', bar: on ? 'inset 3px 0 0 oklch(0.205 0 0)' : 'none', go: () => this.go(t.gid) }; }) : [];
+
+    // граф: тулбар, настройки, таймлайн
+    const isLocal = gv.mode === 'local';
+    const modeSeg = [segOpt('Окружение узла', isLocal, () => this.setGv({ mode: 'local' })), segOpt('Общий вид', !isLocal, () => this.setGv({ mode: 'overview' }))];
+    const layoutSeg = [segOpt('Слои', gv.layout === 'layers', () => this.setGv({ layout: 'layers' })), segOpt('Force', gv.layout === 'force', () => this.setGv({ layout: 'force' }))];
+    const chip = (label, on, go) => ({ label, go, check: on ? '✓' : '', bg: on ? '#2e2e33' : 'transparent', bd: on ? '#4a4a52' : '#2e2e33', fg: on ? '#ffffff' : '#a1a1aa', boxBg: on ? '#ececf0' : 'transparent' });
+    const dirChips = [chip('Откуда пришли деньги', gv.dirIn, () => this.setGv({ dirIn: !gv.dirIn })), chip('Куда ушли деньги', gv.dirOut, () => this.setGv({ dirOut: !gv.dirOut })), chip('Связи между соседями', gv.between, () => this.setGv({ between: !gv.between }))];
+    const roleChips = D ? DAI.ROLE_ORDER.map((k) => { const x = R(k), on = !gv.roles || gv.roles.includes(k); return { title: x.title, color: x.dark, op: on ? 1 : 0.35, bg: on ? '#2a2a2e' : 'transparent', bd: on ? '#44444c' : '#2e2e33', fg: on ? '#ececf0' : '#8a8a92', go: () => { const cur = gv.roles || DAI.ROLE_ORDER.slice(); const nx = cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]; this.setGv({ roles: nx.length === DAI.ROLE_ORDER.length ? null : nx }); } }; }) : [];
+    const presentCl = D ? [...new Set([...DAI.nodes.values()].map((n) => n.cluster_id).filter((x) => x != null))].sort((a, b) => a - b) : [];
+    const clusterChips = presentCl.map((id) => { const on = !gv.clusters || gv.clusters.includes(id); const p = D.clusters.items.find((c) => c.cluster_id === id); return { label: 'Кластер ' + id + (p ? ' · ' + DAI.groups(p.n_nodes) : ''), bg: on ? '#2a2a2e' : 'transparent', bd: on ? '#44444c' : '#2e2e33', fg: on ? '#ececf0' : '#8a8a92', go: () => { const cur = gv.clusters || presentCl.slice(); const nx = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]; this.setGv({ clusters: nx.length === presentCl.length ? null : nx }); } }; });
+    const sw = (label, on, go) => ({ label, go, track: on ? '#ececf0' : '#3a3a40', knob: on ? '14px' : '2px' });
+    const switches = [sw('Показывать seed без связей', gv.showIsolated, () => this.setGv({ showIsolated: !gv.showIsolated })), sw('Скрыть обрыв выборки (4-е колено)', gv.hideTrunc, () => this.setGv({ hideTrunc: !gv.hideTrunc }))];
+    const flowSeg = [segOpt('Стрелки', gv.flow === 'arrows', () => this.setGv({ flow: 'arrows' })), segOpt('Пунктир', gv.flow === 'dash', () => this.setGv({ flow: 'dash' }))];
+    const colorSeg = [segOpt('Роль', gv.colorBy === 'role', () => this.setGv({ colorBy: 'role' })), segOpt('Кластер', gv.colorBy === 'cluster', () => this.setGv({ colorBy: 'cluster' }))];
+    const sl = (label, key, min, max, step, fmt) => ({ label, min, max, step, value: gv[key], shown: fmt(gv[key]), set: (e) => this.setGv({ [key]: +e.target.value }) });
+    const x = (v) => '×' + String(v).replace('.', ',');
+    const dispSliders = [sl('Подписи с приближения', 'labelZoom', 0.4, 3, 0.1, x), sl('Размер узлов', 'nodeScale', 0.5, 2, 0.1, x), sl('Толщина связей', 'edgeScale', 0.5, 2.5, 0.1, x)];
+    const forceSliders = [sl('Отталкивание', 'charge', 10, 200, 5, String), sl('Длина связей', 'linkDist', 15, 120, 5, String), sl('Притяжение к кластеру', 'clusterPull', 0, 0.4, 0.02, (v) => v.toFixed(2).replace('.', ','))];
+
+    const trs = D ? DAI.transfers() : [];
+    const perDay = new Array(32).fill(0); trs.forEach((t) => perDay[+t.date.slice(8)]++);
+    const mx = Math.max(1, ...perDay);
+    const rg = S.range, pv = S.play;
+    const hist = [];
+    for (let d = 1; d <= 31; d++) {
+      const inR = rg ? d >= rg[0] && d <= rg[1] : true, played = pv == null || d <= pv;
+      hist.push({ h: perDay[d] ? Math.max(3, Math.round((perDay[d] / mx) * 36)) + 'px' : '0px', fill: inR && played ? '#d4d4d8' : '#4a4a52', bgc: d === pv ? '#34343a' : rg && inR ? '#26262b' : 'transparent', title: d + ' июля: ' + pl(perDay[d], 'перевод', 'перевода', 'переводов') + ' в загруженных карточках',
+        down: () => { this._drag = d; clearInterval(this._pt); this.setState({ range: [d, d], play: null, playing: false }); },
+        enter: () => { if (this._drag != null) this.setState({ range: [Math.min(this._drag, d), Math.max(this._drag, d)] }); } });
+    }
+    const dd = (n) => String(n).padStart(2, '0') + '.07';
+    const tlLabel = pv != null ? pv + ' июля' : rg ? (rg[0] === rg[1] ? dd(rg[0]) : dd(rg[0]) + '–' + dd(rg[1])) : 'весь июль';
+
+    // карточка
+    const c = S.card, nd = c && c.node, gid = S.gid;
+    const showCard = (st === 'ok' || st === 'nodata') && !!nd;
+    const r = nd ? R(nd.role) : {};
+    let n = {}, stt = {}, inList = [], outList = [], days = [], tl = [], firstIn = '', firstOut = '';
+    if (showCard) {
+      const tr = D.top.items.find((t) => t.gid === gid);
+      const dl = nd.depth == null ? '' : nd.depth === 0 ? 'колено 0 · исходный известный клиент' : nd.depth === 4 ? 'колено 4 · граница выгрузки' : 'колено ' + nd.depth + ' из 4';
+      n = { seed: !!nd.is_seed || (tr && /seed=1/.test(tr.why)), trunc: !!nd.truncated_by_depth, notTrunc: !nd.truncated_by_depth, hasTop: !!tr, rank: tr ? tr.rank : '', prio: DAI.score(nd.priority_score), prioW: Math.round((nd.priority_score || 0) * 100) + '%', rs: DAI.score(nd.role_score), evidence: nd.evidence, depthLabel: dl };
+      if (st === 'ok') {
+        stt = { inKzt: DAI.kzt(nd.in_kzt), outKzt: DAI.kzt(nd.out_kzt), inDeg: pl(nd.in_deg, 'отправитель', 'отправителя', 'отправителей'), outDeg: pl(nd.out_deg, 'получатель', 'получателя', 'получателей'), inTx: pl(nd.in_tx, 'перевод', 'перевода', 'переводов'), outTx: pl(nd.out_tx, 'перевод', 'перевода', 'переводов'), outBs: nd.truncated_by_depth ? 'dashed' : 'solid' };
+        const ins = new Set(c.in_edges.map((e) => e.src)), outs = new Set(c.out_edges.map((e) => e.dst));
+        const row = (g, e) => { const nn = DAI.nodes.get(g), rr = R(nn && nn.role); return { ...gp(g), color: rr.color, ink: rr.ink, title: rr.title, seed: !!(nn && nn.is_seed), both: ins.has(g) && outs.has(g), sum: DAI.kzt(e.sum_kzt), ntx: pl(e.n_tx, 'перевод', 'перевода', 'переводов'), go: () => this.go(g) }; };
+        inList = [...c.in_edges].sort((a, b) => b.sum_kzt - a.sum_kzt).map((e) => row(e.src, e));
+        outList = [...c.out_edges].sort((a, b) => b.sum_kzt - a.sum_kzt).map((e) => row(e.dst, e));
+        let cur = null;
+        c.transfers.forEach((t) => {
+          if (!cur || cur.date !== t.date) { cur = { date: t.date, label: DAI.dateLong(t.date), rows: [], i: 0, o: 0 }; days.push(cur); }
+          const isIn = t.dst === gid, cp = isIn ? t.src : t.dst;
+          isIn ? cur.i++ : cur.o++;
+          cur.rows.push({ ...gp(cp), dir: isIn ? 'вход' : 'выход', arrow: isIn ? 'от' : 'кому', mBg: isIn ? 'oklch(0.3 0 0)' : '#fff', sum: DAI.kzt(t.sum_kzt), go: () => this.go(cp) });
+        });
+        days.forEach((d) => { d.same = d.i > 0 && d.o > 0; d.count = [d.i ? pl(d.i, 'вход', 'входа', 'входов') : '', d.o ? pl(d.o, 'выход', 'выхода', 'выходов') : ''].filter(Boolean).join(' · '); });
+        const agg = {}; c.transfers.forEach((t) => { const d = +t.date.slice(8); agg[d] = agg[d] || { i: 0, o: 0, ni: 0, no: 0 }; if (t.dst === gid) { agg[d].i += t.sum_kzt; agg[d].ni++; } else { agg[d].o += t.sum_kzt; agg[d].no++; } });
+        const amx = Math.max(1, ...Object.values(agg).map((a) => Math.max(a.i, a.o)));
+        const hh = (v) => (v ? Math.max(4, Math.round((Math.log(v + 1) / Math.log(amx + 1)) * 48)) + 'px' : '0px');
+        for (let d = 1; d <= 31; d++) {
+          const a = agg[d] || { i: 0, o: 0, ni: 0, no: 0 };
+          tl.push({ inH: hh(a.i), outH: hh(a.o), outB: a.o ? '1.5px solid oklch(0.3 0 0)' : '0', bg: a.i && a.o ? 'oklch(0.9 0 0)' : 'oklch(0.975 0 0)', tick: [1, 8, 15, 22, 31].includes(d) ? String(d) : '', title: d + ' июля: вход ' + (a.ni ? DAI.kzt(a.i) + ' (' + a.ni + ')' : '—') + ', выход ' + (a.no ? DAI.kzt(a.o) + ' (' + a.no + ')' : '—') });
+        }
+        const fi = c.transfers.find((t) => t.dst === gid), fo = c.transfers.find((t) => t.src === gid);
+        firstIn = 'Первый вход: ' + (fi ? DAI.dateLong(fi.date) : 'нет');
+        firstOut = 'первый выход: ' + (fo ? DAI.dateLong(fo.date) : nd.truncated_by_depth ? 'не выгружены' : 'нет');
+      }
+    }
+    const hasLinks = st === 'ok' && c && (c.in_edges.length + c.out_edges.length + c.transfers.length > 0);
+    const cardErrorText = st === '404' ? S.detail : st === 'down' ? 'Сервер анализа недоступен. Повторите запрос.' : '';
+    const cn = S.counts;
+
+    return {
+      showScenarios: this.props.showScenarios ?? true, scenarios, metaStats, legend, isMock: m ? m.mock : true,
+      inpRef: (el) => (this.inp = el), q,
+      onQ: (e) => { const v = e.target.value.replace(/\s/g, ''); this.setState({ q: v, qFocus: true }); this.runSearch(v); },
+      onQFocus: () => this.setState({ qFocus: true }), onQBlur: () => setTimeout(() => this.setState({ qFocus: false }), 120),
+      onQKey: (e) => { if (e.key === 'Enter') { if (/^\d{18}$/.test(q)) this.go(q); else if (sItems[0]) this.go(sg.items[0].gid); else if (q) this.go(q); } },
+      qBd: !digits ? 'oklch(0.6 0.19 27)' : S.qFocus ? 'oklch(0.55 0 0)' : 'oklch(0.87 0 0)', qRing: S.qFocus ? '0 0 0 3px oklch(0.92 0 0)' : 'none', qErr: !digits,
+      sOpen, sHint: sOpen && q.length < 9, sLoading: sOpen && sg && sg.st === 'loading', sHasItems: sOpen && sItems.length > 0, sItems,
+      sCount: sg && sg.st === 'ok' ? (sg.total > sg.items.length ? 'найдено ' + sg.total + ' · показано ' + sg.items.length : 'найдено ' + sg.total) : '',
+      sNone: sOpen && sg && sg.st === 'ok' && sg.total === 0, sDown: sOpen && sg && sg.st === 'down',
+      top,
+      modeSeg, layoutSeg, dirChips, isLocal, depth: gv.depth, depthLabel: pl(gv.depth, 'хоп', 'хопа', 'хопов'), setDepth: (e) => this.setGv({ depth: +e.target.value }),
+      gCounts: cn ? pl(cn.n, 'узел', 'узла', 'узлов') + ' · ' + pl(cn.e, 'связь', 'связи', 'связей') : '',
+      fit: () => this.G && this.G.fit(), graphRef: (el) => { if (el) this.gEl = el; },
+      toggleSettings: () => this.setState({ settingsOpen: !S.settingsOpen }), settingsOpen: S.settingsOpen,
+      setBg: S.settingsOpen ? '#ececf0' : '#232327', setFg: S.settingsOpen ? '#161618' : '#ececf0', setBd: S.settingsOpen ? '#ececf0' : '#2e2e33',
+      roleChips, clusterChips, switches, flowSeg, colorSeg, dispSliders, forceSliders,
+      flowLegend: gv.flow === 'dash' ? 'бегущий пунктир — направление денег' : 'стрелка — направление денег',
+      hist, histUp: () => { this._drag = null; }, playVal: pv || 31, scrub: (e) => { clearInterval(this._pt); this.setState({ play: +e.target.value, playing: false, range: null }); },
+      togglePlay: () => this.togglePlay(), playIcon: S.playing ? '❚❚' : '▶', tlLabel, tlActive: pv != null || !!rg, tlReset: () => { clearInterval(this._pt); this.setState({ play: null, range: null, playing: false }); },
+      tlNote: 'по ' + pl(trs.length, 'переводу', 'переводам', 'переводам') + ' из загруженных карточек · выделите дни на гистограмме',
+      graphBoot: !D, is404: st === '404', isDown: st === 'down',
+      showNodataGraph: st === 'nodata' && isLocal && !DAI.nodes.has(gid),
+      isIsolated: st === 'ok' && isLocal && c && c.in_edges.length + c.out_edges.length === 0,
+      hasCluster: showCard && nd.cluster_id != null, clusterId: nd ? nd.cluster_id : '',
+      retry: () => { DAI.api.mode = 'ok'; this.setState({ scen: '' }); if (!D) { location.reload(); return; } this.go(gid); },
+      cardLoading: st === 'loading' || st === 'boot', cardError: st === '404' || st === 'down', cardErrorText, detail: S.detail,
+      showCard, showFull: st === 'ok', isPartial: st === 'ok' && c && c.partial, isNodata: st === 'nodata',
+      g: gid ? gp(gid) : {}, r, n, st: stt,
+      copy: () => { try { navigator.clipboard.writeText(gid); } catch (e) {} this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1400); },
+      copyLabel: S.copied ? 'Скопировано' : 'Копировать',
+      showFuture: this.props.showFuture ?? false,
+      isEmpty: st === 'ok' && !hasLinks, hasLinks,
+      tabCp: () => this.setState({ tab: 'cp' }), tabTx: () => this.setState({ tab: 'tx' }),
+      isCp: S.tab === 'cp', isTx: S.tab === 'tx',
+      tCpBg: S.tab === 'cp' ? '#fff' : 'transparent', tTxBg: S.tab === 'tx' ? '#fff' : 'transparent',
+      tCpSh: S.tab === 'cp' ? '0 1px 3px rgba(0,0,0,.1)' : 'none', tTxSh: S.tab === 'tx' ? '0 1px 3px rgba(0,0,0,.1)' : 'none',
+      cpCount: c ? c.in_edges.length + c.out_edges.length : 0, txCount: c ? c.transfers.length : 0,
+      hasIn: inList.length > 0, hasOut: outList.length > 0, inList, outList, days, tl, firstIn, firstOut,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e1014;color:#eceef2;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#cfd3da;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+button,nav a{white-space:nowrap;font-family:inherit}
+</style>
+</helmet>
+<div style="min-width:1440px;min-height:100vh;display:flex;flex-direction:column">
+  <div style="height:52px;flex:none;display:flex;align-items:center;gap:18px;padding:0 16px;border-bottom:1px solid #23262d;background:#121418">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:24px;height:24px;border-radius:6px;background:#eceef2;display:grid;place-items:center;color:#0e1014;font:700 13px 'IBM Plex Mono'">₸</div>
+      <div style="font-weight:600;font-size:15px">Граф денег</div>
+    </div>
+    <nav style="display:flex;gap:2px">
+      <a href="Обзор сети.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Обзор</a>
+      <a href="Рабочее место.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Рабочее место</a>
+      <a href="Кластеры.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#fff;background:#20242c">Кластеры</a>
+      <a href="Запуск и устойчивость.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Устойчивость</a>
+      <a href="Перечень на проверку.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Перечень</a>
+    </nav>
+  </div>
+
+  <div style="flex:1;display:grid;grid-template-columns:minmax(0,1fr) 520px">
+    <div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px;border-right:1px solid #23262d">
+      <div style="display:flex;align-items:baseline;gap:12px">
+        <span style="font-size:24px;font-weight:600">Кластеры</span>
+        <span style="font-size:13.5px;color:#aab0ba">30 кластеров в 16 компонентах · сортировка по числу seed</span>
+      </div>
+      <div style="border:1px solid #23262d;border-radius:10px;overflow:hidden;background:#121418">
+        <div style="display:grid;grid-template-columns:52px 64px 56px 110px 150px minmax(0,1fr) 120px;gap:12px;padding:10px 14px;background:#171a20;border-bottom:1px solid #23262d;font:600 11px 'IBM Plex Mono';letter-spacing:.06em;color:#8a909b">
+          <span>ID</span><span style="text-align:right">УЗЛОВ</span><span style="text-align:right;color:#fff">SEED ↓</span><span style="text-align:right">ОБОРОТ ↕</span><span>ТОП-GID</span><span>ГИПОТЕЗА</span><span>РОЛИ</span>
+        </div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+          <div onClick="{{ r.pick }}" style="display:grid;grid-template-columns:52px 64px 56px 110px 150px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid #1c1f25;cursor:pointer;background:{{ r.bg }}" style-hover="background:#181b21">
+            <span style="display:flex;align-items:center;gap:7px;font:600 14px 'IBM Plex Mono'"><span style="width:10px;height:10px;border-radius:50%;background:{{ r.col }}"></span>К{{ r.id }}</span>
+            <span style="font:500 14px 'IBM Plex Mono';text-align:right">{{ r.n }}</span>
+            <span style="font:600 14px 'IBM Plex Mono';text-align:right">{{ r.s }}</span>
+            <span style="font:500 14px 'IBM Plex Mono';text-align:right;white-space:nowrap">{{ r.sum }}</span>
+            <span style="font:500 12.5px 'IBM Plex Mono';color:#c3c8d0">{{ r.top }}</span>
+            <span style="font-size:13px;color:#c3c8d0;line-height:1.4">{{ r.hyp }}</span>
+            <span style="display:flex;height:10px;border-radius:3px;overflow:hidden;background:#1f2228">
+              <sc-for list="{{ r.stack }}" as="x" hint-placeholder-count="4"><span style="width:{{ x.w }};background:{{ x.c }}"></span></sc-for>
+            </span>
+          </div>
+        </sc-for>
+        <div style="padding:10px 14px;font-size:13px;color:#aab0ba">+ 14 кластеров в мелких компонентах 3–16 (3–12 узлов, 15 seed) · показать</div>
+      </div>
+    </div>
+
+    <aside style="padding:22px 24px;display:flex;flex-direction:column;gap:18px;background:#121418">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="width:14px;height:14px;border-radius:50%;background:#f472b6"></span>
+        <span style="font:600 26px 'IBM Plex Mono'">Кластер 3</span>
+        <span style="font-size:13px;color:#aab0ba">компонента 1</span>
+        <a href="Рабочее место.dc.html" style="margin-left:auto;font-size:13px">Открыть на схеме →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+        <div style="padding:10px 12px;border:1px solid #262a31;border-radius:8px"><div style="font-size:12px;color:#8a909b">Узлов</div><div style="font:600 24px 'IBM Plex Mono'">214</div></div>
+        <div style="padding:10px 12px;border:1px solid #262a31;border-radius:8px"><div style="font-size:12px;color:#8a909b">Seed</div><div style="font:600 24px 'IBM Plex Mono'">7</div></div>
+        <div style="padding:10px 12px;border:1px solid #262a31;border-radius:8px"><div style="font-size:12px;color:#8a909b">Внутр. оборот</div><div style="font:600 24px 'IBM Plex Mono';white-space:nowrap">18,6 млн ₸</div></div>
+      </div>
+      <div style="height:250px;border:1px solid #262a31;border-radius:8px;background-color:#0e1014;background-image:radial-gradient(#1b1e24 1px,transparent 1px);background-size:18px 18px">{{ sub }}</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">СОСТАВ ПО РОЛЯМ</div>
+        <div style="display:flex;height:12px;border-radius:3px;overflow:hidden">
+          <sc-for list="{{ comp }}" as="c" hint-placeholder-count="6"><span style="width:{{ c.w }};background:{{ c.c }}"></span></sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:#c3c8d0">
+          <sc-for list="{{ comp }}" as="c" hint-placeholder-count="6"><span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:2px;background:{{ c.c }}"></span>{{ c.l }} <b style="font-family:'IBM Plex Mono'">{{ c.n }}</b></span></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b;padding-bottom:6px">КЛЮЧЕВЫЕ УЗЛЫ</div>
+        <sc-for list="{{ keyNodes }}" as="k" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:70px 130px minmax(0,1fr) 40px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid #1d2026;font-size:13px">
+            <span style="font:600 14px 'IBM Plex Mono'">{{ k.g }}</span>
+            <span style="color:{{ k.c }};font-weight:600;font-size:12.5px">{{ k.l }}</span>
+            <span style="color:#aab0ba;font-size:12.5px">{{ k.w }}</span>
+            <span style="font:600 14px 'IBM Plex Mono';text-align:right">{{ k.p }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;padding:12px 14px;border-left:3px solid #3fd6e0;background:#10252a;border-radius:0 8px 8px 0">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font:700 10px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 5px">AI</span><span style="font:600 11px 'IBM Plex Mono';letter-spacing:.06em;color:#8fe6ec">ГИПОТЕЗА О НАЗНАЧЕНИИ · СРЕДНЯЯ</span></div>
+        <div style="font-size:14px;line-height:1.55;color:#e8f4f5">Вероятно, контур сбора выручки с 7 seed-клиентов с последующей консолидацией на 2 узлах — 100482 и 108215 — и дальнейшей рассылкой через 203117.</div>
+        <div style="font-size:11.5px;color:#8a909b">сгенерировано по метрикам графа, требует проверки</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid #4a4222;background:#1a1810;border-radius:8px">
+        <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#e9d9a4">ЧЕГО НЕ ХВАТАЕТ ДЛЯ ПРОВЕРКИ</div>
+        <div style="font-size:13px;line-height:1.5;color:#efe3bd">· 38 узлов кластера на колене 4 — исходящие не прослежены</div>
+        <div style="font-size:13px;line-height:1.5;color:#efe3bd">· переводы из кластера за пределы банка не видны</div>
+        <div style="font-size:13px;line-height:1.5;color:#efe3bd">· входящие 7 seed извне выборки отсутствуют</div>
+      </div>
+      <button style="height:40px;border:0;border-radius:8px;background:#eceef2;color:#0e1014;font-size:14px;font-weight:600">Добавить кластер в чат · @cluster:3</button>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const RC = { coordinator: '#b392ff', consolidator: '#ff6b6b', distributor: '#ff9f43', transit: '#f5c542', terminal: '#5aa9ff', peripheral: '#5a606b' };
+const CL = ['#2ec4a6', '#9ad24b', '#f472b6', '#d4a373', '#7dd3fc', '#c4b5fd'];
+const ROWS = [
+  [1, 312, 9, '42,8 млн ₸', '104630 · 172305', 'сбор с 9 seed, консолидация на 104630', [1, 3, 4, 10, 8]],
+  [3, 214, 7, '18,6 млн ₸', '100482 · 203117 · 150903', 'сбор с 7 seed, консолидация на 2 узлах, рассылка через 203117', [0, 4, 3, 12, 7]],
+  [2, 268, 6, '36,1 млн ₸', '211408 · 214772', 'консолидация на 211408, мост в кластеры 5 и 8', [2, 3, 3, 9, 6]],
+  [4, 196, 5, '27,4 млн ₸', '158240 · 161447', 'транзитный коридор: пропуск 0.9+ на 2–3 шагах', [0, 1, 2, 16, 5]],
+  [5, 171, 4, '22,9 млн ₸', '219963 · 233580', 'веерная рассылка от 2 распределителей', [1, 1, 8, 7, 4]],
+  [6, 150, 3, '19,7 млн ₸', '207755 · 226019 · 226904', 'кандидат в координаторы 207755 принимает от 3 точек сбора', [3, 2, 4, 6, 9]],
+  [7, 132, 3, '14,2 млн ₸', '233580', 'рассылка 27 получателям за 2 дня', [0, 1, 5, 6, 4]],
+  [8, 118, 2, '11,9 млн ₸', '188032', 'конечные получатели без исходящих', [0, 1, 1, 5, 9]],
+  [9, 96, 2, '8,3 млн ₸', '205561', 'транзит в кластер 12', [0, 0, 1, 8, 3]],
+  [11, 58, 2, '5,4 млн ₸', '—', 'признаков структуры не выявлено', [0, 0, 1, 3, 2]],
+  [15, 184, 1, '16,8 млн ₸', '420115', 'компонента 2: консолидация на 420115', [0, 2, 3, 7, 5]],
+  [10, 74, 1, '6,1 млн ₸', '—', 'периферия, мало связей', [0, 0, 0, 3, 2]],
+  [12, 44, 1, '3,2 млн ₸', '—', 'признаков структуры не выявлено', [0, 0, 0, 2, 1]],
+  [13, 27, 1, '2,6 млн ₸', '—', 'признаков структуры не выявлено', [0, 0, 0, 1, 1]],
+  [14, 17, 0, '1,1 млн ₸', '—', 'без seed: связан с К6 одним ребром', [0, 0, 0, 1, 1]],
+  [16, 86, 0, '4,9 млн ₸', '—', 'компонента 2, без seed', [0, 0, 1, 3, 2]],
+];
+class Component extends DCLogic {
+  state = { sel: 3 };
+  sub() {
+    const h = React.createElement;
+    const N = [['100017',40,40,'transit',1],['100035',40,100,'peripheral',1],['100121',40,160,'transit',1],['100204',40,220,'transit',1],
+      ['150903',170,40,'transit'],['150211',170,100,'transit'],['151477',170,160,'transit'],['152038',170,220,'transit'],
+      ['108215',300,70,'consolidator'],['100482',300,150,'consolidator'],['203117',400,150,'distributor'],['311540',470,90,'peripheral',0,1],['311602',470,150,'peripheral',0,1],['311877',470,210,'peripheral',0,1]];
+    const B = {}; N.forEach(n => B[n[0]] = n);
+    const E = [['100017','150903'],['100035','150211'],['100121','151477'],['100204','152038'],['150903','100482'],['150211','100482'],['151477','100482'],['152038','100482'],['150211','108215'],['150903','108215'],['100482','203117'],['108215','203117'],['203117','311540'],['203117','311602'],['203117','311877']];
+    const els = E.map((e, i) => { const a = B[e[0]], b = B[e[1]]; const mx = (a[1] + b[1]) / 2; return h('path', { key: i, d: `M${a[1]},${a[2]} C${mx},${a[2]} ${mx},${b[2]} ${b[1]},${b[2]}`, fill: 'none', stroke: '#6a707b', strokeWidth: 1.5 }); });
+    N.forEach(n => { const key = n[0] === '100482' || n[0] === '108215' || n[0] === '203117'; const r = key ? 11 : 7;
+      els.push(h('circle', { key: n[0], cx: n[1], cy: n[2], r, fill: n[5] ? '#2a2e35' : RC[n[3]] === '#5a606b' ? '#8a909b' : RC[n[3]], stroke: n[4] ? '#fff' : n[5] ? '#b8bec8' : '#0e1014', strokeWidth: n[4] ? 2.5 : 1.5, strokeDasharray: n[5] ? '3 2' : null }));
+      if (key) els.push(h('text', { key: 't' + n[0], x: n[1], y: n[2] + 26, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 600, fontFamily: 'IBM Plex Mono' }, n[0])); });
+    return h('svg', { viewBox: '0 0 510 250', style: { width: '100%', height: '100%', display: 'block' } }, ...els);
+  }
+  renderVals() {
+    const cols = ['coordinator', 'consolidator', 'distributor', 'transit', 'terminal'];
+    return {
+      rows: ROWS.map(r => { const tot = r[6].reduce((a, b) => a + b, 0) + 12; return { id: r[0], n: r[1], s: r[2], sum: r[3], top: r[4], hyp: r[5], col: CL[(r[0] - 1) % CL.length], bg: r[0] === this.state.sel ? '#1d2129' : 'transparent', pick: () => this.setState({ sel: r[0] }),
+        stack: [...r[6].map((v, i) => ({ w: v / tot * 100 + '%', c: RC[cols[i]] })), { w: 12 / tot * 100 + '%', c: RC.peripheral }] }; }),
+      sub: this.sub(),
+      comp: [['Координатор', 0, 'coordinator'], ['Консолидация', 2, 'consolidator'], ['Распределитель', 4, 'distributor'], ['Транзит', 23, 'transit'], ['Конечный', 14, 'terminal'], ['Периферия', 171, 'peripheral']].map(c => ({ l: c[0], n: c[1], c: RC[c[2]], w: c[1] / 214 * 100 + '%' })),
+      keyNodes: [['100482', 'Консолидация', 'от 11 плательщиков, пропуск 0.03', '0.94', '#ff6b6b'], ['203117', 'Распределитель', '86 получателей', '0.88', '#ff9f43'], ['108215', 'Консолидация', '5 плательщиков, пропуск 0.12', '0.39', '#ff6b6b'], ['150903', 'Транзит', 'пропуск 0.97, 1 день', '0.71', '#f5c542']].map(k => ({ g: k[0], l: k[1], w: k[2], p: k[3], c: k[4] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

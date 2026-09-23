@@ -1,0 +1,30 @@
+{
+ "unknown_gid": {
+  "request": "GET /nodes/123",
+  "status": 404,
+  "body": {
+   "detail": "gid 123 не найден"
+  }
+ },
+ "bad_params": {
+  "request": "GET /search?q=",
+  "status": 422,
+  "body": {
+   "detail": [
+    {
+     "type": "string_too_short",
+     "loc": [
+      "query",
+      "q"
+     ],
+     "msg": "String should have at least 1 character",
+     "input": "",
+     "ctx": {
+      "min_length": 1
+     }
+    }
+   ]
+  }
+ },
+ "backend_down": "Сетевая ошибка без тела ответа (fetch failed / 502 от dev-прокси). Показывать как «Бэкенд недоступен», не как «ничего не найдено»."
+}

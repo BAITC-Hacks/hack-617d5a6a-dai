@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0c0f;color:#eceef2;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#cfd3da;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+input{font-family:inherit}
+button,nav a{white-space:nowrap}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#2a2e36;border-radius:4px}
+</style>
+</helmet>
+<div style="min-width:1440px;display:flex;flex-direction:column;background:#0b0c0f">
+  <div style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-bottom:1px solid #1d2026;background:#0b0c0f;flex-wrap:wrap">
+    <span style="font:500 11px 'IBM Plex Mono';color:#6c727d;letter-spacing:.08em;margin-right:8px">МАКЕТ · СОСТОЯНИЕ</span>
+    <sc-for list="{{ scenarios }}" as="s" hint-placeholder-count="8">
+      <button onClick="{{ s.go }}" style="border:1px solid {{ s.bd }};background:{{ s.bg }};color:{{ s.fg }};font:500 12.5px 'IBM Plex Sans';padding:5px 10px;border-radius:6px;cursor:pointer">{{ s.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="position:relative;height:900px;display:flex;flex-direction:column;background:#0e1014;overflow:hidden">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:18px;padding:0 16px;border-bottom:1px solid #23262d;background:#121418">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:24px;height:24px;border-radius:6px;background:#eceef2;display:grid;place-items:center;color:#0e1014;font:700 13px 'IBM Plex Mono'">₸</div>
+        <div style="font-weight:600;font-size:15px">Граф денег</div>
+        <div style="font:400 12px 'IBM Plex Mono';color:#8a909b">01.07–31.07.2026</div>
+      </div>
+      <nav style="display:flex;gap:2px">
+        <a href="Обзор сети.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Обзор</a>
+        <a href="Рабочее место.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#fff;background:#20242c">Рабочее место</a>
+        <a href="Кластеры.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Кластеры</a>
+        <a href="Запуск и устойчивость.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Устойчивость</a>
+        <a href="Перечень на проверку.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1;display:flex;gap:6px;align-items:center">Перечень <span style="font:600 11px 'IBM Plex Mono';background:#eceef2;color:#0e1014;border-radius:8px;padding:0 6px">{{ listCount }}</span></a>
+        <a href="Компоненты и состояния.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#6c727d">Компоненты</a>
+      </nav>
+      <div style="position:relative;flex:1;max-width:440px;margin-left:auto">
+        <div style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:7px;background:#0e1014;border:1px solid {{ searchBorder }}">
+          <span style="color:#8a909b;font-size:14px">⌕</span>
+          <input value="{{ q }}" onChange="{{ onQ }}" onFocus="{{ onQFocus }}" onBlur="{{ onQBlur }}" onKeyDown="{{ onQKey }}" placeholder="Найти gid, например 100482" style="flex:1;background:transparent;border:0;outline:0;color:#fff;font:500 14px 'IBM Plex Mono'">
+          <span style="font:500 11px 'IBM Plex Mono';color:#8a909b;border:1px solid #30353e;border-radius:4px;padding:1px 5px">/</span>
+        </div>
+        <sc-if value="{{ showSuggest }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:40px;left:0;right:0;background:#181b21;border:1px solid #30353e;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:30;padding:4px">
+            <sc-for list="{{ suggest }}" as="s" hint-placeholder-count="3">
+              <div onMouseDown="{{ s.pick }}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer" style-hover="background:#232730">
+                <span style="width:8px;height:8px;border-radius:50%;background:{{ s.rc }}"></span>
+                <span style="font:600 14px 'IBM Plex Mono'">{{ s.gid }}</span>
+                <span style="font-size:12.5px;color:{{ s.rc }}">{{ s.rl }}</span>
+                <span style="margin-left:auto;font:500 12px 'IBM Plex Mono';color:#8a909b">{{ s.meta }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:10px;font-size:13px;color:#c3c8d0;line-height:1.45">gid <span style="font-family:'IBM Plex Mono';color:#fff">{{ q }}</span> не найден в выборке. В графе 2 248 узлов с 01.07 по 31.07.2026; клиенты вне обхода от seed не загружены.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onClick="{{ goPalette }}" style="height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:7px;background:#181b21;border:1px solid #2c3038;color:#c3c8d0;font:500 13px 'IBM Plex Sans';cursor:pointer">Команды <span style="font:500 11px 'IBM Plex Mono';color:#8a909b">⌘K</span></button>
+        <div style="height:32px;display:flex;align-items:center;gap:7px;padding:0 10px;border-radius:7px;border:1px solid #1f4a50;color:#8fe6ec;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:#3fd6e0"></span>AI подключён</div>
+        <button onClick="{{ goHelp }}" style="width:32px;height:32px;border-radius:7px;background:#181b21;border:1px solid #2c3038;color:#c3c8d0;font:600 14px 'IBM Plex Mono';cursor:pointer">?</button>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr) 400px">
+      <aside style="display:flex;flex-direction:column;min-height:0;border-right:1px solid #23262d;background:#121418">
+        <div style="padding:14px 14px 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #23262d">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div style="font-size:15px;font-weight:600">Очередь приоритетов</div>
+            <div style="margin-left:auto;font:500 12px 'IBM Plex Mono';color:#8a909b;white-space:nowrap">20 из 2 248</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span style="height:26px;white-space:nowrap;display:flex;align-items:center;gap:5px;padding:0 9px;border-radius:6px;border:1px solid #2c3038;font-size:12.5px;color:#c3c8d0">Роль: все ▾</span>
+            <span style="height:26px;white-space:nowrap;display:flex;align-items:center;gap:5px;padding:0 9px;border-radius:6px;border:1px solid #2c3038;font-size:12.5px;color:#c3c8d0">Кластер ▾</span>
+            <span style="height:26px;white-space:nowrap;display:flex;align-items:center;gap:5px;padding:0 9px;border-radius:6px;border:1px solid #2c3038;font-size:12.5px;color:#c3c8d0">Компонента ▾</span>
+            <button onClick="{{ toggleSeed }}" style="height:26px;padding:0 9px;border-radius:6px;border:1px solid {{ seedBd }};background:{{ seedBg }};font:500 12.5px 'IBM Plex Sans';color:#e3e6eb;cursor:pointer">Только seed</button>
+            <button onClick="{{ toggleCut }}" style="height:26px;padding:0 9px;border-radius:6px;border:1px solid {{ cutBd }};background:{{ cutBg }};font:500 12.5px 'IBM Plex Sans';color:#e3e6eb;cursor:pointer">Скрыть обрыв</button>
+          </div>
+        </div>
+        <div style="flex:1;min-height:0;overflow:auto">
+          <sc-for list="{{ queue }}" as="q" hint-placeholder-count="8">
+            <div onClick="{{ q.pick }}" style="display:grid;grid-template-columns:18px 22px minmax(0,1fr) 46px;gap:9px;padding:11px 14px;border-bottom:1px solid #1c1f25;cursor:pointer;background:{{ q.bg }}" style-hover="background:#191c22">
+              <div onClick="{{ q.toggle }}" style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ q.boxBd }};background:{{ q.boxBg }};color:#0e1014;font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:2px">{{ q.check }}</div>
+              <div style="font:600 13px 'IBM Plex Mono';color:#8a909b;padding-top:1px">{{ q.rank }}</div>
+              <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+                  <span style="font:600 15px 'IBM Plex Mono';color:#fff">{{ q.gid }}</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px 0 3px;border-radius:4px;background:{{ q.rbg }};color:{{ q.rc }};font-size:12px;font-weight:600;white-space:nowrap"><span style="width:14px;height:14px;border-radius:3px;background:{{ q.rc }};color:#0e1014;font:700 10px/14px 'IBM Plex Sans';text-align:center">{{ q.rg }}</span>{{ q.rl }}</span>
+                  <sc-if value="{{ q.seed }}" hint-placeholder-val="{{ false }}"><span style="height:20px;padding:0 6px;border:1.5px solid #fff;border-radius:10px;font:700 10.5px/17px 'IBM Plex Mono';color:#fff">SEED</span></sc-if>
+                  <sc-if value="{{ q.cut }}" hint-placeholder-val="{{ false }}"><span style="height:20px;padding:0 6px;border:1.5px dashed #9aa0aa;border-radius:4px;font-size:11px;line-height:17px;color:#c3c8d0">обрыв выборки</span></sc-if>
+                </div>
+                <div style="font-size:12.5px;color:#aab0ba;line-height:1.4;text-wrap:pretty">{{ q.why }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+                <span style="font:600 15px 'IBM Plex Mono';color:#fff">{{ q.score }}</span>
+                <span style="width:42px;height:4px;border-radius:2px;background:#2a2e36;overflow:hidden"><span style="display:block;height:100%;width:{{ q.barW }};background:#eceef2"></span></span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:24px 16px;font-size:13px;color:#aab0ba;line-height:1.5">Нет узлов под выбранные фильтры. Снимите «Только seed» или «Скрыть обрыв».</div>
+          </sc-if>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid #23262d;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#aab0ba"><span style="width:14px;height:14px;border:1.5px solid #fff;border-radius:50%"></span>31 seed без исходящих переводов<a href="#" style="margin-left:auto;color:#e3e6eb;text-decoration:underline;text-underline-offset:3px">показать</a></div>
+          <div style="display:flex;align-items:center;font:500 12px 'IBM Plex Mono';color:#8a909b">1–20 из 2 248<span style="margin-left:auto;display:flex;gap:4px"><span style="padding:2px 8px;border:1px solid #2c3038;border-radius:5px;color:#5c626c">‹</span><span style="padding:2px 8px;border:1px solid #2c3038;border-radius:5px;color:#e3e6eb">›</span></span></div>
+        </div>
+      </aside>
+
+      <main style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0">
+        <div style="height:48px;flex:none;display:flex;align-items:center;gap:6px;padding:0 10px;min-width:0;overflow:hidden;border-bottom:1px solid #23262d;background:#101216">
+          <div style="display:flex;padding:2px;border-radius:7px;background:#181b21;border:1px solid #262a31">
+            <button onClick="{{ goNet }}" style="border:0;padding:5px 10px;border-radius:5px;font:500 12.5px 'IBM Plex Sans';cursor:pointer;background:{{ segNetBg }};color:{{ segNetFg }}">Вся сеть</button>
+            <button style="border:0;padding:5px 10px;border-radius:5px;font:500 12.5px 'IBM Plex Sans';background:transparent;color:#a0a6b1">К3</button>
+            <button onClick="{{ goEgo }}" style="border:0;padding:5px 10px;border-radius:5px;font:500 12.5px 'IBM Plex Sans';cursor:pointer;background:{{ segEgoBg }};color:{{ segEgoFg }}">Окружение</button>
+          </div>
+          <div style="display:flex;padding:2px;border-radius:7px;background:#181b21;border:1px solid #262a31">
+            <span style="padding:5px 9px;white-space:nowrap;border-radius:5px;font-size:12.5px;color:#a0a6b1">1 хоп</span>
+            <span style="padding:5px 9px;white-space:nowrap;border-radius:5px;font-size:12.5px;background:#2a2e37;color:#fff">2 хопа</span>
+          </div>
+          <div style="display:flex;padding:2px;border-radius:7px;background:#181b21;border:1px solid #262a31">
+            <span style="padding:5px 9px;white-space:nowrap;border-radius:5px;font-size:12.5px;background:{{ layLBg }};color:#e3e6eb">Слои</span>
+            <span style="padding:5px 9px;white-space:nowrap;border-radius:5px;font-size:12.5px;background:{{ layFBg }};color:#e3e6eb">Force</span>
+          </div>
+          <div title="Раскрасить по" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12.5px;color:#8a909b">
+            <div style="display:flex;padding:2px;border-radius:7px;background:#181b21;border:1px solid #262a31">
+              <button onClick="{{ colorRole }}" style="border:0;padding:5px 9px;border-radius:5px;font:500 12.5px 'IBM Plex Sans';cursor:pointer;background:{{ cRoleBg }};color:#e3e6eb">роли</button>
+              <button onClick="{{ colorCluster }}" style="border:0;padding:5px 9px;border-radius:5px;font:500 12.5px 'IBM Plex Sans';cursor:pointer;background:{{ cClBg }};color:#e3e6eb">кластеру</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="position:relative;flex:1;min-height:0;background-color:#0e1014;background-image:radial-gradient(#1b1e24 1px,transparent 1px);background-size:22px 22px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <div style="position:relative;height:100%;max-width:100%;aspect-ratio:1000/1120">
+            {{ graph }}
+            <sc-if value="{{ showTooltip }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:45%;top:36%;transform:translate(8px,8px);width:250px;padding:10px 12px;background:#1b1e24;border:1px solid #363b45;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:6px;pointer-events:none">
+                <div style="font:600 13px 'IBM Plex Mono';color:#fff">150903 → 100482</div>
+                <div style="font:600 20px 'IBM Plex Mono';color:#fff">612 000 ₸</div>
+                <div style="font-size:12.5px;color:#aab0ba;line-height:1.45">4 транзакции · 03.07–21.07<br>97% входа 150903 ушло сюда</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ showMenu }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:32%;top:19%;width:290px;padding:5px;background:#1b1e24;border:1px solid #363b45;border-radius:9px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:20">
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px 9px;border-bottom:1px solid #2c3038;margin-bottom:4px">
+                  <span style="width:9px;height:9px;border-radius:50%;background:#f5c542"></span>
+                  <span style="font:600 14px 'IBM Plex Mono'">150903</span>
+                  <span style="font-size:12.5px;color:#f5c542">Транзит · 0.71</span>
+                </div>
+                <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-size:13.5px;color:#e3e6eb;background:{{ m.bg }}">
+                    <span style="width:16px;text-align:center;color:{{ m.ic }}">{{ m.icon }}</span>{{ m.label }}
+                    <span style="margin-left:auto;font:500 11.5px 'IBM Plex Mono';color:#8a909b">{{ m.key }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ showLasso }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:38.5%;top:47%;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;background:#eceef2;color:#0e1014;border-radius:9px;box-shadow:0 12px 36px rgba(0,0,0,.55);z-index:20;white-space:nowrap">
+                <span style="font-size:13.5px;font-weight:600">Выбрано 3 узла</span>
+                <button onClick="{{ goAssistant }}" style="display:flex;align-items:center;gap:8px;border:0;background:#0e1014;color:#fff;font:600 13px 'IBM Plex Sans';padding:7px 11px;border-radius:6px;cursor:pointer"><span style="font:700 10px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 4px">AI</span>Спросить AI о выбранных (3)<span style="font:500 11px 'IBM Plex Mono';color:#8a909b">A</span></button>
+                <span style="font:500 11.5px 'IBM Plex Mono';color:#555b66;padding-right:4px">Esc</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;max-width:calc(100% - 24px)">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(18,20,24,.92);border:1px solid #262a31;border-radius:7px;font-size:12.5px;color:#c3c8d0">{{ viewInfo }}</div>
+            <sc-if value="{{ banner }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#1f1d14;border:1px solid #4a4222;border-radius:7px;font-size:12.5px;color:#f1dc9a;white-space:normal;max-width:520px">{{ banner }}</div>
+            </sc-if>
+            <sc-if value="{{ showHlChip }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;background:#0f2a2d;border:1px solid #1f5a60;border-radius:7px;font-size:12.5px;color:#9beef3;width:max-content"><span style="font:700 10px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 4px">AI</span>Подсвечен ответ ассистента · 8 узлов, 7 рёбер<button onClick="{{ goEgo }}" style="border:0;background:transparent;color:#9beef3;cursor:pointer;font-size:14px">✕</button></div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 14px;background:#eceef2;color:#0e1014;border-radius:8px;font-size:13.5px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:25"><span style="font-weight:700">✓</span>{{ toast }}</div>
+          </sc-if>
+
+          <div style="position:absolute;left:12px;bottom:12px;width:250px;padding:10px 12px;background:rgba(18,20,24,.94);border:1px solid #262a31;border-radius:8px;display:flex;flex-direction:column;gap:8px">
+            <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ЛЕГЕНДА</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 10px">
+              <sc-for list="{{ legendRoles }}" as="l" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#d3d7dd;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;background:{{ l.c }};color:#0e1014;font:700 9px/14px 'IBM Plex Sans';text-align:center;flex:none">{{ l.g }}</span>{{ l.short }}</div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;padding-top:7px;border-top:1px solid #262a31;font-size:12px;color:#d3d7dd">
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;background:#7a808a"></span>seed-клиент</div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:14px;height:14px;border-radius:50%;border:2px dashed #b8bec8;background:#2a2e35"></span>обрыв выборки (колено 4)</div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:14px;height:14px;border-radius:50%;border:2px dashed #3fd6e0"></span>в контексте чата</div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:0;border-top:4px solid #9aa1ad"></span>▸ направление, толщина = сумма</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;right:12px;bottom:12px;display:flex;align-items:flex-end;gap:8px">
+            <div style="width:150px;height:158px;background:rgba(18,20,24,.94);border:1px solid #262a31;border-radius:8px;overflow:hidden;position:relative">{{ minimap }}</div>
+            <div style="display:flex;flex-direction:column;border:1px solid #262a31;border-radius:8px;overflow:hidden;background:rgba(18,20,24,.94)">
+              <span style="width:34px;height:34px;display:grid;place-items:center;font-size:17px;color:#d3d7dd;border-bottom:1px solid #262a31">+</span>
+              <span style="width:34px;height:34px;display:grid;place-items:center;font-size:17px;color:#d3d7dd;border-bottom:1px solid #262a31">−</span>
+              <span title="Вписать" style="width:34px;height:34px;display:grid;place-items:center;font-size:14px;color:#d3d7dd">⤢</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside style="display:flex;flex-direction:column;min-height:0;border-left:1px solid #23262d;background:#121418">
+        <div style="height:48px;flex:none;display:flex;align-items:flex-end;gap:4px;padding:0 12px;border-bottom:1px solid #23262d">
+          <button onClick="{{ goEgo }}" style="border:0;background:transparent;padding:0 10px 12px;font:600 13.5px 'IBM Plex Sans';cursor:pointer;color:{{ tabCardFg }};border-bottom:2px solid {{ tabCardBd }}">Карточка</button>
+          <button onClick="{{ goAssistant }}" style="border:0;background:transparent;padding:0 10px 12px;font:600 13.5px 'IBM Plex Sans';cursor:pointer;color:{{ tabChatFg }};border-bottom:2px solid {{ tabChatBd }};display:flex;align-items:center;gap:6px">Ассистент <span style="font:500 11px 'IBM Plex Mono';color:#8a909b">/</span></button>
+        </div>
+
+        <sc-if value="{{ showCard }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font:600 28px 'IBM Plex Mono';color:#fff;letter-spacing:-.01em">100482</span>
+                <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px 0 4px;border-radius:5px;background:rgba(255,107,107,.15);color:#ff8a8a;font-size:13px;font-weight:600"><span style="width:16px;height:16px;border-radius:3px;background:#ff6b6b;color:#0e1014;font:700 11px/16px 'IBM Plex Sans';text-align:center">С</span>Консолидация</span>
+                <span style="margin-left:auto;font:600 13px 'IBM Plex Mono';color:#8a909b">#1</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="padding:9px 10px;border:1px solid #262a31;border-radius:7px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11.5px;color:#8a909b">Приоритет</span><span style="display:flex;align-items:center;gap:8px"><span style="font:600 22px 'IBM Plex Mono'">0.94</span><span style="flex:1;height:5px;border-radius:3px;background:#2a2e36"><span style="display:block;width:94%;height:100%;border-radius:3px;background:#eceef2"></span></span></span></div>
+                <div style="padding:9px 10px;border:1px solid #262a31;border-radius:7px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11.5px;color:#8a909b">Уверенность в роли</span><span style="display:flex;align-items:center;gap:8px"><span style="font:600 22px 'IBM Plex Mono'">0.91</span><span style="flex:1;height:5px;border-radius:3px;background:#2a2e36"><span style="display:block;width:91%;height:100%;border-radius:3px;background:#ff6b6b"></span></span></span></div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:#c3c8d0">
+                <span style="padding:3px 8px;white-space:nowrap;border:1px solid #2c3038;border-radius:5px">Кластер 3</span>
+                <span style="padding:3px 8px;white-space:nowrap;border:1px solid #2c3038;border-radius:5px">Компонента 1</span>
+                <span style="padding:3px 8px;white-space:nowrap;border:1px solid #2c3038;border-radius:5px">Колено 2</span>
+                <span style="padding:3px 8px;white-space:nowrap;border:1px solid #2c3038;border-radius:5px">не seed</span>
+                <span style="padding:3px 8px;white-space:nowrap;border:1px solid #2c3038;border-radius:5px;color:#8a909b">флагов качества нет</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ПОЧЕМУ ЭТА РОЛЬ</div>
+              <div style="font-size:13.5px;line-height:1.5;color:#e3e6eb">Получает от 11 разных плательщиков, передаёт дальше 3% полученного; вход 4,2 млн ₸ — выше P90 по колену 2.</div>
+              <div style="border:1px solid #262a31;border-radius:7px;overflow:hidden">
+                <div style="padding:7px 10px;background:#171a20;font-size:12px;color:#aab0ba;border-bottom:1px solid #262a31">Правило <span style="font-family:'IBM Plex Mono';color:#e3e6eb">consolidator</span> · все условия выполнены</div>
+                <sc-for list="{{ rule }}" as="r" hint-placeholder-count="3">
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 18px;gap:10px;align-items:center;padding:7px 10px;border-bottom:1px solid #1d2026;font-size:13px">
+                    <span style="color:#c3c8d0">{{ r.k }}</span><span style="font:500 13px 'IBM Plex Mono';color:#fff;white-space:nowrap">{{ r.v }}</span><span style="color:#6fd39b;font-weight:700">✓</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:12px;color:#8a909b">Вторая роль: <span style="color:#b392ff">Координатор 0.41</span> — далеко, не рассматривается</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">СВЯЗЬ С ДЕЛОМ</div>
+              <div style="font-size:14px;color:#e3e6eb">Деньги от <b style="font-family:'IBM Plex Mono'">7</b> seed-клиентов сходятся в этот узел</div>
+              <sc-for list="{{ paths }}" as="p" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:8px 10px;border:1px solid #262a31;border-radius:7px;font:500 12.5px 'IBM Plex Mono'">
+                  <span style="padding:2px 6px;border:1.5px solid #fff;border-radius:10px;color:#fff">{{ p.a }}</span><span style="color:#8a909b">—{{ p.s1 }}→</span><span style="padding:2px 6px;border-radius:4px;background:#2b2a1c;color:#f5c542">{{ p.b }}</span><span style="color:#8a909b">—{{ p.s2 }}→</span><span style="padding:2px 6px;border-radius:4px;background:rgba(255,107,107,.18);color:#ff8a8a">100482</span>
+                </div>
+              </sc-for>
+              <div style="font-size:12.5px;color:#aab0ba">ещё 5 путей · все длиной 2 перевода</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ПОТОКИ</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#aab0ba"><span>Вход · 11 плательщиков</span><span style="font:600 14px 'IBM Plex Mono';color:#fff">4 215 000 ₸</span></div>
+                <div style="height:8px;border-radius:4px;background:#ff6b6b"></div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#aab0ba"><span>Выход · 1 получатель</span><span style="font:600 14px 'IBM Plex Mono';color:#fff">126 450 ₸</span></div>
+                <div style="height:8px;border-radius:4px;background:#2a2e36"><div style="width:3%;height:100%;border-radius:4px;background:#ff9f43"></div></div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px">
+              <button onClick="{{ addList }}" style="flex:1;height:36px;border:0;border-radius:7px;background:#eceef2;color:#0e1014;font:600 13px 'IBM Plex Sans';cursor:pointer">{{ listBtn }} <span style="font:500 11px 'IBM Plex Mono';color:#555b66">P</span></button>
+              <button onClick="{{ addChat }}" style="flex:1;height:36px;border:1px solid #2c3038;border-radius:7px;background:#181b21;color:#e3e6eb;font:600 13px 'IBM Plex Sans';cursor:pointer">В чат <span style="font:500 11px 'IBM Plex Mono';color:#8a909b">A</span></button>
+              <a href="Карточка узла.dc.html" style="width:100%;height:36px;display:grid;place-items:center;border:1px solid #2c3038;border-radius:7px;color:#e3e6eb;font-size:13px;font-weight:600">Открыть полную карточку и справку →</a>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showChat }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+            <div style="flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+              <sc-if value="{{ showAnswer }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="align-self:flex-end;max-width:88%;padding:9px 12px;background:#20242c;border-radius:10px 10px 2px 10px;font-size:14px;line-height:1.45">Кто собирает деньги с этих узлов?</div>
+                  <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#8a909b"><span style="color:#6fd39b">✓</span>Нашёл исходящие рёбра · проверил пути до seed · посчитал доли · 1,4 с</div>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="display:flex;align-items:center;gap:8px"><span style="font:700 10px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 5px">AI</span><span style="font-size:11.5px;color:#8a909b">сгенерировано по метрикам графа, требует проверки</span></div>
+                    <div style="font-size:14px;line-height:1.6;color:#e3e6eb">Все три узла переводят средства одному получателю — <span style="font:500 12.5px 'IBM Plex Mono';padding:1px 6px;border-radius:4px;background:rgba(255,107,107,.16);color:#ffb0b0;border:1px solid rgba(255,107,107,.35);cursor:pointer">● 100482</span> (Консолидация, rank 1). Вместе <span style="font:500 12.5px 'IBM Plex Mono';padding:1px 6px;border-radius:4px;background:#232730;border:1px solid #30353e">1 650 500 ₸</span> — 39% его входа. Каждый из трёх получает деньги напрямую от своего seed-клиента. Других общих получателей в пределах 2 хопов нет.</div>
+                    <div style="display:flex;flex-direction:column;gap:5px">
+                      <sc-for list="{{ answerPaths }}" as="p" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;font:500 12px 'IBM Plex Mono';padding:6px 8px;background:#15181d;border:1px solid #23272e;border-radius:6px">
+                          <span style="color:#8a909b">seed</span><span style="color:#fff">{{ p.a }}</span><span style="color:#8a909b">→</span><span style="color:#f5c542">{{ p.b }}</span><span style="color:#8a909b">—{{ p.s }}→</span><span style="color:#ff8a8a">100482</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="padding:10px 12px;border-left:3px solid #3fd6e0;background:#10252a;border-radius:0 7px 7px 0;display:flex;flex-direction:column;gap:5px">
+                      <div style="display:flex;gap:8px;align-items:center;font:600 11px 'IBM Plex Mono';letter-spacing:.06em;color:#8fe6ec">ГИПОТЕЗА · УВЕРЕННОСТЬ СРЕДНЯЯ</div>
+                      <div style="font-size:13.5px;line-height:1.5;color:#dff7f9">Три транзитных звена одного контура сбора, сходящегося в 100482. Подтвердит: совпадение дат поступлений от seed. Опровергнет: разные назначения платежей.</div>
+                    </div>
+                    <div style="padding:9px 11px;border:1px solid #4a4222;background:#1a1810;border-radius:7px;font-size:12.5px;line-height:1.5;color:#e9d9a4">Не видно, куда уходят остальные 97% средств 100482: переводы за пределы банка в данных отсутствуют.</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;padding:9px 11px;border:1px solid #262a31;border-radius:7px">
+                      <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ИСТОЧНИКИ</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:5px;font:500 11.5px 'IBM Plex Mono';color:#c3c8d0">
+                        <span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">edges: 3 ребра → 100482</span>
+                        <span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">rule: consolidator</span>
+                        <span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">in_sum 100482</span>
+                        <span style="padding:2px 6px;border:1px solid #30353e;border-radius:4px">seed_paths</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                      <span style="padding:6px 10px;border-radius:6px;background:#0f2a2d;border:1px solid #1f5a60;color:#9beef3;font-size:12.5px;font-weight:500">Подсвечено на графе ✕</span>
+                      <span style="padding:6px 10px;border-radius:6px;border:1px solid #2c3038;color:#e3e6eb;font-size:12.5px">+ Узлы в перечень</span>
+                      <span style="padding:6px 10px;border-radius:6px;border:1px solid #2c3038;color:#e3e6eb;font-size:12.5px">+ В контекст</span>
+                      <span style="padding:6px 10px;border-radius:6px;border:1px solid #2c3038;color:#e3e6eb;font-size:12.5px">В справку</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ showEmptyChat }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:16px;padding-top:8px">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font:700 10px 'IBM Plex Mono';color:#0e1014;background:#3fd6e0;border-radius:3px;padding:1px 5px">AI</span><span style="font-size:15px;font-weight:600">Ассистент аналитика</span></div>
+                  <div style="font-size:13px;line-height:1.55;color:#aab0ba">Объясняет роли и потоки по метрикам графа. Роли и скоры не меняет. Добавьте узлы в контекст, чтобы задать вопрос о них.</div>
+                  <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:12.5px;color:#c3c8d0;align-items:center">
+                    <span style="font:500 11.5px 'IBM Plex Mono';padding:2px 6px;border:1px solid #30353e;border-radius:4px;text-align:center">A</span><span>добавить выбранный узел</span>
+                    <span style="font:500 11.5px 'IBM Plex Mono';padding:2px 6px;border:1px solid #30353e;border-radius:4px;text-align:center">⇧ drag</span><span>лассо по графу</span>
+                    <span style="font:500 11.5px 'IBM Plex Mono';padding:2px 6px;border:1px solid #30353e;border-radius:4px;text-align:center">@</span><span>упомянуть gid или @cluster:3</span>
+                    <span style="font:500 11.5px 'IBM Plex Mono';padding:2px 6px;border:1px solid #30353e;border-radius:4px;text-align:center">⤓</span><span>перетащить узел в поле ввода</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ПРИМЕРЫ</div>
+                    <span style="padding:8px 10px;border:1px solid #262a31;border-radius:7px;font-size:13px;color:#e3e6eb">Какие узлы кластера 3 ключевые?</span>
+                    <span style="padding:8px 10px;border:1px solid #262a31;border-radius:7px;font-size:13px;color:#e3e6eb">Найди общих получателей seed 100017 и 100204</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="position:relative;flex:none;padding:12px;border-top:1px solid #23262d;display:flex;flex-direction:column;gap:8px">
+              <sc-if value="{{ showMention }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:12px;right:12px;bottom:100%;margin-bottom:-4px;background:#1b1e24;border:1px solid #363b45;border-radius:9px;box-shadow:0 -10px 36px rgba(0,0,0,.55);padding:5px;z-index:10">
+                  <div style="padding:6px 8px;font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">GID · @1004</div>
+                  <sc-for list="{{ mentionItems }}" as="m" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px;padding:8px;border-radius:6px;background:{{ m.bg }}">
+                      <span style="width:9px;height:9px;border-radius:50%;background:{{ m.rc }};box-shadow:{{ m.ring }}"></span>
+                      <span style="font:600 14px 'IBM Plex Mono'">{{ m.gid }}</span>
+                      <span style="font-size:12.5px;color:{{ m.rc }}">{{ m.rl }}</span>
+                      <span style="margin-left:auto;font:500 12px 'IBM Plex Mono';color:#8a909b;white-space:nowrap">{{ m.meta }}</span>
+                    </div>
+                  </sc-for>
+                  <div style="padding:7px 8px 4px;border-top:1px solid #2c3038;margin-top:4px;font-size:12px;color:#8a909b">↑↓ выбрать · ↵ вставить чип · <span style="font-family:'IBM Plex Mono'">@cluster:3</span> — весь кластер</div>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+                <span style="font-size:11.5px;color:#8a909b;margin-right:2px">Контекст</span>
+                <sc-for list="{{ ctxChips }}" as="c" hint-placeholder-count="3">
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 4px 0 8px;border-radius:12px;background:#1d2127;border:1px solid #333842;font:500 12.5px 'IBM Plex Mono'"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.rc }}"></span>{{ c.gid }}<span style="font:500 11.5px 'IBM Plex Sans';color:#aab0ba">{{ c.rl }}</span><span style="width:16px;height:16px;display:grid;place-items:center;color:#8a909b;font-size:12px">×</span></span>
+                </sc-for>
+                <sc-if value="{{ noCtx }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#5f656f">пусто — нажмите A на узле</span></sc-if>
+              </div>
+              <sc-if value="{{ showQuick }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                  <span style="padding:4px 9px;border-radius:12px;border:1px solid #1f5a60;color:#9beef3;font-size:12px">Есть ли общий получатель?</span>
+                  <span style="padding:4px 9px;border-radius:12px;border:1px solid #1f5a60;color:#9beef3;font-size:12px">Найди цепочки между ними</span>
+                </div>
+              </sc-if>
+              <div style="display:flex;align-items:flex-end;gap:8px;padding:9px 10px;border-radius:9px;background:#0e1014;border:1px solid {{ inputBd }}">
+                <div style="flex:1;font-size:14px;line-height:1.45;min-height:21px;color:#e3e6eb">{{ inputText }}<sc-if value="{{ showMention }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Mono';color:#9beef3;background:#10252a;border-radius:3px;padding:0 2px">@1004</span><span style="display:inline-block;width:1.5px;height:17px;background:#fff;vertical-align:-3px"></span></sc-if><sc-if value="{{ showPlaceholder }}" hint-placeholder-val="{{ false }}"><span style="color:#5f656f">Спросите о узлах в контексте…</span></sc-if></div>
+                <span style="width:30px;height:30px;border-radius:7px;background:#eceef2;color:#0e1014;display:grid;place-items:center;font-weight:700">↑</span>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+
+    <sc-if value="{{ showPalette }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ goEgo }}" style="position:absolute;inset:0;background:rgba(6,7,9,.62);z-index:50;display:flex;justify-content:center;padding-top:110px">
+        <div onClick="{{ stop }}" style="width:640px;height:max-content;background:#17191e;border:1px solid #363b45;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #2a2e36">
+            <span style="color:#8a909b;font-size:16px">⌕</span>
+            <span style="font:500 17px 'IBM Plex Mono';color:#fff">1004<span style="display:inline-block;width:1.5px;height:19px;background:#fff;vertical-align:-3px;margin-left:1px"></span></span>
+            <span style="margin-left:auto;font:500 11px 'IBM Plex Mono';color:#8a909b;border:1px solid #30353e;border-radius:4px;padding:1px 6px">Esc</span>
+          </div>
+          <div style="padding:6px;display:flex;flex-direction:column">
+            <sc-for list="{{ palette }}" as="g" hint-placeholder-count="3">
+              <div style="padding:8px 10px 4px;font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">{{ g.title }}</div>
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;background:{{ i.bg }}">
+                  <span style="width:18px;text-align:center;color:{{ i.ic }};font-size:13px">{{ i.icon }}</span>
+                  <span style="font:{{ i.font }};color:#eceef2">{{ i.label }}</span>
+                  <span style="font-size:12.5px;color:{{ i.subc }}">{{ i.sub }}</span>
+                  <span style="margin-left:auto;font:500 11.5px 'IBM Plex Mono';color:#8a909b">{{ i.key }}</span>
+                </div>
+              </sc-for>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:16px;padding:9px 16px;border-top:1px solid #2a2e36;font-size:12px;color:#8a909b"><span>↑↓ навигация</span><span>↵ открыть</span><span>⇥ действия с узлом</span><span style="margin-left:auto">? — все хоткеи</span></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showHelp }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ goEgo }}" style="position:absolute;inset:0;background:rgba(6,7,9,.62);z-index:50;display:flex;align-items:center;justify-content:center">
+        <div style="width:560px;background:#17191e;border:1px solid #363b45;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center"><span style="font-size:16px;font-weight:600">Горячие клавиши</span><span style="margin-left:auto;font:500 11px 'IBM Plex Mono';color:#8a909b;border:1px solid #30353e;border-radius:4px;padding:1px 6px">Esc</span></div>
+          <div style="display:grid;grid-template-columns:130px 1fr;gap:10px 16px;align-items:center">
+            <sc-for list="{{ hotkeys }}" as="k" hint-placeholder-count="9">
+              <span style="font:500 13px 'IBM Plex Mono';color:#fff;padding:3px 8px;border:1px solid #363b45;border-bottom-width:2px;border-radius:5px;text-align:center;background:#1f2228">{{ k.k }}</span>
+              <span style="font-size:14px;color:#d3d7dd">{{ k.d }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scenario&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;network&quot;,&quot;ego&quot;,&quot;lasso&quot;,&quot;menu&quot;,&quot;assistant&quot;,&quot;mention&quot;,&quot;palette&quot;,&quot;help&quot;],&quot;default&quot;:&quot;ego&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ROLES = {
+  coordinator: { l: 'Координатор', s: 'Координатор', g: 'К', c: '#b392ff' },
+  consolidator: { l: 'Консолидация', s: 'Консолидация', g: 'С', c: '#ff6b6b' },
+  distributor: { l: 'Распределитель', s: 'Распределитель', g: 'Р', c: '#ff9f43' },
+  transit: { l: 'Транзит', s: 'Транзит', g: 'Т', c: '#f5c542' },
+  terminal: { l: 'Конечный получатель', s: 'Конечный', g: 'П', c: '#5aa9ff' },
+  peripheral: { l: 'Периферия', s: 'Периферия', g: '·', c: '#8a909b' },
+};
+const Q = [
+  [1,'100482','consolidator',.94,'получает от 11 разных плательщиков, передаёт дальше 3% полученного'],
+  [2,'203117','distributor',.88,'рассылает 86 получателям; 71% суммы уходит в день поступления'],
+  [3,'207755','coordinator',.84,'получает от 3 узлов консолидации, передаёт 4 распределителям'],
+  [4,'104630','consolidator',.81,'9 плательщиков из 5 seed-цепочек, пропуск 0.08'],
+  [5,'211408','consolidator',.77,'8 плательщиков, вход 3,1 млн ₸ — выше P90 по колену'],
+  [6,'150903','transit',.71,'пропуск 0.97, выход в среднем через 1 день после входа'],
+  [7,'226019','terminal',.69,'вход 2,1 млн ₸ от 6 плательщиков, исходящих нет (колено 3)'],
+  [8,'219963','distributor',.66,'рассылает 41 получателю, вход от 2 узлов консолидации'],
+  [9,'158240','transit',.63,'пропуск 0.94, 12 транзакций за 3 дня'],
+  [10,'214772','coordinator',.61,'связывает кластеры 2, 5 и 8: вход из К2, выход в К5 и К8'],
+  [11,'226904','peripheral',.58,'вход 1,4 млн ₸ от 5 плательщиков; исходящие не прослежены',0,1],
+  [12,'100017','transit',.56,'630 000 ₸ ушло одному получателю — 150903',1],
+  [13,'172305','terminal',.54,'вход 1,2 млн ₸, исходящих нет (колено 2)'],
+  [14,'150211','transit',.52,'пропуск 0.97, единственный получатель — 100482'],
+  [15,'233580','distributor',.50,'рассылает 27 получателям за 2 дня'],
+  [16,'161447','transit',.48,'пропуск 0.91, вход от 3 seed-клиентов'],
+  [17,'420115','consolidator',.47,'компонента 2: 6 плательщиков, пропуск 0.11'],
+  [18,'151477','transit',.46,'пропуск 0.97, единственный получатель — 100482'],
+  [19,'188032','terminal',.44,'вход 860 000 ₸ от 4 плательщиков'],
+  [20,'205561','transit',.42,'пропуск 0.89, 2 получателя в кластере 6'],
+];
+const EGO = [
+  ['100017',70,150,'transit',.56,1],['100035',70,270,'peripheral',.34,1],['100121',70,390,'transit',.38,1],['100204',70,510,'transit',.36,1],
+  ['100266',70,630,'peripheral',.30,1],['100318',70,750,'transit',.33,1],['100377',70,870,'peripheral',.29,1],
+  ['150903',290,150,'transit',.71],['150211',290,270,'transit',.52],['151477',290,390,'transit',.46],['152038',290,510,'transit',.41],
+  ['153690',290,630,'transit',.37],['154112',290,750,'transit',.35],['155806',290,870,'transit',.31],
+  ['160344',560,130,'transit',.33],['161902',560,250,'peripheral',.27],['162517',560,790,'peripheral',.24],['163081',560,910,'transit',.30],
+  ['100482',560,520,'consolidator',.94],['203117',790,520,'distributor',.88],
+  ['311540',940,380,'peripheral',.18,0,1],['311602',940,520,'peripheral',.17,0,1],['311877',940,660,'peripheral',.16,0,1],
+].map(a => ({ g: a[0], x: a[1], y: a[2], role: a[3], p: a[4], seed: !!a[5], cut: !!a[6] }));
+const EE = [
+  ['100017','150903',630000],['100035','150211',556000],['100121','151477',512000],['100204','152038',470000],['100266','153690',425000],['100318','154112',401000],['100377','155806',371000],
+  ['150903','100482',612000],['150211','100482',540000],['151477','100482',498500],['152038','100482',455000],['153690','100482',410000],['154112','100482',388000],['155806','100482',362500],
+  ['160344','100482',301000],['161902','100482',262000],['162517','100482',214000],['163081','100482',172000],
+  ['100482','203117',126450],['203117','311540',34200],['203117','311602',41500],['203117','311877',29800],['203117','AGG',2764000],
+];
+const CL = ['#2ec4a6','#9ad24b','#f472b6','#d4a373','#7dd3fc','#c4b5fd'];
+const NET = [
+  [1,170,230,88,312,9],[2,400,200,82,268,6],[3,560,380,73,214,7],[4,200,470,70,196,5],[5,390,450,65,171,4],[6,560,640,61,150,3],[7,170,700,57,132,3],
+  [8,380,690,54,118,2],[9,560,870,49,96,2],[10,130,900,43,74,1],[11,300,900,38,58,2],[12,430,880,33,44,1],[13,640,190,26,27,1],[14,660,520,21,17,0],
+  [15,845,250,68,184,1],[16,845,430,46,86,0],
+].map(a => ({ id: a[0], x: a[1], y: a[2], r: a[3], n: a[4], s: a[5] }));
+const SMALL = [12,10,9,7,6,6,5,5,5,4,4,3,3,3];
+const NE = [[1,3,9],[2,3,7],[4,3,6],[5,3,5],[3,6,4],[6,9,3],[2,13,2],[4,7,3],[7,10,2],[5,8,3],[8,11,2],[1,2,4],[1,4,3],[6,14,1],[9,12,1],[15,16,3]];
+const HL = ['100017','100035','100121','150903','150211','151477','100482','203117'];
+const CTX = ['150903','150211','151477'];
+const fmt = n => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+
+class Component extends DCLogic {
+  state = { sc: this.props.scenario ?? 'ego', q: '', qFocus: false, banner: null, toast: null, inList: { '100482': 1, '203117': 1, '150903': 1 }, onlySeed: false, hideCut: false, colorBy: 'role' };
+
+  componentDidMount() {
+    this.onKey = e => {
+      const typing = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); return this.go('palette'); }
+      if (mod && e.key.toLowerCase() === 'j') { e.preventDefault(); return this.go('assistant'); }
+      if (e.key === 'Escape') { if (typing) e.target.blur(); return this.go(this.state.sc === 'network' ? 'network' : 'ego'); }
+      if (typing || mod) return;
+      const k = e.key.toLowerCase();
+      if (e.key === '/') { e.preventDefault(); this.go('mention'); }
+      else if (e.key === '?') this.go('help');
+      else if (k === 'a' || k === 'ф') this.flash(this.state.sc === 'lasso' ? '150903, 150211, 151477 добавлены в чат' : '100482 добавлен в чат');
+      else if (k === 'e' || k === 'у') this.go('ego');
+      else if (k === 'p' || k === 'з') this.addList();
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); clearTimeout(this.tt); }
+  go(sc) { this.setState({ sc, banner: sc === this.state.sc ? this.state.banner : null }); }
+  flash(t) { clearTimeout(this.tt); this.setState({ toast: t }); this.tt = setTimeout(() => this.setState({ toast: null }), 2200); }
+  addList() { this.setState(s => { const l = { ...s.inList }; if (l['100482']) delete l['100482']; else l['100482'] = 1; return { inList: l }; }); this.flash(this.state.inList['100482'] ? '100482 убран из перечня' : '100482 добавлен в перечень'); }
+  pickGid(g) {
+    const inEgo = EGO.find(n => n.g === g);
+    if (g === '420115') this.setState({ sc: 'network', q: g, banner: '420115 вне крупнейшей компоненты — схема переключена на компоненту 2 (270 узлов, 1 seed)' });
+    else this.setState({ sc: 'ego', q: g, banner: inEgo || g === '100482' ? null : `${g} найден · показан в очереди` });
+  }
+
+  edgePath(a, b) {
+    const ra = 7 + 17 * a.p, rb = b.agg ? 0 : 7 + 17 * b.p;
+    if (a.x === b.x) {
+      const dir = b.y > a.y ? 1 : -1;
+      const sy = a.y + dir * ra, ey = b.y - dir * (rb + 4);
+      return { d: `M${a.x},${sy} L${b.x},${ey}`, mx: a.x + 34, my: (sy + ey) / 2 };
+    }
+    const sx = a.x + ra, ex = (b.agg ? b.x - 45 : b.x - rb) - 4, mx = (sx + ex) / 2;
+    return { d: `M${sx},${a.y} C${mx},${a.y} ${mx},${b.y} ${ex},${b.y}`, mx, my: (a.y + b.y) / 2 };
+  }
+
+  graphEgo(sc) {
+    const h = React.createElement;
+    const hl = sc === 'assistant' ? new Set(HL) : null;
+    const ctx = sc === 'assistant' ? new Set(CTX) : null;
+    const las = sc === 'lasso' ? new Set(CTX) : null;
+    const sel = sc === 'assistant' ? null : '100482';
+    const byG = {}; EGO.forEach(n => byG[n.g] = n);
+    byG.AGG = { g: 'AGG', x: 940, y: 800, p: 0, agg: 1 };
+    const els = [];
+    els.push(h('defs', { key: 'd' },
+      ...[['ar', '#8b919c'], ['arH', '#e6e8ec'], ['arC', '#3fd6e0']].map(([id, f]) => h('marker', { key: id, id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 11, markerHeight: 11, markerUnits: 'userSpaceOnUse', orient: 'auto' }, h('path', { d: 'M0,0 L10,5 L0,10 z', fill: f }))),
+      h('pattern', { key: 'p', id: 'hatch', width: 10, height: 10, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('line', { x1: 0, y1: 0, x2: 0, y2: 10, stroke: '#ffffff', strokeOpacity: .06, strokeWidth: 4 }))
+    ));
+    els.push(h('rect', { key: 'band', x: 870, y: 70, width: 130, height: 975, fill: 'url(#hatch)', rx: 10 }));
+    els.push(h('text', { key: 'bandt', x: 935, y: 1030, textAnchor: 'middle', fill: '#9aa0aa', fontSize: 13, fontFamily: 'IBM Plex Sans' }, 'исходящие не прослежены'));
+    const hd = [];
+    hd.push(h('line', { key: 'dir', x1: 20, y1: 118, x2: 985, y2: 118, stroke: '#5a606b', strokeWidth: 1.5, markerEnd: 'url(#ar)' }));
+    [['КОЛЕНО 0 · SEED', 80], ['КОЛЕНО 1', 290], ['КОЛЕНО 2', 560], ['КОЛЕНО 3', 790], ['КОЛЕНО 4', 935]].forEach(([t, x], i) =>
+      hd.push(h('text', { key: 'h' + i, x, y: 100, textAnchor: 'middle', fill: '#9aa0aa', fontSize: 14, fontWeight: 600, letterSpacing: 1.2, fontFamily: 'IBM Plex Mono' }, t)));
+    const flow = e => hl ? (hl.has(e[0]) && hl.has(e[1])) : (e[0] === '100482' || e[1] === '100482');
+    EE.forEach((e, i) => {
+      const a = byG[e[0]], b = byG[e[1]]; const { d, mx, my } = this.edgePath(a, b);
+      const isF = flow(e); const dim = hl && !isF;
+      const w = 1.2 + 6 * Math.sqrt(Math.min(e[2], 700000) / 630000);
+      const col = hl && isF ? '#3fd6e0' : isF ? '#b4bac4' : '#5a606b';
+      els.push(h('path', { key: 'e' + i, d, fill: 'none', stroke: col, strokeWidth: w, strokeOpacity: dim ? .12 : .85, markerEnd: dim ? null : `url(#${hl && isF ? 'arC' : isF ? 'arH' : 'ar'})` }));
+      if (isF) [0, 1].forEach(k => els.push(h('circle', { key: `pt${i}${k}`, r: 3.2, fill: hl ? '#bff6f9' : '#ffffff', opacity: .9 },
+        h('animateMotion', { dur: '2.6s', repeatCount: 'indefinite', path: d, begin: `-${k * 1.3 + (i % 5) * .3}s` }))));
+      const showLbl = !hl ? e[1] === '100482' || e[0] === '100482' : isF && e[1] === '100482';
+      if (showLbl && sc !== 'lasso') els.push(h('text', { key: 'l' + i, x: mx, y: my - 6, textAnchor: 'middle', fill: hl ? '#bff6f9' : '#d3d7dd', fontSize: 14, fontFamily: 'IBM Plex Mono', fontWeight: 500, stroke: '#0e1014', strokeWidth: 5, paintOrder: 'stroke' }, fmt(e[2])));
+    });
+    const aggDim = hl ? .15 : 1;
+    els.push(h('g', { key: 'agg', opacity: aggDim },
+      h('rect', { x: 895, y: 775, width: 90, height: 52, rx: 10, fill: '#1a1d22', stroke: '#b8bec8', strokeDasharray: '5 4', strokeWidth: 1.8 }),
+      h('text', { x: 940, y: 798, textAnchor: 'middle', fill: '#fff', fontSize: 17, fontWeight: 600, fontFamily: 'IBM Plex Mono' }, '+83'),
+      h('text', { x: 940, y: 816, textAnchor: 'middle', fill: '#aab0ba', fontSize: 12, fontFamily: 'IBM Plex Sans' }, 'получателя')));
+    if (las) els.push(h('path', { key: 'lasso', d: 'M225,95 C300,70 370,90 372,160 C380,260 385,380 360,440 C320,470 250,470 225,430 C205,330 200,200 225,95 Z', fill: 'rgba(63,214,224,.06)', stroke: '#3fd6e0', strokeWidth: 2, strokeDasharray: '7 5' }));
+    EGO.forEach(n => {
+      const R = ROLES[n.role]; const r = 7 + 17 * n.p;
+      const dim = hl && !hl.has(n.g);
+      const parts = [];
+      if (n.g === sel) { parts.push(h('circle', { key: 'g', cx: n.x, cy: n.y, r: r + 16, fill: '#fff', opacity: .06 })); parts.push(h('circle', { key: 's', cx: n.x, cy: n.y, r: r + 7, fill: 'none', stroke: '#fff', strokeWidth: 2 })); }
+      if (ctx && ctx.has(n.g)) parts.push(h('circle', { key: 'c', cx: n.x, cy: n.y, r: r + 7, fill: 'none', stroke: '#3fd6e0', strokeWidth: 2.2, strokeDasharray: '5 3' }));
+      if (las && las.has(n.g)) parts.push(h('circle', { key: 'ls', cx: n.x, cy: n.y, r: r + 6, fill: 'none', stroke: '#fff', strokeWidth: 2.2 }));
+      parts.push(h('circle', { key: 'm', cx: n.x, cy: n.y, r, fill: n.cut ? '#2a2e35' : R.c, stroke: n.seed ? '#fff' : n.cut ? '#b8bec8' : '#0e1014', strokeWidth: n.seed ? 3.5 : 2, strokeDasharray: n.cut ? '4 3' : null }));
+      if (r >= 12) parts.push(h('text', { key: 't', x: n.x, y: n.y + r * .33, textAnchor: 'middle', fill: n.cut ? '#c3c8d0' : '#0e1014', fontSize: Math.round(r * .9), fontWeight: 700, fontFamily: 'IBM Plex Sans' }, R.g));
+      const key = n.g === '100482' || n.g === '203117';
+      parts.push(h('text', { key: 'lb', x: n.x, y: n.y + r + (key ? 22 : 18), textAnchor: 'middle', fill: key ? '#fff' : '#c9cdd4', fontSize: key ? 18 : 14, fontWeight: key ? 600 : 500, fontFamily: 'IBM Plex Mono', stroke: '#0e1014', strokeWidth: 4, paintOrder: 'stroke' }, n.g));
+      if (key) parts.push(h('text', { key: 'rl', x: n.x, y: n.y + r + 42, textAnchor: 'middle', fill: R.c, fontSize: 14, fontWeight: 600, fontFamily: 'IBM Plex Sans', stroke: '#0e1014', strokeWidth: 4, paintOrder: 'stroke' }, `${R.l} · ${n.p.toFixed(2)}`));
+      if (n.cut && n.g === '311540') parts.push(h('text', { key: 'cu', x: n.x, y: n.y + r + 35, textAnchor: 'middle', fill: '#aab0ba', fontSize: 12, fontFamily: 'IBM Plex Sans' }, 'обрыв выборки'));
+      els.push(h('g', { key: n.g, opacity: dim ? .15 : 1 }, ...parts));
+    });
+    return h('svg', { viewBox: '0 0 1000 1120', style: { width: '100%', height: '100%', display: 'block' } }, els[0], ...hd, h('g', { key: 'body', transform: 'translate(0,60)' }, ...els.slice(1)));
+  }
+
+  graphNet() {
+    const h = React.createElement; const byC = cluster => this.state.colorBy === 'cluster';
+    const clusterMode = this.state.colorBy === 'cluster';
+    const adj = new Set([3, 1, 2, 4, 5, 6]);
+    const B = {}; NET.forEach(c => B[c.id] = c);
+    const els = [h('defs', { key: 'd' }, h('marker', { id: 'arN', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 11, markerHeight: 11, markerUnits: 'userSpaceOnUse', orient: 'auto' }, h('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#9aa1ad' })))];
+    [[30, 70, 690, 965, 'КОМПОНЕНТА 1 · 1 877 узлов · 46 seed'], [735, 70, 245, 450, 'КОМП. 2 · 270 · 1 seed'], [735, 545, 245, 490, 'КОМП. 3–16 · 82 узла · 15 seed']].forEach((r, i) => {
+      els.push(h('rect', { key: 'c' + i, x: r[0], y: r[1], width: r[2], height: r[3], rx: 22, fill: 'rgba(255,255,255,.015)', stroke: '#2c3038', strokeWidth: 1.5 }));
+      els.push(h('text', { key: 'ct' + i, x: r[0] + 16, y: r[1] + 26, fill: '#9aa0aa', fontSize: 13, fontWeight: 600, letterSpacing: .8, fontFamily: 'IBM Plex Mono' }, r[4]));
+    });
+    NE.forEach((e, i) => {
+      const a = B[e[0]], b = B[e[1]]; const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy);
+      const sx = a.x + dx / L * a.r, sy = a.y + dy / L * a.r, ex = b.x - dx / L * (b.r + 5), ey = b.y - dy / L * (b.r + 5);
+      const hot = e[0] === 3 || e[1] === 3;
+      const d = `M${sx},${sy} L${ex},${ey}`;
+      els.push(h('path', { key: 'e' + i, d, stroke: hot ? '#c3c8d0' : '#6a707b', strokeWidth: 1 + e[2] * .7, strokeOpacity: hot ? .9 : .35, markerEnd: 'url(#arN)' }));
+      if (hot) els.push(h('circle', { key: 'p' + i, r: 3.2, fill: '#fff' }, h('animateMotion', { dur: '2.4s', repeatCount: 'indefinite', path: d, begin: `-${i * .4}s` })));
+    });
+    NET.forEach((c, i) => {
+      const col = CL[i % CL.length]; const dim = !adj.has(c.id) && c.id < 15 ? .4 : c.id >= 15 ? .55 : 1;
+      const sel = c.id === 3;
+      const g = [h('circle', { key: 'b', cx: c.x, cy: c.y, r: c.r, fill: col, fillOpacity: clusterMode ? .42 : .09, stroke: sel ? '#fff' : col, strokeOpacity: sel ? 1 : .55, strokeWidth: sel ? 2.5 : 1.5 })];
+      g.push(h('text', { key: 't', x: c.x, y: c.y - (c.r > 30 ? 6 : -5), textAnchor: 'middle', fill: '#fff', fontSize: c.r > 30 ? 20 : 13, fontWeight: 700, fontFamily: 'IBM Plex Sans' }, 'К' + c.id));
+      if (c.r > 30) g.push(h('text', { key: 'n', x: c.x, y: c.y + 16, textAnchor: 'middle', fill: '#d3d7dd', fontSize: 13, fontFamily: 'IBM Plex Mono' }, `${c.n} · ${c.s} seed`));
+      else g.push(h('text', { key: 'n', x: c.x, y: c.y + c.r + 16, textAnchor: 'middle', fill: '#aab0ba', fontSize: 12, fontFamily: 'IBM Plex Mono' }, `${c.n} · ${c.s}s`));
+      els.push(h('g', { key: 'b' + c.id, opacity: dim }, ...g));
+    });
+    [['100482', 538, 428, 'consolidator', 11, 1], ['203117', 585, 432, 'distributor', 9], ['150903', 610, 350, 'transit', 7], ['207755', 585, 665, 'coordinator', 9], ['104630', 205, 250, 'consolidator', 8]].forEach(t => {
+      const R = ROLES[t[3]];
+      els.push(h('circle', { key: 'n' + t[0], cx: t[1], cy: t[2], r: t[4], fill: clusterMode ? '#fff' : R.c, stroke: '#0e1014', strokeWidth: 2 }));
+      if (t[5]) { els.push(h('circle', { key: 's' + t[0], cx: t[1], cy: t[2], r: t[4] + 6, fill: 'none', stroke: '#fff', strokeWidth: 2 })); els.push(h('text', { key: 'l' + t[0], x: t[1] - 22, y: t[2] + 5, textAnchor: 'end', fill: '#fff', fontSize: 16, fontWeight: 600, fontFamily: 'IBM Plex Mono', stroke: '#0e1014', strokeWidth: 4, paintOrder: 'stroke' }, t[0])); }
+    });
+    SMALL.forEach((n, i) => {
+      const x = i % 2 ? 905 : 800, y = 610 + Math.floor(i / 2) * 58, r = 4 + Math.sqrt(n) * 3;
+      els.push(h('circle', { key: 's' + i, cx: x, cy: y, r, fill: CL[(i + 2) % CL.length], fillOpacity: clusterMode ? .5 : .12, stroke: CL[(i + 2) % CL.length], strokeOpacity: .6 }));
+      els.push(h('text', { key: 'st' + i, x: x + r + 8, y: y + 4, fill: '#aab0ba', fontSize: 12, fontFamily: 'IBM Plex Mono' }, `${n} узл.`));
+    });
+    els.push(h('text', { key: 'iso', x: 752, y: 1020, fill: '#d3d7dd', fontSize: 12.5, fontFamily: 'IBM Plex Sans' }, '+ 19 seed без рёбер — в очереди'));
+    return h('svg', { viewBox: '0 0 1000 1120', style: { width: '100%', height: '100%', display: 'block' } }, h('g', { transform: 'translate(0,60)' }, ...els));
+  }
+
+  minimap(isNet) {
+    const h = React.createElement;
+    const dots = isNet ? NET.map(c => h('circle', { key: c.id, cx: c.x, cy: c.y, r: c.r, fill: '#3a3f48' }))
+      : EGO.map(n => h('circle', { key: n.g, cx: n.x, cy: n.y, r: 14, fill: ROLES[n.role].c, opacity: .8 }));
+    return h('svg', { viewBox: '0 0 1000 1060', style: { width: '100%', height: '100%', display: 'block', padding: 8 } }, ...dots,
+      h('rect', { key: 'vp', x: isNet ? 20 : 30, y: isNet ? 60 : 80, width: isNet ? 960 : 940, height: isNet ? 980 : 960, fill: 'none', stroke: '#fff', strokeWidth: 12, strokeOpacity: .7, rx: 20 }));
+  }
+
+  renderVals() {
+    const s = this.state; const sc = s.sc; const isNet = sc === 'network';
+    const R = r => ROLES[r];
+    const scen = [['network', 'Вся сеть'], ['ego', 'Окружение 100482'], ['lasso', 'Лассо'], ['menu', 'Контекстное меню'], ['assistant', 'Ассистент: ответ'], ['mention', 'Чат: @-упоминание'], ['palette', 'Палитра ⌘K'], ['help', 'Хоткеи ?']];
+    let queue = Q.map(a => ({ rank: a[0], gid: a[1], role: a[2], p: a[3], why: a[4], seed: !!a[5], cut: !!a[6] }));
+    if (s.onlySeed) queue = queue.filter(x => x.seed);
+    if (s.hideCut) queue = queue.filter(x => !x.cut);
+    const selG = sc === 'assistant' ? null : '100482';
+    const allG = [...Q.map(a => [a[1], a[2], `#${a[0]} · ${a[3].toFixed(2)}`]), ['311540', 'peripheral', 'колено 4 · обрыв'], ['100093', 'peripheral', 'seed · нет исходящих']];
+    const qq = s.q.trim();
+    const suggest = qq ? allG.filter(g => g[0].startsWith(qq)).slice(0, 6) : [];
+    const chips = sc === 'assistant' ? CTX : sc === 'mention' ? [] : [];
+    const mentionItems = [['100482', 'consolidator', '#1 · 0.94', 1], ['100417', 'transit', '0.37'], ['100493', 'peripheral', 'seed · нет исходящих', 0, 1]];
+    return {
+      scenarios: scen.map(([k, l]) => ({ label: l, go: () => this.go(k), bg: sc === k ? '#eceef2' : 'transparent', fg: sc === k ? '#0e1014' : '#c3c8d0', bd: sc === k ? '#eceef2' : '#2c3038' })),
+      listCount: Object.keys(s.inList).length,
+      q: s.q, onQ: e => this.setState({ q: e.target.value.replace(/\D/g, '') }), onQFocus: () => this.setState({ qFocus: true }), onQBlur: () => this.setState({ qFocus: false }),
+      onQKey: e => { if (e.key === 'Enter') { const hit = suggest[0]; if (hit) this.pickGid(hit[0]); e.target.blur(); } },
+      showSuggest: s.qFocus && qq.length > 0, notFound: qq.length > 0 && suggest.length === 0,
+      suggest: suggest.map(g => ({ gid: g[0], rl: R(g[1]).l, rc: R(g[1]).c, meta: g[2], pick: () => this.pickGid(g[0]) })),
+      searchBorder: s.qFocus ? '#5a606b' : '#2c3038',
+      goPalette: () => this.go('palette'), goHelp: () => this.go('help'), goNet: () => this.go('network'), goEgo: () => this.go('ego'), goAssistant: () => this.go('assistant'), stop: e => e.stopPropagation(),
+      toggleSeed: () => this.setState({ onlySeed: !s.onlySeed }), toggleCut: () => this.setState({ hideCut: !s.hideCut }),
+      seedBg: s.onlySeed ? '#2a2e37' : 'transparent', seedBd: s.onlySeed ? '#5a606b' : '#2c3038', cutBg: s.hideCut ? '#2a2e37' : 'transparent', cutBd: s.hideCut ? '#5a606b' : '#2c3038',
+      queue: queue.map(x => { const r = R(x.role); const ck = !!s.inList[x.gid]; return {
+        ...x, score: x.p.toFixed(2), barW: x.p * 100 + '%', rl: r.l, rg: r.g, rc: r.c, rbg: r.c + '22',
+        bg: x.gid === selG ? '#1d2129' : 'transparent', check: ck ? '✓' : '', boxBg: ck ? '#eceef2' : 'transparent', boxBd: ck ? '#eceef2' : '#4a505a',
+        pick: () => x.gid === '100482' ? this.go('ego') : this.pickGid(x.gid),
+        toggle: e => { e.stopPropagation(); this.setState(st => { const l = { ...st.inList }; if (l[x.gid]) delete l[x.gid]; else l[x.gid] = 1; return { inList: l }; }); } }; }),
+      queueEmpty: queue.length === 0,
+      segNetBg: isNet ? '#2a2e37' : 'transparent', segNetFg: isNet ? '#fff' : '#a0a6b1', segEgoBg: isNet ? 'transparent' : '#2a2e37', segEgoFg: isNet ? '#a0a6b1' : '#fff',
+      layLBg: isNet ? 'transparent' : '#2a2e37', layFBg: isNet ? '#2a2e37' : 'transparent',
+      colorRole: () => this.setState({ colorBy: 'role' }), colorCluster: () => this.setState({ colorBy: 'cluster' }),
+      cRoleBg: s.colorBy === 'role' ? '#2a2e37' : 'transparent', cClBg: s.colorBy === 'cluster' ? '#2a2e37' : 'transparent',
+      graph: isNet ? this.graphNet() : this.graphEgo(sc),
+      minimap: this.minimap(isNet),
+      viewInfo: isNet ? 'Вся сеть · 16 компонент · 30 кластеров свёрнуты в пузыри · выбран 100482 (К3)' : 'Окружение 100482 · 2 хопа · 23 узла + 83 свёрнуто · слои по колену →',
+      banner: s.banner,
+      showHlChip: sc === 'assistant', toast: s.toast || (sc === 'assistant' ? null : null),
+      showTooltip: sc === 'ego', showMenu: sc === 'menu', showLasso: sc === 'lasso', showPalette: sc === 'palette', showHelp: sc === 'help',
+      menuItems: [['+', 'Добавить в чат', 'A', 1], ['AI', 'Спросить AI об этом узле', ''], ['↗', 'Кто собирает деньги с этого узла?', ''], ['⇢', 'Найти путь до…', ''], ['◎', 'Окружение узла', 'E'], ['✓', 'Добавить в перечень', 'P']].map(m => ({ icon: m[0], label: m[1], key: m[2], bg: m[3] ? '#262a32' : 'transparent', ic: m[0] === 'AI' ? '#3fd6e0' : '#aab0ba' })),
+      legendRoles: Object.values(ROLES).map(r => ({ c: r.c, g: r.g, short: r.s })),
+      rule: [['Уникальных плательщиков', '11 ≥ 5'], ['Доля пропуска', '0.03 ≤ 0.20'], ['Вход, ₸', '4,2 млн ≥ P90 (1,8 млн)']].map(r => ({ k: r[0], v: r[1] })),
+      paths: [['100017', '630 000', '150903', '612 000'], ['100035', '556 000', '150211', '540 000']].map(p => ({ a: p[0], s1: p[1], b: p[2], s2: p[3] })),
+      listBtn: s.inList['100482'] ? '✓ В перечне' : 'Добавить в перечень', addList: () => this.addList(), addChat: () => this.flash('100482 добавлен в чат'),
+      showCard: !['assistant', 'mention'].includes(sc), showChat: ['assistant', 'mention'].includes(sc),
+      tabCardFg: ['assistant', 'mention'].includes(sc) ? '#8a909b' : '#fff', tabCardBd: ['assistant', 'mention'].includes(sc) ? 'transparent' : '#fff',
+      tabChatFg: ['assistant', 'mention'].includes(sc) ? '#fff' : '#8a909b', tabChatBd: ['assistant', 'mention'].includes(sc) ? '#fff' : 'transparent',
+      showAnswer: sc === 'assistant', showEmptyChat: sc === 'mention', showMention: sc === 'mention', showQuick: sc === 'assistant',
+      answerPaths: [['100017', '150903', '612 000'], ['100035', '150211', '540 000'], ['100121', '151477', '498 500']].map(p => ({ a: p[0], b: p[1], s: p[2] })),
+      ctxChips: chips.map(g => ({ gid: g, rc: ROLES.transit.c, rl: 'Транзит' })), noCtx: chips.length === 0,
+      inputText: sc === 'mention' ? 'Куда уходят деньги от ' : '', showPlaceholder: sc === 'assistant', inputBd: sc === 'mention' ? '#3fd6e0' : '#2c3038',
+      mentionItems: mentionItems.map(m => ({ gid: m[0], rl: R(m[1]).l, rc: R(m[1]).c, meta: m[2], bg: m[3] ? '#262a32' : 'transparent', ring: m[4] ? '0 0 0 2px #fff' : 'none' })),
+      palette: [
+        { title: 'УЗЛЫ', items: [['●', '100482', 'Консолидация', '#1 · 0.94', '↵', 1, '#ff6b6b'], ['●', '100417', 'Транзит', '0.37', '', 0, '#f5c542'], ['○', '100493', 'seed · нет исходящих', '0.12', '', 0, '#fff']] },
+        { title: 'ДЕЙСТВИЯ С 100482', items: [['+', 'Добавить в чат', '', '', 'A'], ['✓', 'В перечень на проверку', '', '', 'P'], ['◎', 'Окружение узла', '', '', 'E'], ['⊘', 'Изъять топ-N узлов…', '', '', '']] },
+        { title: 'КЛАСТЕРЫ И AI', items: [['▣', 'Перейти к кластеру 3', '214 узлов · 7 seed', '', ''], ['AI', 'Спросить AI: «1004»', '', '', '⌘↵']] },
+      ].map(g => ({ title: g.title, items: g.items.map(i => ({ icon: i[0], label: i[1], sub: i[2] + (i[3] ? '  ' + i[3] : ''), key: i[4], bg: i[5] ? '#262a32' : 'transparent', ic: i[6] || (i[0] === 'AI' ? '#3fd6e0' : '#aab0ba'), subc: i[6] && i[6] !== '#fff' ? i[6] : '#8a909b', font: /^\d/.test(i[1]) ? "600 14px 'IBM Plex Mono'" : "500 14px 'IBM Plex Sans'" })) })),
+      hotkeys: [['/ · Ctrl+J', 'Ассистент'], ['A', 'Добавить выбранное в чат'], ['⇧ клик · ⇧ drag', 'Мультивыбор, лассо'], ['Ctrl+K', 'Командная палитра'], ['F', 'Фокус на выбранном'], ['E', 'Окружение узла'], ['P', 'В перечень на проверку'], ['Esc', 'Снять выделение и подсветку'], ['?', 'Эта шпаргалка']].map(k => ({ k: k[0], d: k[1] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

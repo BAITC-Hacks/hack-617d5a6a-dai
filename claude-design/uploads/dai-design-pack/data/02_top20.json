@@ -1,0 +1,144 @@
+{
+ "items": [
+  {
+   "rank": 1,
+   "gid": "100000003684369100",
+   "role": "coordinator",
+   "priority_score": 0.9931,
+   "why": "mock coordinator: in_deg=24, out_deg=62, in_kzt=3,848,436, out_kzt=8,588,655, depth=0, seed=1"
+  },
+  {
+   "rank": 2,
+   "gid": "100000003016635100",
+   "role": "coordinator",
+   "priority_score": 0.9804,
+   "why": "mock coordinator: in_deg=8, out_deg=73, in_kzt=586,981, out_kzt=9,414,081, depth=0, seed=1"
+  },
+  {
+   "rank": 3,
+   "gid": "100000001616816100",
+   "role": "consolidator",
+   "priority_score": 0.977,
+   "why": "mock consolidator: in_deg=5, out_deg=3, in_kzt=176,195, out_kzt=181,326, depth=0, seed=1"
+  },
+  {
+   "rank": 4,
+   "gid": "100000005382566100",
+   "role": "consolidator",
+   "priority_score": 0.9746,
+   "why": "mock consolidator: in_deg=7, out_deg=1, in_kzt=393,066, out_kzt=50,000, depth=0, seed=1"
+  },
+  {
+   "rank": 5,
+   "gid": "100000008659445100",
+   "role": "consolidator",
+   "priority_score": 0.972,
+   "why": "mock consolidator: in_deg=3, out_deg=4, in_kzt=138,490, out_kzt=875,150, depth=0, seed=1"
+  },
+  {
+   "rank": 6,
+   "gid": "100000006866783100",
+   "role": "coordinator",
+   "priority_score": 0.9681,
+   "why": "mock coordinator: in_deg=13, out_deg=67, in_kzt=838,812, out_kzt=3,948,037, depth=0, seed=1"
+  },
+  {
+   "rank": 7,
+   "gid": "100000002527114100",
+   "role": "coordinator",
+   "priority_score": 0.9651,
+   "why": "mock coordinator: in_deg=3, out_deg=111, in_kzt=129,000, out_kzt=3,289,249, depth=0, seed=1"
+  },
+  {
+   "rank": 8,
+   "gid": "100000000343175100",
+   "role": "coordinator",
+   "priority_score": 0.955,
+   "why": "mock coordinator: in_deg=8, out_deg=31, in_kzt=178,712, out_kzt=4,000,039, depth=0, seed=1"
+  },
+  {
+   "rank": 9,
+   "gid": "100000001732159100",
+   "role": "peripheral",
+   "priority_score": 0.9475,
+   "why": "mock peripheral: in_deg=2, out_deg=4, in_kzt=2,378,100, out_kzt=1,505,966, depth=0, seed=1"
+  },
+  {
+   "rank": 10,
+   "gid": "100000008571433100",
+   "role": "peripheral",
+   "priority_score": 0.9359,
+   "why": "mock peripheral: in_deg=2, out_deg=2, in_kzt=350,000, out_kzt=1,434,000, depth=0, seed=1"
+  },
+  {
+   "rank": 11,
+   "gid": "100000008637537100",
+   "role": "consolidator",
+   "priority_score": 0.9351,
+   "why": "mock consolidator: in_deg=3, out_deg=3, in_kzt=619,890, out_kzt=2,351,495, depth=0, seed=1"
+  },
+  {
+   "rank": 12,
+   "gid": "100000000580561100",
+   "role": "peripheral",
+   "priority_score": 0.9268,
+   "why": "mock peripheral: in_deg=2, out_deg=3, in_kzt=27,980, out_kzt=1,488,077, depth=0, seed=1"
+  },
+  {
+   "rank": 13,
+   "gid": "100000004007116100",
+   "role": "consolidator",
+   "priority_score": 0.9215,
+   "why": "mock consolidator: in_deg=3, out_deg=4, in_kzt=764,704, out_kzt=148,000, depth=0, seed=1"
+  },
+  {
+   "rank": 14,
+   "gid": "100000008601794100",
+   "role": "peripheral",
+   "priority_score": 0.9207,
+   "why": "mock peripheral: in_deg=2, out_deg=1, in_kzt=494,400, out_kzt=871,400, depth=0, seed=1"
+  },
+  {
+   "rank": 15,
+   "gid": "100000004041163100",
+   "role": "peripheral",
+   "priority_score": 0.9187,
+   "why": "mock peripheral: in_deg=1, out_deg=2, in_kzt=50,000, out_kzt=866,000, depth=0, seed=1"
+  },
+  {
+   "rank": 16,
+   "gid": "100000004019124100",
+   "role": "consolidator",
+   "priority_score": 0.9065,
+   "why": "mock consolidator: in_deg=3, out_deg=0, in_kzt=193,000, out_kzt=0, depth=0, seed=1"
+  },
+  {
+   "rank": 17,
+   "gid": "100000008516839100",
+   "role": "consolidator",
+   "priority_score": 0.902,
+   "why": "mock consolidator: in_deg=3, out_deg=0, in_kzt=155,000, out_kzt=0, depth=0, seed=1"
+  },
+  {
+   "rank": 18,
+   "gid": "100000006232815100",
+   "role": "peripheral",
+   "priority_score": 0.8975,
+   "why": "mock peripheral: in_deg=1, out_deg=5, in_kzt=160,000, out_kzt=296,500, depth=0, seed=1"
+  },
+  {
+   "rank": 19,
+   "gid": "100000008650785100",
+   "role": "peripheral",
+   "priority_score": 0.8917,
+   "why": "mock peripheral: in_deg=2, out_deg=2, in_kzt=92,000, out_kzt=120,120, depth=0, seed=1"
+  },
+  {
+   "rank": 20,
+   "gid": "100000005668605100",
+   "role": "consolidator",
+   "priority_score": 0.8913,
+   "why": "mock consolidator: in_deg=3, out_deg=0, in_kzt=94,500, out_kzt=0, depth=0, seed=1"
+  }
+ ]
+}

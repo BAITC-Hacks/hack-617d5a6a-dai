@@ -476,6 +476,7 @@ API (`backend/`) читает `outputs/*.csv` и `task/data/*.parquet`; пути
 | `outputs/` | итоговые `nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `run_meta.json`; `metrics.json` — отчёт `make metrics` |
 | `backend/` | API на FastAPI для интерфейса; [запуск и эндпоинты](backend/README.md) |
 | `dai-front/` | интерфейс на React; [запуск, переменные окружения, стек](dai-front/README.md) |
+| `claude-design/`, `design-outputs/` | макеты интерфейса из Claude Design; в `design-outputs/` — доработанный движок графа и самостоятельный просмотрщик на D3 + SVG ([как открыть](design-outputs/README.md)); рабочий интерфейс — `dai-front/` |
 | `docs/` | гипотезы и их проверка: [временной признак](docs/hypothesis_check_2026-09-23.md), [смежные работы](docs/related_work_2026-09-23.md), [сценарий аналитика](docs/aml_analyst_ajtbd.md), [порядок переводов](docs/temporal_research.md), [контрольные случаи](docs/acceptance.md), [проверки без разметки](docs/ds_metrics_2026-09-23.md), [устройство системы](docs/ds_system_design_2026-09-23.md) |
 | `Makefile` | `setup`, `pipeline`, `check`, `metrics`, `baselines` (пишет `outputs/baselines.json`, в git его нет), `api`, `web`, `contract` |
 | `requirements.txt` | зависимости пайплайна и API с закреплёнными версиями |

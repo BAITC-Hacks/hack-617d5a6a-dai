@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e1014;color:#eceef2;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#cfd3da;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+button{white-space:nowrap;font-family:inherit}
+input[type=range]{accent-color:#eceef2}
+</style>
+</helmet>
+<div style="min-width:1440px;min-height:100vh;padding:28px 32px 48px;display:grid;grid-template-columns:520px minmax(0,1fr);gap:28px;align-items:start">
+  <section id="1a" style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px"><a href="#1a" style="font:600 12px 'IBM Plex Mono';background:#eceef2;color:#0e1014;padding:2px 7px;border-radius:4px">1</a><span style="font-size:13px;color:#a0a6b1">Запуск анализа · эскиз</span></div>
+    <div style="background:#121418;border:1px solid #23262d;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:18px">
+      <div style="font-size:22px;font-weight:600">Построить модель</div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px dashed #3a3f48;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font:600 14px 'IBM Plex Mono'">./data/</span><span style="margin-left:auto;font-size:12.5px;color:#cfd3da;text-decoration:underline;text-underline-offset:3px">выбрать папку</span></div>
+        <sc-for list="{{ files }}" as="f" hint-placeholder-count="3">
+          <div style="display:flex;gap:10px;font:500 13px 'IBM Plex Mono';color:#c3c8d0"><span style="color:#6fd39b">✓</span>{{ f.n }}<span style="margin-left:auto;color:#8a909b">{{ f.s }}</span></div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font:600 40px 'IBM Plex Mono'">02:41</span><span style="font-size:13px;color:#aab0ba">из 05:00 допустимых</span></div>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ stages }}" as="s" hint-placeholder-count="7">
+          <div style="display:grid;grid-template-columns:22px minmax(0,1fr) 60px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #1d2026;font-size:14px;color:{{ s.fg }}">
+            <span style="color:{{ s.ic }};font-weight:700">{{ s.mark }}</span><span>{{ s.n }}</span><span style="font:500 13px 'IBM Plex Mono';text-align:right;color:#8a909b">{{ s.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;color:#8a909b">ВЫГРУЗКИ</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;font:500 13px 'IBM Plex Mono'">
+          <span style="padding:5px 9px;border:1px solid #2c3038;border-radius:6px">nodes_roles.csv · 2 248</span>
+          <span style="padding:5px 9px;border:1px solid #2c3038;border-radius:6px">clusters.csv · 30</span>
+          <span style="padding:5px 9px;border:1px solid #2c3038;border-radius:6px">top_nodes.csv · 20</span>
+        </div>
+      </div>
+      <a href="Обзор сети.dc.html" style="height:40px;display:grid;place-items:center;border-radius:8px;background:#eceef2;color:#0e1014;font-size:14px;font-weight:600">Перейти в обзор →</a>
+    </div>
+  </section>
+
+  <section id="6a" style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px"><a href="#6a" style="font:600 12px 'IBM Plex Mono';background:#eceef2;color:#0e1014;padding:2px 7px;border-radius:4px">6</a><span style="font-size:13px;color:#a0a6b1">Устойчивость сети · эскиз</span></div>
+    <div style="background:#121418;border:1px solid #23262d;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:22px;font-weight:600">Что будет, если изъять топ-N узлов</span><span style="font-size:13px;color:#aab0ba">узлы удаляются по priority_score, модель без пересчёта ролей</span></div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span style="font-size:14px;color:#c3c8d0;white-space:nowrap">Изъять топ-</span>
+        <span style="font:600 32px 'IBM Plex Mono';width:56px">{{ n }}</span>
+        <input type="range" min="0" max="50" value="{{ n }}" onChange="{{ onN }}" style="flex:1">
+        <span style="font:500 13px 'IBM Plex Mono';color:#8a909b">0 — 50</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <div style="padding:14px 16px;border:1px solid #262a31;border-radius:9px"><div style="font-size:13px;color:#8a909b">Компонент</div><div style="font:600 30px 'IBM Plex Mono'">{{ comps }}</div><div style="font-size:12.5px;color:#aab0ba">было 16</div></div>
+        <div style="padding:14px 16px;border:1px solid #262a31;border-radius:9px"><div style="font-size:13px;color:#8a909b">Крупнейшая компонента</div><div style="font:600 30px 'IBM Plex Mono'">{{ largest }}</div><div style="font-size:12.5px;color:#aab0ba">было 1 877 узлов</div></div>
+        <div style="padding:14px 16px;border:1px solid #262a31;border-radius:9px"><div style="font-size:13px;color:#8a909b">Seed, отрезанных от консолидаторов</div><div style="font:600 30px 'IBM Plex Mono'">{{ cut }}</div><div style="font-size:12.5px;color:#aab0ba">из 62 seed с рёбрами</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;color:#aab0ba">N → размер крупнейшей компоненты</div>
+          <div style="height:240px;border:1px solid #262a31;border-radius:8px;padding:8px">{{ chart }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;color:#aab0ba">Схема до / после</div>
+          <div style="height:240px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="border:1px solid #262a31;border-radius:8px;position:relative">{{ before }}<span style="position:absolute;left:8px;top:6px;font-size:12px;color:#8a909b">до</span></div>
+            <div style="border:1px solid #262a31;border-radius:8px;position:relative">{{ after }}<span style="position:absolute;left:8px;top:6px;font-size:12px;color:#8a909b">после N = {{ n }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const L = n => Math.round(1877 * Math.exp(-n / 26) + (n > 0 ? 40 : 0) * (1 - Math.exp(-n / 26)));
+function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const PTS = (() => { const r = rnd(7); return Array.from({ length: 90 }, (_, i) => ({ x: 20 + r() * 200, y: 20 + r() * 180, top: i < 12 })); })();
+class Component extends DCLogic {
+  state = { n: 10 };
+  scatter(removeN) {
+    const h = React.createElement;
+    const pts = PTS; const cutK = removeN / 50;
+    const els = [];
+    pts.forEach((p, i) => pts.slice(i + 1, i + 4).forEach((q, j) => {
+      const broken = removeN && (p.top || q.top || ((i + j) % 10) / 10 < cutK * .8);
+      if (!broken) els.push(h('line', { key: `${i}-${j}`, x1: p.x, y1: p.y, x2: q.x, y2: q.y, stroke: '#4a505a', strokeWidth: 1 }));
+    }));
+    pts.forEach((p, i) => { if (removeN && p.top && i < Math.ceil(removeN / 4)) return; els.push(h('circle', { key: 'c' + i, cx: p.x, cy: p.y, r: p.top ? 5 : 3, fill: p.top ? '#ff6b6b' : '#8a909b' })); });
+    return h('svg', { viewBox: '0 0 240 220', style: { width: '100%', height: '100%', display: 'block' } }, ...els);
+  }
+  chart() {
+    const h = React.createElement; const W = 600, H = 220, px = n => 40 + n / 50 * (W - 60), py = v => 10 + (1 - v / 1877) * (H - 40);
+    const d = Array.from({ length: 51 }, (_, n) => `${n ? 'L' : 'M'}${px(n)},${py(L(n))}`).join(' ');
+    const n = this.state.n;
+    return h('svg', { viewBox: `0 0 ${W} ${H}`, style: { width: '100%', height: '100%', display: 'block' } },
+      [0, 10, 20, 30, 40, 50].map(t => h('text', { key: 't' + t, x: px(t), y: H - 8, textAnchor: 'middle', fill: '#8a909b', fontSize: 12, fontFamily: 'IBM Plex Mono' }, t)),
+      [0, 900, 1877].map(v => h('text', { key: 'v' + v, x: 32, y: py(v) + 4, textAnchor: 'end', fill: '#8a909b', fontSize: 12, fontFamily: 'IBM Plex Mono' }, v)),
+      h('path', { key: 'p', d, fill: 'none', stroke: '#eceef2', strokeWidth: 2.5 }),
+      h('line', { key: 'l', x1: px(n), x2: px(n), y1: 10, y2: H - 30, stroke: '#ff6b6b', strokeDasharray: '4 3' }),
+      h('circle', { key: 'c', cx: px(n), cy: py(L(n)), r: 6, fill: '#ff6b6b' }));
+  }
+  renderVals() {
+    const n = this.state.n;
+    return {
+      files: [['edges.parquet', '3 119 строк'], ['nodes.parquet', '2 248 строк'], ['transactions.parquet', '4 840 строк']].map(f => ({ n: f[0], s: f[1] })),
+      stages: [['Загрузка', '0:04', 2], ['Граф', '0:11', 2], ['Метрики', '0:38', 2], ['Роли', '0:52', 2], ['Кластеры', '0:36', 1], ['Приоритеты', '', 0], ['Выгрузки', '', 0]].map(s => ({ n: s[0], t: s[1], mark: s[2] === 2 ? '✓' : s[2] === 1 ? '◐' : '○', ic: s[2] === 2 ? '#6fd39b' : s[2] === 1 ? '#fff' : '#5f656f', fg: s[2] ? '#eceef2' : '#8a909b' })),
+      n, onN: e => this.setState({ n: +e.target.value }),
+      comps: 16 + Math.round(n * 2.4), largest: L(n).toLocaleString('ru-RU'), cut: Math.min(58, Math.round(n * 1.15)),
+      chart: this.chart(), before: this.scatter(0), after: this.scatter(n),
+    };
+  }
+}
+</script>
+</body>
+</html>

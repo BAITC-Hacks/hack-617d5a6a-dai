@@ -1,0 +1,534 @@
+{
+ "cluster": {
+  "cluster_id": 2,
+  "n_nodes": 17,
+  "n_seed": 1,
+  "sum_kzt_internal": 2977887.0,
+  "top_gids": [
+   "100000004007116100",
+   "100000004144536100",
+   "100000001330595100",
+   "100000002731501100",
+   "100000003616818100"
+  ],
+  "hypothesis": "mock: слабосвязная компонента, 17 узлов, 1 seed, внутренний оборот 2,977,887 KZT"
+ },
+ "graph": {
+  "nodes": [
+   {
+    "gid": "100000004007116100",
+    "role": "consolidator",
+    "role_score": 0.375,
+    "cluster_id": 2,
+    "priority_score": 0.9215,
+    "evidence": "mock consolidator: in_deg=3, out_deg=4, in_kzt=764,704, out_kzt=148,000, depth=0, seed=1",
+    "depth": 0,
+    "is_seed": true,
+    "in_deg": 3,
+    "out_deg": 4,
+    "in_kzt": 764704.0,
+    "out_kzt": 148000.0,
+    "in_tx": 24,
+    "out_tx": 6,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000004144536100",
+    "role": "consolidator",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.8224,
+    "evidence": "mock consolidator: in_deg=4, out_deg=0, in_kzt=168,000, out_kzt=0, depth=1, seed=0",
+    "depth": 1,
+    "is_seed": false,
+    "in_deg": 4,
+    "out_deg": 0,
+    "in_kzt": 168000.0,
+    "out_kzt": 0.0,
+    "in_tx": 6,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000001330595100",
+    "role": "consolidator",
+    "role_score": 0.375,
+    "cluster_id": 2,
+    "priority_score": 0.8008,
+    "evidence": "mock consolidator: in_deg=3, out_deg=1, in_kzt=87,000, out_kzt=154,000, depth=2, seed=0",
+    "depth": 2,
+    "is_seed": false,
+    "in_deg": 3,
+    "out_deg": 1,
+    "in_kzt": 87000.0,
+    "out_kzt": 154000.0,
+    "in_tx": 6,
+    "out_tx": 1,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000002731501100",
+    "role": "coordinator",
+    "role_score": 0.6,
+    "cluster_id": 2,
+    "priority_score": 0.7679,
+    "evidence": "mock coordinator: in_deg=3, out_deg=7, in_kzt=570,370, out_kzt=833,960, depth=1, seed=0",
+    "depth": 1,
+    "is_seed": false,
+    "in_deg": 3,
+    "out_deg": 7,
+    "in_kzt": 570370.0,
+    "out_kzt": 833960.0,
+    "in_tx": 7,
+    "out_tx": 20,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000003616818100",
+    "role": "consolidator",
+    "role_score": 0.375,
+    "cluster_id": 2,
+    "priority_score": 0.7605,
+    "evidence": "mock consolidator: in_deg=3, out_deg=3, in_kzt=78,000, out_kzt=240,100, depth=1, seed=0",
+    "depth": 1,
+    "is_seed": false,
+    "in_deg": 3,
+    "out_deg": 3,
+    "in_kzt": 78000.0,
+    "out_kzt": 240100.0,
+    "in_tx": 4,
+    "out_tx": 8,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000004005964100",
+    "role": "consolidator",
+    "role_score": 0.375,
+    "cluster_id": 2,
+    "priority_score": 0.7238,
+    "evidence": "mock consolidator: in_deg=3, out_deg=3, in_kzt=97,900, out_kzt=72,000, depth=1, seed=0",
+    "depth": 1,
+    "is_seed": false,
+    "in_deg": 3,
+    "out_deg": 3,
+    "in_kzt": 97900.0,
+    "out_kzt": 72000.0,
+    "in_tx": 9,
+    "out_tx": 5,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000004160650100",
+    "role": "distributor",
+    "role_score": 0.4,
+    "cluster_id": 2,
+    "priority_score": 0.7204,
+    "evidence": "mock distributor: in_deg=2, out_deg=10, in_kzt=75,100, out_kzt=1,489,827, depth=2, seed=0",
+    "depth": 2,
+    "is_seed": false,
+    "in_deg": 2,
+    "out_deg": 10,
+    "in_kzt": 75100.0,
+    "out_kzt": 1489827.0,
+    "in_tx": 4,
+    "out_tx": 40,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000003275398100",
+    "role": "peripheral",
+    "role_score": 0.3,
+    "cluster_id": 2,
+    "priority_score": 0.647,
+    "evidence": "mock peripheral: in_deg=1, out_deg=1, in_kzt=300,000, out_kzt=20,000, depth=2, seed=0",
+    "depth": 2,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 1,
+    "in_kzt": 300000.0,
+    "out_kzt": 20000.0,
+    "in_tx": 1,
+    "out_tx": 1,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000002257794100",
+    "role": "terminal",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.5954,
+    "evidence": "mock terminal: in_deg=1, out_deg=0, in_kzt=154,000, out_kzt=0, depth=3, seed=0",
+    "depth": 3,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 154000.0,
+    "out_kzt": 0.0,
+    "in_tx": 1,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000003603979100",
+    "role": "terminal",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.5649,
+    "evidence": "mock terminal: in_deg=1, out_deg=0, in_kzt=165,000, out_kzt=0, depth=2, seed=0",
+    "depth": 2,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 165000.0,
+    "out_kzt": 0.0,
+    "in_tx": 3,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000000704700100",
+    "role": "peripheral",
+    "role_score": 0.3,
+    "cluster_id": 2,
+    "priority_score": 0.534,
+    "evidence": "mock peripheral: in_deg=1, out_deg=0, in_kzt=10,000, out_kzt=0, depth=4, seed=0, граница выгрузки",
+    "depth": 4,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 10000.0,
+    "out_kzt": 0.0,
+    "in_tx": 1,
+    "out_tx": 0,
+    "truncated_by_depth": true
+   },
+   {
+    "gid": "100000008774237100",
+    "role": "peripheral",
+    "role_score": 0.3,
+    "cluster_id": 2,
+    "priority_score": 0.5167,
+    "evidence": "mock peripheral: in_deg=1, out_deg=1, in_kzt=50,000, out_kzt=10,000, depth=2, seed=0",
+    "depth": 2,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 1,
+    "in_kzt": 50000.0,
+    "out_kzt": 10000.0,
+    "in_tx": 1,
+    "out_tx": 1,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000003031890100",
+    "role": "terminal",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.4742,
+    "evidence": "mock terminal: in_deg=1, out_deg=0, in_kzt=215,000, out_kzt=0, depth=2, seed=0",
+    "depth": 2,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 215000.0,
+    "out_kzt": 0.0,
+    "in_tx": 10,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000002886166100",
+    "role": "terminal",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.4072,
+    "evidence": "mock terminal: in_deg=1, out_deg=0, in_kzt=185,000, out_kzt=0, depth=3, seed=0",
+    "depth": 3,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 185000.0,
+    "out_kzt": 0.0,
+    "in_tx": 3,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000004064431100",
+    "role": "peripheral",
+    "role_score": 0.3,
+    "cluster_id": 2,
+    "priority_score": 0.3808,
+    "evidence": "mock peripheral: in_deg=1, out_deg=1, in_kzt=26,000, out_kzt=10,000, depth=3, seed=0",
+    "depth": 3,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 1,
+    "in_kzt": 26000.0,
+    "out_kzt": 10000.0,
+    "in_tx": 1,
+    "out_tx": 1,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000003338583100",
+    "role": "terminal",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.2148,
+    "evidence": "mock terminal: in_deg=1, out_deg=0, in_kzt=21,765, out_kzt=0, depth=3, seed=0",
+    "depth": 3,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 21765.0,
+    "out_kzt": 0.0,
+    "in_tx": 1,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   },
+   {
+    "gid": "100000004007197100",
+    "role": "terminal",
+    "role_score": 0.5,
+    "cluster_id": 2,
+    "priority_score": 0.1625,
+    "evidence": "mock terminal: in_deg=1, out_deg=0, in_kzt=10,048, out_kzt=0, depth=3, seed=0",
+    "depth": 3,
+    "is_seed": false,
+    "in_deg": 1,
+    "out_deg": 0,
+    "in_kzt": 10048.0,
+    "out_kzt": 0.0,
+    "in_tx": 1,
+    "out_tx": 0,
+    "truncated_by_depth": false
+   }
+  ],
+  "edges": [
+   {
+    "src": "100000004007116100",
+    "dst": "100000004144536100",
+    "sum_kzt": 113000.0,
+    "n_tx": 3,
+    "depth": 1
+   },
+   {
+    "src": "100000004007116100",
+    "dst": "100000004005964100",
+    "sum_kzt": 10000.0,
+    "n_tx": 1,
+    "depth": 1
+   },
+   {
+    "src": "100000004007116100",
+    "dst": "100000002731501100",
+    "sum_kzt": 10000.0,
+    "n_tx": 1,
+    "depth": 1
+   },
+   {
+    "src": "100000004007116100",
+    "dst": "100000003616818100",
+    "sum_kzt": 15000.0,
+    "n_tx": 1,
+    "depth": 1
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000003031890100",
+    "sum_kzt": 215000.0,
+    "n_tx": 10,
+    "depth": 2
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000001330595100",
+    "sum_kzt": 22000.0,
+    "n_tx": 2,
+    "depth": 2
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000003275398100",
+    "sum_kzt": 300000.0,
+    "n_tx": 1,
+    "depth": 2
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000004007116100",
+    "sum_kzt": 201960.0,
+    "n_tx": 3,
+    "depth": 2
+   },
+   {
+    "src": "100000004005964100",
+    "dst": "100000002731501100",
+    "sum_kzt": 10000.0,
+    "n_tx": 1,
+    "depth": 2
+   },
+   {
+    "src": "100000003616818100",
+    "dst": "100000004160650100",
+    "sum_kzt": 35100.0,
+    "n_tx": 2,
+    "depth": 2
+   },
+   {
+    "src": "100000003616818100",
+    "dst": "100000003603979100",
+    "sum_kzt": 165000.0,
+    "n_tx": 3,
+    "depth": 2
+   },
+   {
+    "src": "100000004005964100",
+    "dst": "100000004007116100",
+    "sum_kzt": 27000.0,
+    "n_tx": 2,
+    "depth": 2
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000004160650100",
+    "sum_kzt": 40000.0,
+    "n_tx": 2,
+    "depth": 2
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000008774237100",
+    "sum_kzt": 50000.0,
+    "n_tx": 1,
+    "depth": 2
+   },
+   {
+    "src": "100000004005964100",
+    "dst": "100000003616818100",
+    "sum_kzt": 35000.0,
+    "n_tx": 2,
+    "depth": 2
+   },
+   {
+    "src": "100000003616818100",
+    "dst": "100000004005964100",
+    "sum_kzt": 40000.0,
+    "n_tx": 3,
+    "depth": 2
+   },
+   {
+    "src": "100000002731501100",
+    "dst": "100000004144536100",
+    "sum_kzt": 5000.0,
+    "n_tx": 1,
+    "depth": 2
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000001330595100",
+    "sum_kzt": 45000.0,
+    "n_tx": 3,
+    "depth": 3
+   },
+   {
+    "src": "100000001330595100",
+    "dst": "100000002257794100",
+    "sum_kzt": 154000.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000004064431100",
+    "sum_kzt": 26000.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000003616818100",
+    "sum_kzt": 28000.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000003275398100",
+    "dst": "100000001330595100",
+    "sum_kzt": 20000.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000004007197100",
+    "sum_kzt": 10048.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000008774237100",
+    "dst": "100000004144536100",
+    "sum_kzt": 10000.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000003338583100",
+    "sum_kzt": 21765.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000004144536100",
+    "sum_kzt": 40000.0,
+    "n_tx": 1,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000002731501100",
+    "sum_kzt": 550370.0,
+    "n_tx": 5,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000004007116100",
+    "sum_kzt": 535744.0,
+    "n_tx": 19,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000002886166100",
+    "sum_kzt": 185000.0,
+    "n_tx": 3,
+    "depth": 3
+   },
+   {
+    "src": "100000004160650100",
+    "dst": "100000004005964100",
+    "sum_kzt": 47900.0,
+    "n_tx": 5,
+    "depth": 3
+   },
+   {
+    "src": "100000004064431100",
+    "dst": "100000000704700100",
+    "sum_kzt": 10000.0,
+    "n_tx": 1,
+    "depth": 4
+   }
+  ],
+  "meta": {
+   "mock": true,
+   "n_nodes": 17,
+   "n_edges": 31,
+   "truncated": false
+  }
+ }
+}

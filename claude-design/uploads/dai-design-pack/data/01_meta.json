@@ -1,0 +1,44 @@
+{
+ "mock": true,
+ "source": "mock",
+ "n_nodes": 2248,
+ "n_edges": 3119,
+ "n_transactions": 4840,
+ "n_seed": 81,
+ "n_clusters": 35,
+ "period_start": "2026-07-01",
+ "period_end": "2026-07-31",
+ "total_kzt": 365890012.01,
+ "roles": [
+  {
+   "role": "consolidator",
+   "title": "Консолидатор",
+   "description": "Аккумулирует средства от нескольких участников"
+  },
+  {
+   "role": "transit",
+   "title": "Транзит",
+   "description": "Пропускает средства дальше, не удерживая"
+  },
+  {
+   "role": "distributor",
+   "title": "Распределитель",
+   "description": "Веерная рассылка средств многим получателям"
+  },
+  {
+   "role": "terminal",
+   "title": "Конечный получатель",
+   "description": "Деньги приходят и, по наблюдаемым данным, не уходят"
+  },
+  {
+   "role": "coordinator",
+   "title": "Координатор",
+   "description": "Структурно важный узел, кандидат в организаторы"
+  },
+  {
+   "role": "peripheral",
+   "title": "Периферия",
+   "description": "Признаков роли не выявлено"
+  }
+ ]
+}

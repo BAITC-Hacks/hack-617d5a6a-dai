@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e1014;color:#eceef2;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#cfd3da;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+button,nav a{white-space:nowrap;font-family:inherit}
+textarea{font-family:inherit}
+</style>
+</helmet>
+<div style="min-width:1440px;min-height:100vh;display:flex;flex-direction:column">
+  <div style="height:52px;flex:none;display:flex;align-items:center;gap:18px;padding:0 16px;border-bottom:1px solid #23262d;background:#121418">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:24px;height:24px;border-radius:6px;background:#eceef2;display:grid;place-items:center;color:#0e1014;font:700 13px 'IBM Plex Mono'">₸</div>
+      <div style="font-weight:600;font-size:15px">Граф денег</div>
+    </div>
+    <nav style="display:flex;gap:2px">
+      <a href="Обзор сети.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Обзор</a>
+      <a href="Рабочее место.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Рабочее место</a>
+      <a href="Кластеры.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Кластеры</a>
+      <a href="Запуск и устойчивость.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#a0a6b1">Устойчивость</a>
+      <a href="Перечень на проверку.dc.html" style="padding:6px 10px;border-radius:6px;font-size:13.5px;color:#fff;background:#20242c">Перечень <span style="font:600 11px 'IBM Plex Mono';background:#eceef2;color:#0e1014;border-radius:8px;padding:0 6px">3</span></a>
+    </nav>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button style="height:34px;padding:0 14px;border:1px solid #2c3038;border-radius:7px;background:#181b21;color:#e3e6eb;font-size:13px;font-weight:600">Экспорт CSV</button>
+      <button style="height:34px;padding:0 14px;border:0;border-radius:7px;background:#eceef2;color:#0e1014;font-size:13px;font-weight:600">Экспорт текста запроса</button>
+    </div>
+  </div>
+
+  <div style="flex:1;display:grid;grid-template-columns:560px minmax(0,1fr)">
+    <div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px;border-right:1px solid #23262d">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:24px;font-weight:600">Перечень на проверку</span><span style="font-size:13.5px;color:#aab0ba">3 узла</span></div>
+      <sc-for list="{{ items }}" as="i" hint-placeholder-count="3">
+        <div style="padding:14px 16px;background:#121418;border:1px solid {{ i.bd }};border-radius:10px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font:600 13px 'IBM Plex Mono';color:#8a909b">#{{ i.rank }}</span>
+            <span style="font:600 20px 'IBM Plex Mono'">{{ i.g }}</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px 0 3px;border-radius:4px;background:{{ i.bg }};color:{{ i.c }};font-size:12.5px;font-weight:600"><span style="width:16px;height:16px;border-radius:3px;background:{{ i.c }};color:#0e1014;font:700 10px/16px 'IBM Plex Sans';text-align:center">{{ i.gl }}</span>{{ i.l }}</span>
+            <span style="margin-left:auto;font:600 18px 'IBM Plex Mono'">{{ i.p }}</span>
+          </div>
+          <div style="font-size:13.5px;line-height:1.5;color:#c3c8d0">{{ i.why }}</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:12px;color:#8a909b">Заметка аналитика</span>
+            <textarea style="min-height:52px;resize:vertical;background:#0e1014;border:1px solid #2c3038;border-radius:7px;color:#eceef2;font-size:13.5px;line-height:1.45;padding:8px 10px;outline:none" placeholder="Добавьте комментарий к узлу" defaultValue="{{ i.note }}"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#aab0ba">
+            <span style="color:{{ i.stc }}">{{ i.st }}</span>
+            <a href="Карточка узла.dc.html" style="margin-left:auto">карточка</a><span style="color:#5f656f">·</span><span>убрать</span>
+          </div>
+        </div>
+      </sc-for>
+      <div style="padding:14px 16px;border:1px dashed #2c3038;border-radius:10px;font-size:13px;color:#aab0ba;line-height:1.5">Пустой перечень выглядит так: «Добавьте узлы из очереди — чекбокс в строке, клавиша P или “Добавить узлы из ответа” в чате».</div>
+    </div>
+
+    <div style="padding:22px 32px 48px;display:flex;flex-direction:column;gap:14px;align-items:center">
+      <div style="width:100%;max-width:820px;display:flex;align-items:center;gap:12px;font-size:12.5px;color:#aab0ba">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:2px;background:#123034;border:1px dashed #3fd6e0"></span>AI-фрагмент, не проверен</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="color:#6fd39b">✓</span>проверено аналитиком</span>
+        <span style="margin-left:auto">2 фрагмента ждут подтверждения</span>
+      </div>
+      <div style="width:100%;max-width:820px;background:#f4f2ee;color:#1a1c20;border-radius:6px;padding:48px 56px;display:flex;flex-direction:column;gap:18px;font-size:15px;line-height:1.6">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:12px;letter-spacing:.08em;color:#6a6d73;font-family:'IBM Plex Mono'">ПОДРАЗДЕЛЕНИЕ ФИНАНСОВОГО МОНИТОРИНГА · СОПРОВОДИТЕЛЬНАЯ СПРАВКА</div>
+          <div style="font-size:24px;font-weight:600;line-height:1.3">Структура сети переводов от 81 клиента из переданного перечня</div>
+          <div style="font-size:13px;color:#55585e">Период 01.07–31.07.2026 · сформировано 23.09.2026</div>
+        </div>
+        <div style="padding:12px 14px;border:1px solid #d9c98f;background:#faf3dc;border-radius:5px;font-size:13.5px;line-height:1.5;color:#4a3f17">Выводы носят гипотетический характер и основаны только на внутрибанковских переводах от 5 000 ₸. Они не устанавливают причастность клиентов к противоправной деятельности и требуют проверки.</div>
+
+        <div style="font-size:17px;font-weight:600;margin-top:4px">1. Структура сети</div>
+        <div style="position:relative;padding-left:22px"><span style="position:absolute;left:0;top:1px;color:#2f8f5b;font-weight:700">✓</span>От 81 seed-клиента по исходящим переводам на глубину 4 колена выявлено 2 248 клиентов и 3 119 связей на сумму 365 890 012 ₸. Сеть состоит из 16 несвязных частей; крупнейшая включает 1 877 клиентов и 46 seed.</div>
+        <div style="position:relative;padding:8px 10px 8px 12px;background:#e3f4f5;border:1px dashed #2aa8b2;border-radius:5px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font:700 10px 'IBM Plex Mono';color:#fff;background:#1a8e97;border-radius:3px;padding:1px 5px">AI</span><span style="font-size:12px;color:#1a6f76">не проверено</span><span style="margin-left:auto;display:flex;gap:6px"><span style="font-size:12px;padding:2px 8px;border-radius:4px;background:#1a1c20;color:#fff">Подтвердить</span><span style="font-size:12px;padding:2px 8px;border-radius:4px;border:1px solid #9fb9bb;color:#1a4f54">Удалить</span></span></div>
+          Средства seed-клиентов, по-видимому, сходятся в небольшое число точек консолидации на коленах 2–3, после чего рассылаются через распределителей. Такая структура характерна для контура сбора выручки.
+        </div>
+
+        <div style="font-size:17px;font-weight:600;margin-top:4px">2. Клиенты, рекомендуемые к углублённой проверке</div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid #d8d5ce;border-radius:5px">
+          <div style="display:flex;align-items:baseline;gap:10px"><span style="font:600 17px 'IBM Plex Mono'">100482</span><span style="font-size:13.5px;color:#b43a3a;font-weight:600">признаки консолидации</span><span style="margin-left:auto;font:500 13px 'IBM Plex Mono';color:#55585e">приоритет 0.94</span></div>
+          <div style="position:relative;padding-left:22px"><span style="position:absolute;left:0;top:1px;color:#2f8f5b;font-weight:700">✓</span><b>Роль.</b> Получает от 11 разных плательщиков, передаёт дальше 3% полученного; вход 4 215 000 ₸ выше P90 по колену (1,8 млн ₸).</div>
+          <div style="position:relative;padding-left:22px"><span style="position:absolute;left:0;top:1px;color:#2f8f5b;font-weight:700">✓</span><b>Связь с seed.</b> Средства 7 seed-клиентов поступают через 7 цепочек по 2 перевода, например 100017 → 150903 → 100482 (630 000 ₸ → 612 000 ₸).</div>
+          <div style="position:relative;padding:6px 10px;background:#e3f4f5;border:1px dashed #2aa8b2;border-radius:5px"><b>Гипотеза (AI, не проверено).</b> Возможен вывод средств вне банка: 97% входа не переведены дальше внутри банка.</div>
+          <div><b>Ограничения.</b> Переводы за пределы банка и переводы менее 5 000 ₸ в данных отсутствуют.</div>
+          <div><b>Запросить.</b> Выписку по снятиям наличных и внешним переводам за июль; назначения 28 входящих платежей.</div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;padding:12px 16px;border:1px solid #d8d5ce;border-radius:5px"><span style="font:600 17px 'IBM Plex Mono'">203117</span><span style="font-size:13.5px;color:#b8641a;font-weight:600">признаки распределителя</span><span style="font-size:13.5px;color:#55585e">рассылает 86 получателям; 83 из них на колене 4</span><span style="margin-left:auto;font-size:12.5px;color:#55585e">развернуть ▾</span></div>
+        <div style="display:flex;align-items:baseline;gap:10px;padding:12px 16px;border:1px solid #d8d5ce;border-radius:5px"><span style="font:600 17px 'IBM Plex Mono'">150903</span><span style="font-size:13.5px;color:#8a6a00;font-weight:600">признаки транзита</span><span style="font-size:13.5px;color:#55585e">пропуск 0.97, выход через 1 день</span><span style="margin-left:auto;font-size:12.5px;color:#55585e">развернуть ▾</span></div>
+
+        <div style="font-size:17px;font-weight:600;margin-top:4px">3. Рекомендуемые запросы</div>
+        <div style="position:relative;padding-left:22px"><span style="position:absolute;left:0;top:1px;color:#2f8f5b;font-weight:700">✓</span>Продолжить обход за 4-е колено для 444 клиентов, включая 83 получателя 203117.</div>
+        <div style="position:relative;padding-left:22px"><span style="position:absolute;left:0;top:1px;color:#2f8f5b;font-weight:700">✓</span>Запросить входящие переводы seed-клиентов из-за пределов выборки.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      items: [
+        [1, '100482', 'Консолидация', 'С', '#ff6b6b', '0.94', 'Получает от 11 разных плательщиков, передаёт дальше 3% полученного; вход 4,2 млн ₸ ≥ P90.', 'Сверить даты поступлений с датами эпизодов по делу.', 'справка: 1 AI-фрагмент ждёт проверки', '#8fe6ec', '#3a3f48'],
+        [2, '203117', 'Распределитель', 'Р', '#ff9f43', '0.88', 'Рассылает 86 получателям; 71% суммы уходит в день поступления.', '', 'справка проверена', '#6fd39b', '#23262d'],
+        [6, '150903', 'Транзит', 'Т', '#f5c542', '0.71', 'Пропуск 0.97, выход в среднем через 1 день; путь seed 100017 → 150903 → 100482.', '', 'справка проверена', '#6fd39b', '#23262d'],
+      ].map(i => ({ rank: i[0], g: i[1], l: i[2], gl: i[3], c: i[4], bg: i[4] + '24', p: i[5], why: i[6], note: i[7], st: i[8], stc: i[9], bd: i[10] })),
+    };
+  }
+}
+</script>
+</body>
+</html>
