@@ -1,13 +1,15 @@
 ---
 type: work-order
 owner: Иван
-status: active
+status: archived
 updated: 2026-09-23
 tags: [hackalem, граф-денег, mvp, docker, readme, контракт-api, итерации]
 related: ["[[ds_system_design_2026-09-23]]", "[[ds_metrics_2026-09-23]]", "[[deep_research_request_2026-09-23]]", "[[temporal_research]]", "[[hypothesis_ivan_din]]", "[[hypothesis_check_2026-09-23]]", "[[related_work_2026-09-23]]", "[[aml_analyst_ajtbd]]", "[[strategy_aml_four_checks]]"]
 ---
 
 # План выполнения «Граф денег»: остаток дня, 15:40–18:00
+
+> Рабочий план дня хакатона, сохранён как есть. Упоминания папки `handoff/` относятся к запискам между участниками, удалённым перед сдачей; актуальный запуск и проверка — в корневом README.
 
 Время по Asia/Almaty, в скобках T+N минут от старта разработки. Старт 13:00 и сдача 18:00 (T+300) подтверждены владельцем: таймер организаторов в 15:42 показывал 2 ч 17 мин. Пути от корня репозитория `hack-617d5a6a-dai`.
 
