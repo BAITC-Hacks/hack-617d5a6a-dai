@@ -1,0 +1,13 @@
+.git
+.venv
+**/__pycache__
+**/node_modules
+**/dist
+outputs
+scratch
+docs
+handoff
+.claude
+**/.env
+**/.env.*
+!**/.env.example

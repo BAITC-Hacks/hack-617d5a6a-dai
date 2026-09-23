@@ -10,7 +10,13 @@
 make setup && make pipeline
 ```
 
+<<<<<<< Updated upstream
 `make setup` создаёт `.venv` и ставит зависимости из `requirements.txt`. `make pipeline` пересчитывает три CSV из `task/data/*.parquet` в `outputs/` и сразу прогоняет проверку выгрузок. Прогон удался, если последние строки такие:
+=======
+Есть и путь через Docker: `docker compose run --rm pipeline` даёт те же три CSV, `docker compose up --build` поднимает экран на http://localhost:8080 (раздел [Через Docker](#через-docker-альтернатива-нативному-пути)).
+
+`make setup` создаёт `.venv` и ставит зависимости из `requirements.txt`. `make pipeline` за 2 секунды пересчитывает три CSV из `task/data/*.parquet` в `outputs/` и сразу прогоняет проверку выгрузок. Прогон удался, если последние строки такие:
+>>>>>>> Stashed changes
 
 ```text
 проверок 49, провалено 0
@@ -337,6 +343,17 @@ API_PROXY_TARGET=http://localhost:8001 npm run dev -- --port 5174
 
 - pip: `Could not find a version that satisfies the requirement` при `nodename nor servname provided` — это недоступный pypi.org, а не ошибка в `requirements.txt`. Если зависимости уже есть в кэше uv, помогает `uv pip install --offline --python .venv/bin/python -r requirements.txt`.
 - npm: `ENOTFOUND registry.npmjs.org` или `EAI_AGAIN` — не резолвится имя реестра, это сеть или DNS машины, а не ошибка в `package-lock.json`. Обход: `npm ci --prefer-offline` берёт пакеты из локального кэша npm. Он помогает, только если все пакеты из lockfile уже есть в кэше; если какого-то нет, та же ошибка `ENOTFOUND` повторится, и нужна сеть (или другой DNS-сервер, если связь по IP есть).
+
+### Через Docker (альтернатива нативному пути)
+
+Нужен Docker с Compose v2. Из корня репозитория:
+
+```bash
+docker compose run --rm pipeline     # три CSV в outputs/
+docker compose up --build            # экран на http://localhost:8080, API на :8000; остановка — docker compose down
+```
+
+Замер 23.09.2026 на macOS arm64 при уже скачанных базовых образах: сборка образов около 50 с, пересчёт 1,3 с, стек отвечает через 8 с после старта. Первая сборка на чистой машине дополнительно скачивает около 230 МБ (базовые образы и колёса Python) и требует сети, время зависит от канала. Если порты заняты: `API_PORT=18000 WEB_PORT=18080 docker compose up --build`. При старте API пайплайн пересчитывается заново; в `outputs/run_meta.json` при этом меняются только поля времени. Сборка проверена на arm64; базовые образы и закреплённые колёса Python есть и для amd64.
 
 ## Как проверить
 

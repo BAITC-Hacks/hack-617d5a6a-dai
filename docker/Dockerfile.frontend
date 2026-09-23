@@ -1,0 +1,14 @@
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY dai-front/package.json dai-front/package-lock.json dai-front/.npmrc ./
+RUN npm ci --no-audit --no-fund
+COPY dai-front/ ./
+# .env-файлы в образ не попадают (.dockerignore); без переменной клиент пойдёт на /graph вместо /api/graph
+ENV VITE_API_URL=/api
+# без tsc -b: проверка типов — гейт команды, сборка от ошибки типов не зависит
+RUN npx vite build
+
+FROM nginx:1.27-alpine
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
