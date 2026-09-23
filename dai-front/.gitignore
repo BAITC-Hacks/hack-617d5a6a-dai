@@ -25,3 +25,8 @@ dist-ssr
 
 # TanStack Router temp
 .tanstack
+
+# Env: only .env.example is committed; real values live locally / in the hosting settings
+.env
+.env.*
+!.env.example
