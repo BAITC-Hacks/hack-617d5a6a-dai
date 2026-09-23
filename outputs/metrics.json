@@ -1,0 +1,1951 @@
+{
+  "generated_at": "2026-09-23T16:35:58+0500",
+  "params": {
+    "data": "task/data",
+    "out": "outputs",
+    "perm": 1000,
+    "seed": 42,
+    "compare": null,
+    "temporal_impl": "pipeline"
+  },
+  "versions": {
+    "python": "3.11.4",
+    "pandas": "2.3.3",
+    "numpy": "1.26.4",
+    "networkx": "3.4.2"
+  },
+  "inputs": {
+    "nodes_roles.csv": "221c1a00c8c3e8e30b87ca066407484bf5d8117923a2ae6b31c608b67d9c3a3c",
+    "clusters.csv": "5e92df35bafa2487b784cd3caab438baa3b9a3ab5c8f742ec34e092d889e5d66",
+    "top_nodes.csv": "37174bf4030fe567dbcbc01e89d6256e39decbcedf14cfd83540d219b5732043",
+    "nodes.parquet": "d2a45b0df6e9352832d5fb09839d10b9e23f898156c3bab263b051b31cc0296d",
+    "edges.parquet": "4e71dde5cd3115bcb26e91202665532ee6581cf8233a9fc8059ea59fb7358a38",
+    "transactions.parquet": "c30c5317b5439591dde86f2058dc47a3d19b2900c055ded994fe547f6fb7e7da"
+  },
+  "summary": {
+    "n_checks": 51,
+    "required_failed": [],
+    "soft_failed": [
+      "role_threshold_sensitivity"
+    ],
+    "elapsed_s": 3.458
+  },
+  "timing_s": {
+    "load_parquet": 0.038,
+    "build_graphs": 0.012,
+    "schema_coverage": 0.018,
+    "roles_scores_evidence": 0.004,
+    "top_checks": 0.003,
+    "cluster_checks": 0.005,
+    "determinism": 0.001,
+    "cluster_stability": 0.28,
+    "pipeline_reference": 1.039,
+    "score_noise_ablation": 1.078,
+    "role_sensitivity": 0.001,
+    "permutation": 0.634,
+    "value": 0.018,
+    "baselines": 0.325
+  },
+  "checks": [
+    {
+      "group": "b",
+      "name": "files_present",
+      "required": true,
+      "ok": true,
+      "value": {
+        "nodes_roles": "221c1a00c8c3e8e3",
+        "clusters": "5e92df35bafa2487",
+        "top_nodes": "37174bf4030fe567"
+      },
+      "threshold": "3 CSV",
+      "note": "sha256 (первые 16 знаков) — полные хеши в inputs"
+    },
+    {
+      "group": "b",
+      "name": "csv_parse",
+      "required": true,
+      "ok": true,
+      "value": "все 3 читаются",
+      "threshold": "CSV читается",
+      "note": "лишняя запятая без кавычек, пустой файл или не UTF-8"
+    },
+    {
+      "group": "b",
+      "name": "schema_nodes_roles_columns",
+      "required": true,
+      "ok": true,
+      "value": {
+        "missing": [],
+        "extra": [
+          "is_seed",
+          "depth",
+          "in_deg",
+          "out_deg",
+          "in_kzt",
+          "out_kzt",
+          "in_tx",
+          "out_tx",
+          "pass_kzt",
+          "pass_through",
+          "pagerank",
+          "betweenness",
+          "n_seed_upstream",
+          "active_days",
+          "first_date",
+          "last_date",
+          "truncated_by_depth",
+          "flags",
+          "fast_transit_pairs",
+          "fast_transit_flag",
+          "priority_raw",
+          "score_terms",
+          "role_checks",
+          "next_request",
+          "limitations",
+          "method",
+          "n_terms_above_p95",
+          "in_queue"
+        ]
+      },
+      "threshold": [
+        "gid",
+        "role",
+        "role_score",
+        "cluster_id",
+        "priority_score",
+        "evidence"
+      ],
+      "note": "лишние колонки допустимы"
+    },
+    {
+      "group": "b",
+      "name": "schema_clusters_columns",
+      "required": true,
+      "ok": true,
+      "value": {
+        "missing": [],
+        "extra": [
+          "n_edges_internal",
+          "share_depth4"
+        ]
+      },
+      "threshold": [
+        "cluster_id",
+        "n_nodes",
+        "n_seed",
+        "sum_kzt_internal",
+        "top_gids",
+        "hypothesis"
+      ],
+      "note": "лишние колонки допустимы"
+    },
+    {
+      "group": "b",
+      "name": "schema_top_nodes_columns",
+      "required": true,
+      "ok": true,
+      "value": {
+        "missing": [],
+        "extra": [
+          "cluster_id",
+          "priority_raw",
+          "score_terms",
+          "in_queue"
+        ]
+      },
+      "threshold": [
+        "rank",
+        "gid",
+        "role",
+        "priority_score",
+        "why"
+      ],
+      "note": "лишние колонки допустимы"
+    },
+    {
+      "group": "b",
+      "name": "schema_nodes_roles_dtypes",
+      "required": true,
+      "ok": true,
+      "value": {
+        "gid_not_int64": 0,
+        "role_score_nan": 0,
+        "priority_score_nan": 0,
+        "cluster_id_nan_or_nonint": 0,
+        "gid_examples": []
+      },
+      "threshold": "все 0",
+      "note": "gid — целое без знака ≤19 цифр в пределах int64, читается строкой без float; скоры — числа; cluster_id — целое"
+    },
+    {
+      "group": "b",
+      "name": "coverage_nodes",
+      "required": true,
+      "ok": true,
+      "value": {
+        "rows": 2248,
+        "missing": 0,
+        "unknown": 0
+      },
+      "threshold": 2248,
+      "note": "строки nodes_roles.csv против nodes.parquet"
+    },
+    {
+      "group": "b",
+      "name": "gid_unique",
+      "required": true,
+      "ok": true,
+      "value": 0,
+      "threshold": 0,
+      "note": "дубли gid"
+    },
+    {
+      "group": "b",
+      "name": "role_vocabulary",
+      "required": true,
+      "ok": true,
+      "value": [],
+      "threshold": [
+        "consolidator",
+        "transit",
+        "distributor",
+        "terminal",
+        "coordinator",
+        "peripheral"
+      ],
+      "note": "роль из словаря ТЗ"
+    },
+    {
+      "group": "b",
+      "name": "role_distribution",
+      "required": false,
+      "ok": true,
+      "value": {
+        "consolidator": 0.0641,
+        "transit": 0.0271,
+        "distributor": 0.0129,
+        "terminal": 0.46,
+        "coordinator": 0.024,
+        "peripheral": 0.4119
+      },
+      "threshold": "max доля ≤0.85, ролей ≥3",
+      "note": "доли ролей; санити-граница, не цель"
+    },
+    {
+      "group": "b",
+      "name": "terminal_not_truncated",
+      "required": true,
+      "ok": true,
+      "value": 0,
+      "threshold": 0,
+      "note": "terminal у depth=4 без исходящих запрещён: выхода не видно по построению обхода"
+    },
+    {
+      "group": "b",
+      "name": "role_structure_consistency",
+      "required": false,
+      "ok": true,
+      "value": {
+        "consolidator_in_deg<2": 0,
+        "distributor_out_deg<2": 0,
+        "transit_no_in_or_out": 0,
+        "terminal_no_in": 0,
+        "coordinator_no_in_or_out": 0,
+        "isolated_not_peripheral": 0
+      },
+      "threshold": "все 0",
+      "note": "минимальная структура под роль по parquet"
+    },
+    {
+      "group": "b",
+      "name": "role_score_range",
+      "required": true,
+      "ok": true,
+      "value": {
+        "out_of_range": 0,
+        "min": 0.03,
+        "max": 1.0
+      },
+      "threshold": "[0;1]",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "priority_score_range",
+      "required": true,
+      "ok": true,
+      "value": {
+        "out_of_range": 0,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "threshold": "[0;1]",
+      "note": "сырой скор идёт в priority_raw (0…41,2 на данных v1, потолок 7·ln 2248 + 1 ≈ 55,0); priority_score = priority_raw / max(priority_raw)"
+    },
+    {
+      "group": "b",
+      "name": "evidence_format",
+      "required": true,
+      "ok": true,
+      "value": {
+        "empty": 0,
+        "over_200": 0,
+        "no_digit": 0,
+        "newline": 0,
+        "mock_prefix": 0,
+        "max_len": 191
+      },
+      "threshold": "непусто, ≤200, есть цифра, без перевода строки, без префикса mock (план §3.3)",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "evidence_mentions_boundary",
+      "required": false,
+      "ok": true,
+      "value": {
+        "truncated": 444,
+        "mention": 444
+      },
+      "threshold": "все depth=4 без выхода",
+      "note": "в evidence узла на границе выгрузки есть слово о границе"
+    },
+    {
+      "group": "b",
+      "name": "top_min_rows",
+      "required": true,
+      "ok": true,
+      "value": 50,
+      "threshold": "≥20",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "top_rank_sorted",
+      "required": true,
+      "ok": true,
+      "value": {
+        "rank_1..n": true,
+        "priority_non_increasing": true
+      },
+      "threshold": "rank 1..n, priority по убыванию",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "top_gid_in_nodes",
+      "required": true,
+      "ok": true,
+      "value": {
+        "bad_gid": 0,
+        "not_in_nodes_roles": 0,
+        "dup": 0
+      },
+      "threshold": "все 0",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "top_matches_nodes",
+      "required": true,
+      "ok": true,
+      "value": {
+        "role_mismatch": 0,
+        "priority_mismatch": 0
+      },
+      "threshold": "все 0",
+      "note": "роль и priority_score в top_nodes совпадают с nodes_roles (нечисловой priority считается расхождением)"
+    },
+    {
+      "group": "b",
+      "name": "top_is_topk_by_priority",
+      "required": false,
+      "ok": true,
+      "value": {
+        "overlap": 50,
+        "k": 50
+      },
+      "threshold": "overlap = k",
+      "note": "top_nodes — первые k по priority_score из nodes_roles (при равенстве по gid)"
+    },
+    {
+      "group": "b",
+      "name": "top_why_nonempty",
+      "required": true,
+      "ok": true,
+      "value": 0,
+      "threshold": 0,
+      "note": "why непустой (план §3.3)"
+    },
+    {
+      "group": "b",
+      "name": "top_why_format",
+      "required": false,
+      "ok": true,
+      "value": {
+        "no_digit": 0,
+        "over_200": 0
+      },
+      "threshold": "есть цифра, ≤200",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "schema_clusters_dtypes",
+      "required": true,
+      "ok": true,
+      "value": {
+        "cluster_id_nan_or_nonint": 0,
+        "n_nodes_nan_or_nonint": 0,
+        "n_seed_nan_or_nonint": 0,
+        "sum_kzt_internal_nan": 0
+      },
+      "threshold": "все 0",
+      "note": "cluster_id, n_nodes, n_seed — целые; sum_kzt_internal — число"
+    },
+    {
+      "group": "b",
+      "name": "cluster_ids_consistent",
+      "required": true,
+      "ok": true,
+      "value": {
+        "dup_in_clusters": 0,
+        "only_in_nodes": 0,
+        "only_in_clusters": 0,
+        "nodes_without_cluster": 0,
+        "n_clusters": 89
+      },
+      "threshold": "все 0",
+      "note": "cluster_id у каждого узла и ровно одна строка в clusters.csv"
+    },
+    {
+      "group": "b",
+      "name": "cluster_n_nodes",
+      "required": true,
+      "ok": true,
+      "value": {
+        "sum": 2248,
+        "row_mismatch": 0
+      },
+      "threshold": 2248,
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "cluster_n_seed",
+      "required": true,
+      "ok": true,
+      "value": {
+        "sum": 81,
+        "row_mismatch": 0
+      },
+      "threshold": 81,
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "cluster_sum_kzt_internal",
+      "required": true,
+      "ok": true,
+      "value": {
+        "sum": 331254491.97,
+        "turnover": 365890012.01,
+        "share": 0.905339,
+        "row_mismatch": 0
+      },
+      "threshold": "≤365890012; строка = пересчёт ±1.0 KZT",
+      "note": "внутренний оборот = сумма направленных рёбер с обоими концами в кластере"
+    },
+    {
+      "group": "b",
+      "name": "cluster_top_gids_subset",
+      "required": true,
+      "ok": true,
+      "value": {
+        "outside_cluster": 0,
+        "empty_top": 0
+      },
+      "threshold": 0,
+      "note": "top_gids непуст, каждый gid принадлежит своему кластеру"
+    },
+    {
+      "group": "b",
+      "name": "cluster_hypothesis_nonempty",
+      "required": true,
+      "ok": true,
+      "value": 0,
+      "threshold": 0,
+      "note": "hypothesis непустая (план §3.3)"
+    },
+    {
+      "group": "b",
+      "name": "cluster_hypothesis_format",
+      "required": false,
+      "ok": true,
+      "value": {
+        "no_digit": 0
+      },
+      "threshold": "есть число",
+      "note": ""
+    },
+    {
+      "group": "b",
+      "name": "cluster_connected_in_U",
+      "required": true,
+      "ok": true,
+      "value": 0,
+      "threshold": 0,
+      "note": "каждый кластер связен в ненаправленной проекции U"
+    },
+    {
+      "group": "b",
+      "name": "determinism_two_runs",
+      "required": false,
+      "ok": null,
+      "value": null,
+      "threshold": "все True",
+      "note": "не запускалось: дайте --compare <каталог второго прогона>"
+    },
+    {
+      "group": "b",
+      "name": "cluster_matches_reference",
+      "required": false,
+      "ok": null,
+      "value": {
+        "ami": 0.950625,
+        "ari": 0.92422,
+        "identical_ids": false
+      },
+      "threshold": 1.0,
+      "note": "выгрузка против эталонного Louvain seed 42 на U; 1,0 ожидается, если U строится по возрастанию gid и в порядке edges.parquet (ds_system_design §3); при другом порядке вставки 0,93–0,96, как между seed"
+    },
+    {
+      "group": "b",
+      "name": "cluster_stability_seed",
+      "required": false,
+      "ok": true,
+      "value": {
+        "n_communities": {
+          "42": 91,
+          "1": 86,
+          "7": 92
+        },
+        "louvain42~louvain1": {
+          "ami": 0.929747,
+          "ari": 0.879451
+        },
+        "louvain42~louvain7": {
+          "ami": 0.942078,
+          "ari": 0.895204
+        },
+        "louvain1~louvain7": {
+          "ami": 0.960277,
+          "ari": 0.930231
+        },
+        "csv~louvain42": {
+          "ami": 0.950625,
+          "ari": 0.92422
+        },
+        "csv~louvain1": {
+          "ami": 0.942513,
+          "ari": 0.896346
+        },
+        "csv~louvain7": {
+          "ami": 0.959863,
+          "ari": 0.921575
+        }
+      },
+      "threshold": "AMI между seed ≥0.90",
+      "note": "эталонный Louvain на U; строки csv~ — совпадение выгрузки с эталоном"
+    },
+    {
+      "group": "b",
+      "name": "cluster_stability_resolution",
+      "required": false,
+      "ok": true,
+      "value": {
+        "res0.8": {
+          "n_communities": 84,
+          "ami_vs_res1": 0.971222,
+          "ari_vs_res1": 0.951744,
+          "ami_vs_csv": 0.950301
+        },
+        "res1.2": {
+          "n_communities": 91,
+          "ami_vs_res1": 0.957219,
+          "ari_vs_res1": 0.868962,
+          "ami_vs_csv": 0.92394
+        }
+      },
+      "threshold": "AMI(0.8|1.2 ~ 1.0) ≥0.85",
+      "note": "seed 42; соседние resolution"
+    },
+    {
+      "group": "c",
+      "name": "cluster_modularity",
+      "required": false,
+      "ok": null,
+      "value": {
+        "csv": 0.858876,
+        "louvain42": 0.859508,
+        "n_clusters_csv": 89,
+        "n_clusters_louvain42": 91
+      },
+      "threshold": null,
+      "note": "Q на явной U (вес — KZT в обе стороны), γ = 1,0; эталон 0,8595; csv = null, если не все узлы в кластерах"
+    },
+    {
+      "group": "b",
+      "name": "features_match_parquet",
+      "required": false,
+      "ok": true,
+      "value": {
+        "in_deg": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "out_deg": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "in_tx": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "out_tx": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "depth": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "is_seed": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "in_kzt": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "out_kzt": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "pass_kzt": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "pass_through": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "betweenness": {
+          "mismatch": 0,
+          "example_gid": null
+        },
+        "truncated_by_depth": {
+          "mismatch": 0,
+          "example_gid": null
+        }
+      },
+      "threshold": "0 расхождений",
+      "note": "точно: степени, число переводов, depth, is_seed, truncated_by_depth; ±0,01 KZT: суммы, pass_kzt = min(in_kzt, out_kzt); ±1e-3: pass_through = min/max; ±1e-6: betweenness"
+    },
+    {
+      "group": "b",
+      "name": "priority_raw_matches_reference",
+      "required": true,
+      "ok": true,
+      "value": {
+        "priority_raw": {
+          "rows_off": 0,
+          "max_abs": 0.0,
+          "example_gid": null
+        },
+        "priority_score": {
+          "rows_off": 0,
+          "max_abs": 0.0,
+          "example_gid": null
+        },
+        "n_terms_above_p95": {
+          "rows_off": 0,
+          "max_abs": 0.0,
+          "example_gid": null
+        },
+        "in_queue": {
+          "rows_off": 0,
+          "max_abs": 0.0,
+          "example_gid": null
+        },
+        "reference_terms": [
+          "in_kzt",
+          "out_kzt",
+          "in_deg",
+          "out_deg",
+          "betweenness",
+          "pass_kzt",
+          "n_seed_upstream",
+          "fast_transit_flag"
+        ],
+        "max_priority_raw": 41.2036
+      },
+      "threshold": "|Δ| ≤ 1e-3 по скорам, 0 по n_terms_above_p95 и in_queue",
+      "note": "эталон — функции пайплайна (load → features.compute → run._temporal_features → priority.v1) на parquet; расхождение значит, что CSV устарели относительно кода"
+    },
+    {
+      "group": "b",
+      "name": "top20_noise_5pct",
+      "required": false,
+      "ok": true,
+      "value": {
+        "mean_overlap": 0.965,
+        "min_overlap": 0.95,
+        "repeats": 20
+      },
+      "threshold": "средняя доля пересечения ≥0.80",
+      "note": "priority.v1 пайплайна, шум U(0,95;1,05) на каждый перевод: суммы, pass_kzt и быстрый транзит пересчитываются; степени и betweenness не меняются"
+    },
+    {
+      "group": "b",
+      "name": "top20_ablation",
+      "required": false,
+      "ok": true,
+      "value": {
+        "in_kzt": 0.9,
+        "out_kzt": 0.85,
+        "in_deg": 0.9,
+        "out_deg": 0.8,
+        "betweenness": 0.85,
+        "pass_kzt": 0.9,
+        "n_seed_upstream": 0.85,
+        "fast_transit_flag": 0.9
+      },
+      "threshold": "пересечение ≥0.70 без любого слагаемого",
+      "note": "вклады c_<признак> эталона пайплайна; без перенормировки p_j"
+    },
+    {
+      "group": "b",
+      "name": "role_threshold_sensitivity",
+      "required": false,
+      "ok": false,
+      "value": {
+        "coord_in-(2)": 0.013345,
+        "coord_in+(4)": 0.011566,
+        "coord_out-(3)": 0.01468,
+        "coord_out+(8)": 0.005783,
+        "dist_out-(8)": 0.003114,
+        "dist_out+(16.35)": 0.008007,
+        "cons_in-(2)": 0.105427,
+        "cons_in+(4)": 0.037811,
+        "transit_band-(0.1)": 0.008007,
+        "transit_band+(0.3)": 0.013345
+      },
+      "threshold": "max доля смены роли ≤0.10",
+      "note": "правила заглушки v0; сдвиг порога на соседнюю ступень квантилей P50…P99,5 среди ненулевых; для transit — полоса ±0,1"
+    },
+    {
+      "group": "b",
+      "name": "temporal_fast_transit_permutation",
+      "required": false,
+      "ok": true,
+      "value": {
+        "observed": 54,
+        "n_perm": 1000,
+        "seed": 42,
+        "global": {
+          "mean": 34.08,
+          "sd": 3.46,
+          "p": 0.001
+        },
+        "within_sender": {
+          "mean": 38.16,
+          "sd": 3.56,
+          "p": 0.001
+        },
+        "pairs_total": 350,
+        "elapsed_s": {
+          "setup": 0.013,
+          "global": 0.251,
+          "within_sender": 0.368,
+          "total": 0.633
+        }
+      },
+      "threshold": "p ≤0.01 при обоих нулях",
+      "note": "pipeline.temporal_check.run_check, статистика fast_transit; p = (1 + #нуль ≥ набл.)/(N + 1)"
+    },
+    {
+      "group": "b",
+      "name": "pipeline_runtime",
+      "required": false,
+      "ok": true,
+      "value": {
+        "elapsed_s": 1.227,
+        "method": "v1",
+        "stages": {
+          "load": 0.035,
+          "sanity_check": 0.005,
+          "build_graph": 0.004,
+          "features.degrees": 0.007,
+          "features.pagerank": 0.022,
+          "features.betweenness": 0.939,
+          "features.n_seed_upstream": 0.005,
+          "features.dates_flags": 0.006,
+          "temporal.fast_transit": 0.036,
+          "clusters.louvain": 0.063,
+          "roles_v1": 0.028,
+          "priority": 0.014,
+          "evidence": 0.059
+        }
+      },
+      "threshold": "≤300 с",
+      "note": "из run_meta.json пайплайна"
+    },
+    {
+      "group": "c",
+      "name": "feature_quantiles",
+      "required": false,
+      "ok": null,
+      "value": {
+        "in_kzt": {
+          "all": {
+            "p50": 50000.0,
+            "p75": 164528.0,
+            "p90": 405790.0,
+            "p95": 613779.0,
+            "p99": 1790237.4
+          },
+          "nonzero": {
+            "p50": 50000.0,
+            "p75": 166819.7,
+            "p90": 416000.0,
+            "p95": 620722.5,
+            "p99": 1814421.0
+          },
+          "n_nonzero": 2206
+        },
+        "out_kzt": {
+          "all": {
+            "p50": 0.0,
+            "p75": 20000.0,
+            "p90": 266640.0,
+            "p95": 747120.9,
+            "p99": 3204227.41
+          },
+          "nonzero": {
+            "p50": 90840.5,
+            "p75": 397500.0,
+            "p90": 1410790.0,
+            "p95": 2332914.1,
+            "p99": 5543117.9
+          },
+          "n_nonzero": 694
+        },
+        "in_deg": {
+          "all": {
+            "p50": 1.0,
+            "p75": 1.0,
+            "p90": 2.0,
+            "p95": 3.0,
+            "p99": 6.0
+          },
+          "nonzero": {
+            "p50": 1.0,
+            "p75": 1.0,
+            "p90": 2.0,
+            "p95": 3.0,
+            "p99": 6.0
+          },
+          "n_nonzero": 2206
+        },
+        "out_deg": {
+          "all": {
+            "p50": 0.0,
+            "p75": 1.0,
+            "p90": 3.0,
+            "p95": 5.0,
+            "p99": 23.53
+          },
+          "nonzero": {
+            "p50": 2.0,
+            "p75": 3.0,
+            "p90": 8.0,
+            "p95": 16.35,
+            "p99": 61.07
+          },
+          "n_nonzero": 694
+        },
+        "betweenness": {
+          "all": {
+            "p50": 0.0,
+            "p75": 1e-06,
+            "p90": 4.8e-05,
+            "p95": 0.000155,
+            "p99": 0.001989
+          },
+          "nonzero": {
+            "p50": 2.4e-05,
+            "p75": 0.000106,
+            "p90": 0.000483,
+            "p95": 0.001336,
+            "p99": 0.004282
+          },
+          "n_nonzero": 599
+        },
+        "pass_kzt": {
+          "all": {
+            "p50": 0.0,
+            "p75": 10000.0,
+            "p90": 87225.0,
+            "p95": 200000.0,
+            "p99": 607703.0
+          },
+          "nonzero": {
+            "p50": 43500.0,
+            "p75": 138000.0,
+            "p90": 349000.0,
+            "p95": 515790.0,
+            "p99": 1289200.0
+          },
+          "n_nonzero": 671
+        },
+        "n_seed_upstream": {
+          "all": {
+            "p50": 7.0,
+            "p75": 7.0,
+            "p90": 9.0,
+            "p95": 10.0,
+            "p99": 11.0
+          },
+          "nonzero": {
+            "p50": 7.0,
+            "p75": 7.0,
+            "p90": 9.0,
+            "p95": 10.0,
+            "p99": 11.0
+          },
+          "n_nonzero": 2198
+        }
+      },
+      "threshold": null,
+      "note": "семь слагаемых скора по всем 2 248 узлам и среди ненулевых; значения признаков эталона пайплайна (pass_kzt = 0 у граничных узлов глубины 4 и изолятов)"
+    },
+    {
+      "group": "c",
+      "name": "value_removal_topN",
+      "required": false,
+      "ok": true,
+      "value": {
+        "baseline_lcc": 1877,
+        "N=10": {
+          "priority_csv": {
+            "lcc": 1456,
+            "turnover_left": 0.744578
+          },
+          "betweenness": {
+            "lcc": 1567,
+            "turnover_left": 0.851948
+          },
+          "turnover": {
+            "lcc": 1466,
+            "turnover_left": 0.71366
+          },
+          "random_median": {
+            "lcc": 1863.5,
+            "turnover_left": 0.992907
+          }
+        },
+        "N=20": {
+          "priority_csv": {
+            "lcc": 1243,
+            "turnover_left": 0.649147
+          },
+          "betweenness": {
+            "lcc": 1257,
+            "turnover_left": 0.757209
+          },
+          "turnover": {
+            "lcc": 1376,
+            "turnover_left": 0.622503
+          },
+          "random_median": {
+            "lcc": 1845.0,
+            "turnover_left": 0.983637
+          }
+        },
+        "N=50": {
+          "priority_csv": {
+            "lcc": 930,
+            "turnover_left": 0.483826
+          },
+          "betweenness": {
+            "lcc": 921,
+            "turnover_left": 0.660664
+          },
+          "turnover": {
+            "lcc": 1034,
+            "turnover_left": 0.437299
+          },
+          "random_median": {
+            "lcc": 1792.0,
+            "turnover_left": 0.95425
+          }
+        }
+      },
+      "threshold": "N=20: остаток оборота по priority_csv < случайного",
+      "note": "LCC — крупнейшая слабая компонента, узлов; turnover_left — доля оборота на рёбрах без изъятых узлов; случайно — медиана 20 повторов"
+    },
+    {
+      "group": "b",
+      "name": "queue_count_matches_run_meta",
+      "required": false,
+      "ok": true,
+      "value": {
+        "in_queue_csv": 165,
+        "n_in_queue_run_meta": 165
+      },
+      "threshold": "равны",
+      "note": "число строк in_queue = 1 в nodes_roles.csv против run_meta.json → n_in_queue"
+    },
+    {
+      "group": "b",
+      "name": "queue_rule_consistent",
+      "required": false,
+      "ok": true,
+      "value": {
+        "mismatch": 0,
+        "min_terms": 2,
+        "in_queue_n": 165,
+        "n_terms_dist": {
+          "0": 1894,
+          "1": 189,
+          "2": 75,
+          "3": 52,
+          "4": 18,
+          "5": 11,
+          "6": 9
+        }
+      },
+      "threshold": 0,
+      "note": "in_queue = 1 ⇔ n_terms_above_p95 ≥ queue_min_terms_above_p95 из run_meta.json (rules.QUEUE_MIN_TERMS_ABOVE_P95); при отсутствии ключа 2"
+    },
+    {
+      "group": "c",
+      "name": "value_queue_share",
+      "required": false,
+      "ok": null,
+      "value": {
+        "in_queue_share": 0.073399,
+        "in_queue_n": 165,
+        "n_nodes": 2248,
+        "top20_in_queue": 20,
+        "queue_rule": "в очереди проверки, если не меньше 2 из 7 признаков скора в верхних 5 % (вклад −ln p ≥ −ln 0,05 ≈ 3,0); сумма priority_raw ≥ 6,0 — только справочно"
+      },
+      "threshold": null,
+      "note": "доля и число узлов в очереди проверки по колонке in_queue; сколько из топ-20 по priority_score в очереди"
+    },
+    {
+      "group": "c",
+      "name": "value_manual_3gid",
+      "required": false,
+      "ok": null,
+      "value": [
+        "100000001275752100",
+        "100000005550592100",
+        "100000007737775100"
+      ],
+      "threshold": "≤60 с на gid",
+      "note": "ручной чек по шаблону docs/ds_metrics: роль, правило, числа evidence против карточки"
+    },
+    {
+      "group": "c",
+      "name": "baselines_run",
+      "required": false,
+      "ok": true,
+      "value": {
+        "n_summary": 10,
+        "warnings": 0
+      },
+      "threshold": null,
+      "note": "pipeline.baselines.run_baselines; полный результат — ключ baselines отчёта"
+    }
+  ],
+  "baselines": {
+    "baselines": {
+      "priority": {
+        "conditions": {
+          "N": [
+            10,
+            20,
+            50
+          ],
+          "seed": 42,
+          "n_random": 20,
+          "turnover_total_kzt": 365890012.01,
+          "lcc_before": 1877,
+          "n_seed": 81,
+          "n_nodes": 2248,
+          "random_band": "медиана и перцентили 5–95 % по n_random повторам; «лучше» и «хуже» только вне полосы",
+          "removed_turnover_share": "Σ sum_kzt рёбер, инцидентных изъятым узлам / общий оборот",
+          "lcc_after": "узлов в крупнейшей слабосвязной компоненте оставшегося графа (изоляты считаются)",
+          "seed_branches_hit": "seed, у которых изъятый узел достижим по исходящим рёбрам (сам seed входит)",
+          "evidence": "для всех методов evidence берётся из nodes_roles.csv у выбранных узлов; «с числом» = есть цифра вне gid (≥15 цифр подряд не считаются)"
+        },
+        "methods": {
+          "ours": "priority_score из nodes_roles.csv, по убыванию; при равенстве gid по возрастанию",
+          "random": "случайный порядок узлов",
+          "turnover": "in_kzt + out_kzt по убыванию",
+          "degree": "in_deg + out_deg по убыванию",
+          "pagerank": "PageRank стартового кода (граф из edges, weight=sum_kzt, alpha 0,85)",
+          "seed_first": "все seed первыми в случайном порядке, затем остальные в случайном порядке"
+        },
+        "metrics": {
+          "removed_turnover_share": {
+            "label": "снятый оборот",
+            "direction": "больше лучше"
+          },
+          "lcc_after": {
+            "label": "LCC после изъятия",
+            "direction": "меньше лучше"
+          },
+          "seed_branches_hit": {
+            "label": "затронутые seed-ветви",
+            "direction": "больше лучше"
+          },
+          "depth4_share": {
+            "label": "доля depth 4",
+            "direction": "меньше лучше"
+          },
+          "evidence_nonempty_share": {
+            "label": "evidence непустой",
+            "direction": "больше лучше"
+          },
+          "evidence_numeric_share": {
+            "label": "evidence с числом",
+            "direction": "больше лучше"
+          }
+        },
+        "outcomes": {
+          "ours": {
+            "10": {
+              "removed_turnover_share": 0.255422,
+              "lcc_after": 1456,
+              "seed_branches_hit": 12,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0,
+              "top_csv_rows_used": 10,
+              "why_numeric_share": 1.0
+            },
+            "20": {
+              "removed_turnover_share": 0.350853,
+              "lcc_after": 1243,
+              "seed_branches_hit": 17,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0,
+              "top_csv_rows_used": 20,
+              "why_numeric_share": 1.0
+            },
+            "50": {
+              "removed_turnover_share": 0.516174,
+              "lcc_after": 930,
+              "seed_branches_hit": 27,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0,
+              "top_csv_rows_used": 50,
+              "why_numeric_share": 1.0
+            }
+          },
+          "turnover": {
+            "10": {
+              "removed_turnover_share": 0.28634,
+              "lcc_after": 1466,
+              "seed_branches_hit": 12,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            },
+            "20": {
+              "removed_turnover_share": 0.377497,
+              "lcc_after": 1376,
+              "seed_branches_hit": 13,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            },
+            "50": {
+              "removed_turnover_share": 0.562701,
+              "lcc_after": 1034,
+              "seed_branches_hit": 20,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            }
+          },
+          "degree": {
+            "10": {
+              "removed_turnover_share": 0.23091,
+              "lcc_after": 1428,
+              "seed_branches_hit": 11,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            },
+            "20": {
+              "removed_turnover_share": 0.302821,
+              "lcc_after": 1188,
+              "seed_branches_hit": 12,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            },
+            "50": {
+              "removed_turnover_share": 0.466742,
+              "lcc_after": 620,
+              "seed_branches_hit": 14,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            }
+          },
+          "pagerank": {
+            "10": {
+              "removed_turnover_share": 0.059613,
+              "lcc_after": 1846,
+              "seed_branches_hit": 11,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            },
+            "20": {
+              "removed_turnover_share": 0.072059,
+              "lcc_after": 1834,
+              "seed_branches_hit": 17,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            },
+            "50": {
+              "removed_turnover_share": 0.129213,
+              "lcc_after": 1749,
+              "seed_branches_hit": 28,
+              "depth4_share": 0.0,
+              "evidence_nonempty_share": 1.0,
+              "evidence_numeric_share": 1.0
+            }
+          },
+          "random": {
+            "10": {
+              "removed_turnover_share": {
+                "median": 0.007093,
+                "p5": 0.004254,
+                "p95": 0.01379
+              },
+              "lcc_after": {
+                "median": 1863.5,
+                "p5": 1842.1,
+                "p95": 1868.05
+              },
+              "seed_branches_hit": {
+                "median": 11.5,
+                "p5": 8.0,
+                "p95": 16.0
+              },
+              "depth4_share": {
+                "median": 0.2,
+                "p5": 0.0,
+                "p95": 0.4
+              },
+              "evidence_nonempty_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              },
+              "evidence_numeric_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              }
+            },
+            "20": {
+              "removed_turnover_share": {
+                "median": 0.016363,
+                "p5": 0.010137,
+                "p95": 0.053106
+              },
+              "lcc_after": {
+                "median": 1845.0,
+                "p5": 1809.5,
+                "p95": 1855.1
+              },
+              "seed_branches_hit": {
+                "median": 14.0,
+                "p5": 11.0,
+                "p95": 18.2
+              },
+              "depth4_share": {
+                "median": 0.125,
+                "p5": 0.0475,
+                "p95": 0.3025
+              },
+              "evidence_nonempty_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              },
+              "evidence_numeric_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              }
+            },
+            "50": {
+              "removed_turnover_share": {
+                "median": 0.04575,
+                "p5": 0.027456,
+                "p95": 0.096965
+              },
+              "lcc_after": {
+                "median": 1792.0,
+                "p5": 1732.85,
+                "p95": 1820.05
+              },
+              "seed_branches_hit": {
+                "median": 17.5,
+                "p5": 14.0,
+                "p95": 23.0
+              },
+              "depth4_share": {
+                "median": 0.18,
+                "p5": 0.079,
+                "p95": 0.241
+              },
+              "evidence_nonempty_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              },
+              "evidence_numeric_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              }
+            }
+          },
+          "seed_first": {
+            "10": {
+              "removed_turnover_share": {
+                "median": 0.020166,
+                "p5": 0.007392,
+                "p95": 0.041153
+              },
+              "lcc_after": {
+                "median": 1836.5,
+                "p5": 1784.0,
+                "p95": 1869.0
+              },
+              "seed_branches_hit": {
+                "median": 22.0,
+                "p5": 15.75,
+                "p95": 30.1
+              },
+              "depth4_share": {
+                "median": 0.0,
+                "p5": 0.0,
+                "p95": 0.0
+              },
+              "evidence_nonempty_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              },
+              "evidence_numeric_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              }
+            },
+            "20": {
+              "removed_turnover_share": {
+                "median": 0.041367,
+                "p5": 0.022834,
+                "p95": 0.068144
+              },
+              "lcc_after": {
+                "median": 1797.0,
+                "p5": 1749.4,
+                "p95": 1856.15
+              },
+              "seed_branches_hit": {
+                "median": 32.5,
+                "p5": 29.95,
+                "p95": 41.05
+              },
+              "depth4_share": {
+                "median": 0.0,
+                "p5": 0.0,
+                "p95": 0.0
+              },
+              "evidence_nonempty_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              },
+              "evidence_numeric_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              }
+            },
+            "50": {
+              "removed_turnover_share": {
+                "median": 0.098332,
+                "p5": 0.068842,
+                "p95": 0.124971
+              },
+              "lcc_after": {
+                "median": 1680.0,
+                "p5": 1616.35,
+                "p95": 1749.85
+              },
+              "seed_branches_hit": {
+                "median": 60.0,
+                "p5": 56.9,
+                "p95": 63.05
+              },
+              "depth4_share": {
+                "median": 0.0,
+                "p5": 0.0,
+                "p95": 0.0
+              },
+              "evidence_nonempty_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              },
+              "evidence_numeric_share": {
+                "median": 1.0,
+                "p5": 1.0,
+                "p95": 1.0
+              }
+            }
+          }
+        },
+        "verdicts": {
+          "random": {
+            "removed_turnover_share": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "lcc_after": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "seed_branches_hit": {
+              "by_N": {
+                "10": "в полосе случайного",
+                "20": "в полосе случайного",
+                "50": "лучше"
+              },
+              "overall": "смешанно (N=10: в полосе случайного, N=20: в полосе случайного, N=50: лучше)"
+            },
+            "depth4_share": {
+              "by_N": {
+                "10": "в полосе случайного",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "смешанно (N=10: в полосе случайного, N=20: лучше, N=50: лучше)"
+            },
+            "evidence_nonempty_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_numeric_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            }
+          },
+          "turnover": {
+            "removed_turnover_share": {
+              "by_N": {
+                "10": "хуже",
+                "20": "хуже",
+                "50": "хуже"
+              },
+              "overall": "хуже"
+            },
+            "lcc_after": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "seed_branches_hit": {
+              "by_N": {
+                "10": "равно",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "смешанно (N=10: равно, N=20: лучше, N=50: лучше)"
+            },
+            "depth4_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_nonempty_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_numeric_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            }
+          },
+          "degree": {
+            "removed_turnover_share": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "lcc_after": {
+              "by_N": {
+                "10": "хуже",
+                "20": "хуже",
+                "50": "хуже"
+              },
+              "overall": "хуже"
+            },
+            "seed_branches_hit": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "depth4_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_nonempty_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_numeric_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            }
+          },
+          "pagerank": {
+            "removed_turnover_share": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "lcc_after": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "seed_branches_hit": {
+              "by_N": {
+                "10": "лучше",
+                "20": "равно",
+                "50": "хуже"
+              },
+              "overall": "смешанно (N=10: лучше, N=20: равно, N=50: хуже)"
+            },
+            "depth4_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_nonempty_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_numeric_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            }
+          },
+          "seed_first": {
+            "removed_turnover_share": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "lcc_after": {
+              "by_N": {
+                "10": "лучше",
+                "20": "лучше",
+                "50": "лучше"
+              },
+              "overall": "лучше"
+            },
+            "seed_branches_hit": {
+              "by_N": {
+                "10": "хуже",
+                "20": "хуже",
+                "50": "хуже"
+              },
+              "overall": "хуже"
+            },
+            "depth4_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_nonempty_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            },
+            "evidence_numeric_share": {
+              "by_N": {
+                "10": "равно",
+                "20": "равно",
+                "50": "равно"
+              },
+              "overall": "равно"
+            }
+          }
+        }
+      },
+      "roles": {
+        "conditions": {
+          "seed": 42,
+          "noise_repeats": 20,
+          "noise": "U(0,95; 1,05) на каждый перевод",
+          "single_feature": "terminal если out_deg = 0; distributor если out_deg ≥ 10; consolidator если in_deg ≥ 3;  иначе peripheral. Проверка сверху вниз, depth не учитывается.",
+          "depth4_terminal": "узлы depth=4 с ролью terminal; у них нет наблюдаемых исходящих по построению выгрузки",
+          "entropy": "Шеннон по долям ролей, бит; максимум log2(6) = 2,585",
+          "share_non_peripheral": "доля узлов с ролью из словаря ТЗ, кроме peripheral",
+          "noise_dummy": "dummy «все peripheral» и dummy по степени не зависят от сумм: их смена роли 0 по построению"
+        },
+        "methods": {
+          "ours": {
+            "depth4_terminal": 0,
+            "share_non_peripheral": 0.588078,
+            "entropy_bits": 1.647774,
+            "entropy_norm": 0.637446,
+            "agreement_with_single_feature": 0.717527,
+            "kappa_with_single_feature": 0.515819,
+            "distribution": {
+              "consolidator": 144,
+              "coordinator": 54,
+              "distributor": 29,
+              "peripheral": 926,
+              "terminal": 1034,
+              "transit": 61
+            },
+            "outside_vocabulary": 0,
+            "depth4_terminal_explained": 0,
+            "noise_role_change_share": null,
+            "noise_note": "требует пересчёта пайплайна: передайте role_fn (--role-fn pipeline.baselines:pipeline_v0_roles или свой модуль:функция)"
+          },
+          "all_peripheral": {
+            "depth4_terminal": 0,
+            "share_non_peripheral": 0.0,
+            "entropy_bits": 0.0,
+            "entropy_norm": 0.0,
+            "agreement_with_single_feature": 0.230872,
+            "kappa_with_single_feature": 0.0,
+            "distribution": {
+              "peripheral": 2248
+            },
+            "outside_vocabulary": 0,
+            "noise_role_change_share": 0.0
+          },
+          "single_feature": {
+            "depth4_terminal": 444,
+            "share_non_peripheral": 0.769128,
+            "entropy_bits": 1.216944,
+            "entropy_norm": 0.470778,
+            "agreement_with_single_feature": 1.0,
+            "kappa_with_single_feature": 1.0,
+            "distribution": {
+              "consolidator": 111,
+              "distributor": 64,
+              "peripheral": 519,
+              "terminal": 1554
+            },
+            "outside_vocabulary": 0,
+            "noise_role_change_share": 0.0
+          }
+        },
+        "verdicts": {
+          "all_peripheral": {
+            "depth4_terminal": "равно",
+            "noise_role_change_share": "справочно",
+            "share_non_peripheral": "справочно",
+            "entropy_bits": "справочно",
+            "agreement_with_single_feature": "справочно",
+            "kappa_with_single_feature": "справочно"
+          },
+          "single_feature": {
+            "depth4_terminal": "лучше",
+            "noise_role_change_share": "справочно",
+            "share_non_peripheral": "справочно",
+            "entropy_bits": "справочно",
+            "agreement_with_single_feature": "справочно",
+            "kappa_with_single_feature": "справочно"
+          }
+        }
+      },
+      "clusters": {
+        "conditions": {
+          "seed": 42,
+          "n_random": 20,
+          "U": "ненаправленная проекция, вес пары = sum(A→B) + sum(B→A)",
+          "internal_turnover_share": "Σ sum_kzt направленных рёбер внутри кластеров / общий оборот; у компонент это потолок 1,0 по построению",
+          "random_same_sizes": "перестановка меток нашего разбиения: размеры кластеров те же",
+          "ami": "поправка на случайное совпадение (Vinh и др., 2010), среднее арифметическое энтропий",
+          "missing_cluster_id": "узел без cluster_id считается отдельным кластером"
+        },
+        "methods": {
+          "ours": {
+            "modularity_U": 0.858876,
+            "internal_turnover_share": 0.905339,
+            "n_clusters_ge2_seed": 8,
+            "n_clusters": 89,
+            "largest_cluster": 278,
+            "ami_vs_wcc": 0.295289,
+            "identical_to_wcc": false
+          },
+          "wcc": {
+            "modularity_U": 0.124711,
+            "internal_turnover_share": 1.0,
+            "n_clusters_ge2_seed": 2,
+            "n_clusters": 35,
+            "largest_cluster": 1877,
+            "ami_vs_wcc": 1.0
+          },
+          "random_same_sizes": {
+            "modularity_U": {
+              "median": -0.006964,
+              "p5": -0.019097,
+              "p95": 0.003141
+            },
+            "internal_turnover_share": {
+              "median": 0.050042,
+              "p5": 0.039362,
+              "p95": 0.064389
+            },
+            "n_clusters_ge2_seed": {
+              "median": 16.0,
+              "p5": 12.95,
+              "p95": 18.0
+            },
+            "n_clusters": {
+              "median": 89.0,
+              "p5": 89.0,
+              "p95": 89.0
+            },
+            "largest_cluster": {
+              "median": 278.0,
+              "p5": 278.0,
+              "p95": 278.0
+            },
+            "ami_vs_wcc": {
+              "median": -0.000277,
+              "p5": -0.002639,
+              "p95": 0.003229
+            }
+          }
+        },
+        "verdicts": {
+          "wcc": {
+            "modularity_U": "лучше",
+            "internal_turnover_share": "хуже",
+            "n_clusters_ge2_seed": "справочно",
+            "n_clusters": "справочно",
+            "largest_cluster": "справочно",
+            "ami_vs_wcc": "справочно"
+          },
+          "random_same_sizes": {
+            "modularity_U": "лучше",
+            "internal_turnover_share": "лучше",
+            "n_clusters_ge2_seed": "справочно",
+            "n_clusters": "справочно",
+            "largest_cluster": "справочно",
+            "ami_vs_wcc": "справочно"
+          }
+        }
+      },
+      "temporal": {
+        "status": "ok",
+        "source": "колонка fast_transit_flag",
+        "conditions": {
+          "n_perm": 200,
+          "seed": 42,
+          "lag_days": [
+            0,
+            2
+          ],
+          "ratio": [
+            0.8,
+            1.2
+          ],
+          "min_pairs": 2,
+          "null_global": "перестановка столбца дат по всем переводам",
+          "null_within_sender": "перестановка дат внутри переводов одного отправителя",
+          "p": "(1 + #нуль ≥ наблюдаемого) / (n_perm + 1)"
+        },
+        "observed_flagged": 54,
+        "null": {
+          "global": {
+            "mean": 33.705,
+            "sd": 3.240444,
+            "p": 0.004975
+          },
+          "within_sender": {
+            "mean": 38.075,
+            "sd": 3.452386,
+            "p": 0.004975
+          }
+        },
+        "agreement_with_reference": {
+          "reference_flagged": 54,
+          "both": 54,
+          "only_csv": 0,
+          "only_reference": 0,
+          "jaccard": 1.0
+        },
+        "reference": {
+          "flagged_real_dates": 54,
+          "null": {
+            "global": {
+              "mean": 33.705,
+              "sd": 3.240444,
+              "p": 0.004975
+            },
+            "within_sender": {
+              "mean": 38.075,
+              "sd": 3.452386,
+              "p": 0.004975
+            }
+          }
+        },
+        "verdict": "лучше"
+      }
+    },
+    "summary": [
+      "priority (изъятие топ-N, N=10/20/50, seed 42, 20 повторов): наш скор против random: лучше по снятому обороту, LCC после изъятия; равно по непустому evidence, evidence с числом; смешанно по затронутым seed-ветвям (N=10: в полосе случайного, N=20: в полосе случайного, N=50: лучше); доле depth 4 (N=10: в полосе случайного, N=20: лучше, N=50: лучше)",
+      "priority (изъятие топ-N, N=10/20/50, seed 42): наш скор против turnover: лучше по LCC после изъятия; хуже по снятому обороту; равно по доле depth 4, непустому evidence, evidence с числом; смешанно по затронутым seed-ветвям (N=10: равно, N=20: лучше, N=50: лучше)",
+      "priority (изъятие топ-N, N=10/20/50, seed 42): наш скор против degree: лучше по снятому обороту, затронутым seed-ветвям; хуже по LCC после изъятия; равно по доле depth 4, непустому evidence, evidence с числом",
+      "priority (изъятие топ-N, N=10/20/50, seed 42): наш скор против pagerank: лучше по снятому обороту, LCC после изъятия; равно по доле depth 4, непустому evidence, evidence с числом; смешанно по затронутым seed-ветвям (N=10: лучше, N=20: равно, N=50: хуже)",
+      "priority (изъятие топ-N, N=10/20/50, seed 42, 20 повторов): наш скор против seed_first: лучше по снятому обороту, LCC после изъятия; хуже по затронутым seed-ветвям; равно по доле depth 4, непустому evidence, evidence с числом",
+      "roles (seed 42, шум 20 повторов): наши роли против all_peripheral: равно по числу terminal на depth 4; справочно: доля не peripheral 0.588 против 0.000, энтропия ролей, бит 1.648 против 0.000, совпадение с dummy по одному признаку 0.718 против 0.231; шум для наших ролей не считался (требует пересчёта пайплайна)",
+      "roles (seed 42, шум 20 повторов): наши роли против single_feature: лучше по числу terminal на depth 4; справочно: доля не peripheral 0.588 против 0.769, энтропия ролей, бит 1.648 против 1.217, совпадение с dummy по одному признаку 0.718 против 1.000; шум для наших ролей не считался (требует пересчёта пайплайна)",
+      "clusters (seed 42): наши кластеры против wcc: лучше по модулярности на U; хуже по доле внутреннего оборота; AMI с компонентами 0.295",
+      "clusters (seed 42, 20 повторов): наши кластеры против random_same_sizes: лучше по модулярности на U, доле внутреннего оборота",
+      "temporal (200 перестановок, seed 42): наш флаг против случайных дат: лучше; помечено 54 узлов против 33.7 (глобально, p=0.005) и 38.1 (внутри отправителя, p=0.005); совпадение с эталонным определением: Жаккар 1.00"
+    ],
+    "warnings": [],
+    "inputs": {
+      "data_dir": "task/data",
+      "out_dir": "outputs",
+      "seed": 42,
+      "n_random": 20,
+      "role_fn": null,
+      "nodes_roles": {
+        "rows_csv": 2248,
+        "gid_unparsed": 0,
+        "gid_duplicates": 0,
+        "gid_foreign": 0,
+        "gid_missing": 0,
+        "cluster_id_missing": 0,
+        "priority_nan": 0,
+        "priority_unique": 1291,
+        "fast_transit_source": "колонка fast_transit_flag"
+      },
+      "top_nodes_rows": 50,
+      "clusters_csv_rows": 89,
+      "edges_dropped_unknown_gid": 0,
+      "tx_dropped_unknown_gid": 0
+    },
+    "timing_s": {
+      "load": 0.021,
+      "priority": 0.028,
+      "roles": 0.074,
+      "clusters": 0.094,
+      "temporal": 0.106
+    },
+    "elapsed_s": 0.322
+  }
+}

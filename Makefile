@@ -3,7 +3,7 @@ PY   ?= .venv/bin/python
 DATA ?= task/data
 OUT  ?= outputs
 
-.PHONY: setup pipeline check api contract web
+.PHONY: setup pipeline check metrics baselines api contract web
 
 # venv и зависимости пайплайна и API
 setup:
@@ -16,6 +16,14 @@ pipeline:
 # гейт схемы выгрузок по ТЗ; код 1 при нарушении
 check:
 	$(PY) -m pipeline.check --data $(DATA) --out $(OUT)
+
+# проверки качества выгрузок без разметки → outputs/metrics.json; код 1 при провале обязательной
+metrics:
+	$(PY) -m pipeline.metrics --data $(DATA) --out $(OUT) --report $(OUT)/metrics.json --perm 1000
+
+# сравнение с dummy-моделями на прокси-исходах → outputs/baselines.json
+baselines:
+	$(PY) -m pipeline.baselines --data $(DATA) --out $(OUT) --report $(OUT)/baselines.json
 
 # API на :8000; после make pipeline — POST /reload
 api:
