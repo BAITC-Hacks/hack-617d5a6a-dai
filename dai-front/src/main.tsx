@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { queryClient } from '@/lib/query-client'
 import { routeTree } from './routeTree.gen'
 
@@ -35,7 +36,9 @@ enableMocks().catch((error) => console.warn('[MSW] моки не запущен�
     <StrictMode>
       <ThemeProvider attribute="class" forcedTheme="light" disableTransitionOnChange>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <TooltipProvider delay={200}>
+            <RouterProvider router={router} />
+          </TooltipProvider>
           <Toaster richColors />
         </QueryClientProvider>
       </ThemeProvider>

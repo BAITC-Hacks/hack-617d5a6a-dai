@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { searchNodesOptions } from '@/client/@tanstack/react-query.gen'
 import { GidText, SeedPill } from '@/components/top-list'
+import { RoleIcon } from '@/components/role-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { count, formatScore } from '@/lib/format'
 import { errorKind, metaQuery, useRoleInfo } from '@/lib/graph-data'
@@ -148,7 +149,7 @@ export function GidSearch() {
                         </div>
                         <div className="flex items-center gap-2 text-[13px] font-medium">
                           <span className={cn('flex items-center gap-1.5', rc.ink)}>
-                            <span className={cn('size-2.5 rounded-full', rc.dot)} />
+                            <RoleIcon role={n.role} className="size-3.5" />
                             {roleInfo(n.role).title}
                           </span>
                           {n.is_seed && <SeedPill />}

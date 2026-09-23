@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import type { EdgeOut, NodeCard as NodeCardData, TransferOut } from '@/client/types.gen'
+import { RoleIcon } from '@/components/role-icon'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getErrorMessage } from '@/lib/api-error'
@@ -82,7 +83,7 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className={cn('inline-flex h-7.5 items-center gap-2 rounded-lg pr-3 pl-2.5 text-[15px] font-semibold', rc.badge)}>
-            <span className={cn('size-3 rounded-full', rc.dot)} />
+            <RoleIcon role={nd.role} className="size-4" />
             {role.title}
           </span>
           {nd.is_seed && <SeedPill />}
@@ -265,7 +266,7 @@ function CpList({ title, rows, both }: { title: string; rows: { gid: string; e: 
             <Gid gid={gid} className="text-sm font-medium" />
             <span className="text-right font-mono text-sm font-semibold whitespace-nowrap">{formatKzt(e.sum_kzt)}</span>
             <span className={cn('flex flex-wrap items-center gap-1.5 text-[12.5px] font-medium', rc.ink)}>
-              <span className={cn('size-2 rounded-full', rc.dot)} />
+              <RoleIcon role={n?.role} className="size-3" />
               {roleInfo(n?.role).title}
               {n?.is_seed && <SeedPill small />}
               {both(gid) && <span className="text-xs text-foreground/70">⇄ встречные переводы</span>}

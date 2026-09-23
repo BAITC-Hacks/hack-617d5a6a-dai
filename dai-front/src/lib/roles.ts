@@ -1,3 +1,4 @@
+import { symbol, symbolCircle, symbolDiamond, symbolSquare, symbolStar, symbolTriangle, type SymbolType } from 'd3'
 import type { NodeOut } from '@/client/types.gen'
 
 export type Role = NodeOut['role']
@@ -31,3 +32,20 @@ export const roleClass = (role: Role | null | undefined) => (role ? ROLE_CLASS[r
 
 /** Цвет роли для D3/SVG: `selection.style('fill', roleVar(role))`. Внутри `.dark` берётся тёмный вариант. */
 export const roleVar = (role: Role | null | undefined) => (role ? `var(--role-${role})` : 'var(--muted-foreground)')
+
+// Форма узла = роль: цвет не единственный носитель смысла (DESIGN.md). Та же форма — в легенде, бейджах и на графе.
+// ◆ координатор · ✱ распределитель · ▼ консолидатор (воронка) · ▶ транзит · ■ получатель без исходящих · ● периферия
+const ROLE_SYMBOL: Record<Role, { type: SymbolType; rotate: number }> = {
+  coordinator: { type: symbolDiamond, rotate: 0 },
+  distributor: { type: symbolStar, rotate: 0 },
+  consolidator: { type: symbolTriangle, rotate: 180 },
+  transit: { type: symbolTriangle, rotate: 90 },
+  terminal: { type: symbolSquare, rotate: 0 },
+  peripheral: { type: symbolCircle, rotate: 0 },
+}
+
+/** SVG-путь формы роли с центром в 0,0 и площадью круга радиуса r; без роли — круг. */
+export function roleSymbolPath(role: Role | null | undefined, r: number) {
+  const s = role ? ROLE_SYMBOL[role] : { type: symbolCircle, rotate: 0 }
+  return { d: symbol(s.type, Math.PI * r * r)() ?? '', rotate: s.rotate }
+}

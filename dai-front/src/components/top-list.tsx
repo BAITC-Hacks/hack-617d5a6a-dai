@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import { RoleIcon } from '@/components/role-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatScore, gidParts } from '@/lib/format'
 import { errorKind, metaQuery, useQueue, useRoleInfo } from '@/lib/graph-data'
@@ -91,7 +92,7 @@ export function TopList({ activeGid }: { activeGid: string }) {
               <div />
               <div className="col-span-2 flex items-center gap-2">
                 <span title={description} className={cn('inline-flex h-[22px] items-center gap-1.5 rounded-md pr-2 pl-1.5 text-[12.5px] font-semibold whitespace-nowrap', rc.badge)}>
-                  <span className={cn('size-[9px] rounded-full', rc.dot)} />
+                  <RoleIcon role={n.role} className="size-3" />
                   {title}
                 </span>
                 {n.is_seed && <SeedPill />}

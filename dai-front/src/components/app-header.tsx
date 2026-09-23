@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { LegendEntry } from '@/components/role-legend'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDayLong, formatInt, formatKztCompact } from '@/lib/format'
-import { metaQuery, useRoleInfo } from '@/lib/graph-data'
-import { ROLE_ORDER, roleClass } from '@/lib/roles'
-import { cn } from '@/lib/utils'
+import { metaQuery } from '@/lib/graph-data'
+import { ROLE_ORDER } from '@/lib/roles'
 
 /** «2026-07-01», «2026-07-31» → «1–31 июля 2026». */
 function formatPeriod(start: string, end: string) {
@@ -15,7 +15,6 @@ function formatPeriod(start: string, end: string) {
 
 export function AppHeader() {
   const { data: meta } = useQuery(metaQuery())
-  const roleInfo = useRoleInfo()
 
   const stats = meta
     ? [
@@ -54,25 +53,13 @@ export function AppHeader() {
 
       <div className="flex min-h-11 flex-none flex-wrap items-center gap-[18px] border-b bg-muted/40 px-5 py-1.5">
         <div className="flex flex-wrap items-center gap-4">
-          {ROLE_ORDER.map((role) => {
-            const { title, description } = roleInfo(role)
-            return (
-              <span key={role} title={description} className="flex cursor-help items-center gap-[7px] text-[13.5px] font-medium whitespace-nowrap">
-                <span className={cn('size-3 rounded-full ring-1 ring-foreground/10 ring-inset', roleClass(role).dot)} />
-                {title}
-              </span>
-            )
-          })}
+          {ROLE_ORDER.map((role) => (
+            <LegendEntry key={role} item={role} />
+          ))}
         </div>
         <span className="h-5 w-px bg-border" />
-        <span className="flex items-center gap-[7px] text-[13.5px] font-medium whitespace-nowrap">
-          <span className="size-3.5 rounded-full border-[3.5px] border-double border-primary" />
-          seed — известный клиент
-        </span>
-        <span className="flex items-center gap-[7px] text-[13.5px] font-medium whitespace-nowrap">
-          <span className="size-3.5 rounded-full border-2 border-dashed border-foreground/80" />
-          граница выгрузки
-        </span>
+        <LegendEntry item="seed" />
+        <LegendEntry item="boundary" />
         {meta?.mock && (
           // Статус данных, а не элемент темы — поэтому янтарные утилиты.
           <div className="ml-auto flex h-[30px] items-center gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 pr-3 pl-1">

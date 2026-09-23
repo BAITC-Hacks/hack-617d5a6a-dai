@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { listClustersOptions } from '@/client/@tanstack/react-query.gen'
+import { RoleIcon } from '@/components/role-icon'
+import { LegendTooltip } from '@/components/role-legend'
 import { graphQuery, useRoleInfo } from '@/lib/graph-data'
 import { formatInt } from '@/lib/format'
-import { ROLE_CLASS, ROLE_ORDER } from '@/lib/roles'
+import { ROLE_ORDER } from '@/lib/roles'
 import { cn } from '@/lib/utils'
 import { useGraphView, type GraphView } from '@/stores/graph-view'
 
@@ -145,16 +147,17 @@ export function GraphSettings() {
           {ROLE_ORDER.map((r) => {
             const on = !view.roles || view.roles.includes(r)
             return (
-              <button
-                key={r}
-                type="button"
-                aria-pressed={on}
-                onClick={() => setView({ roles: toggleIn(view.roles, ROLE_ORDER, r) })}
-                className={pill(on)}
-              >
-                <span className={cn('size-2 rounded-full', ROLE_CLASS[r].dot, !on && 'opacity-35')} />
-                {roleInfo(r).title}
-              </button>
+              <LegendTooltip key={r} item={r}>
+                <button
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setView({ roles: toggleIn(view.roles, ROLE_ORDER, r) })}
+                  className={pill(on)}
+                >
+                  <RoleIcon role={r} className={cn('size-3', !on && 'opacity-35')} />
+                  {roleInfo(r).title}
+                </button>
+              </LegendTooltip>
             )
           })}
         </div>
