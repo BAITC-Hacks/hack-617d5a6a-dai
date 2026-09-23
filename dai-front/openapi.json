@@ -704,6 +704,48 @@
             },
             "type": "array",
             "title": "Roles"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "Метод пайплайна из run_meta.json (v1, v0) или mock",
+            "default": "mock"
+          },
+          "threshold_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Score",
+            "description": "Порог приоритета на шкале priority_score 0–1"
+          },
+          "threshold_raw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Raw",
+            "description": "Порог приоритета на сырой шкале priority_raw"
+          },
+          "elapsed_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Elapsed S",
+            "description": "Время прогона пайплайна, с"
           }
         },
         "type": "object",
@@ -748,6 +790,14 @@
             "type": "array",
             "title": "Transfers",
             "description": "Все переводы с участием узла, по дате"
+          },
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/TransferPair"
+            },
+            "type": "array",
+            "title": "Pairs",
+            "description": "Пары вход→выход узла, по дате входа"
           }
         },
         "type": "object",
@@ -758,7 +808,7 @@
           "transfers"
         ],
         "title": "NodeCard",
-        "description": "Карточка узла: сам узел, его рёбра и отдельные переводы."
+        "description": "Карточка узла: сам узел, его рёбра, отдельные переводы и пары вход→выход."
       },
       "NodeOut": {
         "properties": {
@@ -848,6 +898,60 @@
             "type": "boolean",
             "title": "Truncated By Depth",
             "description": "Узел на 4-м колене без исходящих: граница выгрузки, не сток"
+          },
+          "priority_raw": {
+            "type": "number",
+            "title": "Priority Raw",
+            "description": "Сырой скор до нормировки: сумма −ln(доли узлов не ниже) + вес быстрого транзита",
+            "default": 0
+          },
+          "score_terms": {
+            "type": "string",
+            "title": "Score Terms",
+            "description": "Два наибольших вклада в скор, например «in_deg=24 (P99, +7.7)»",
+            "default": ""
+          },
+          "role_checks": {
+            "type": "string",
+            "title": "Role Checks",
+            "description": "Условия назначенной роли с фактическими значениями, до 200 символов",
+            "default": ""
+          },
+          "fast_transit_pairs": {
+            "type": "integer",
+            "title": "Fast Transit Pairs",
+            "description": "Пар вход→выход 1-к-1 с лагом 0–2 дня и отношением сумм 0,8–1,2",
+            "default": 0
+          },
+          "fast_transit_flag": {
+            "type": "boolean",
+            "title": "Fast Transit Flag",
+            "description": "Быстрый транзит: пар не меньше двух",
+            "default": false
+          },
+          "n_seed_upstream": {
+            "type": "integer",
+            "title": "N Seed Upstream",
+            "description": "Из скольких seed узел достижим по исходящим переводам",
+            "default": 0
+          },
+          "betweenness": {
+            "type": "number",
+            "title": "Betweenness",
+            "description": "Посредничество в графе выгрузки",
+            "default": 0
+          },
+          "next_request": {
+            "type": "string",
+            "title": "Next Request",
+            "description": "Какой запрос данных закрыл бы главный пробел по узлу",
+            "default": ""
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations",
+            "description": "Ограничения данных по узлу через «; »; пусто, если их нет",
+            "default": ""
           }
         },
         "type": "object",
@@ -1035,6 +1139,71 @@
         ],
         "title": "TransferOut",
         "description": "Отдельный перевод; дата с точностью до дня, порядок внутри дня неизвестен."
+      },
+      "TransferPair": {
+        "properties": {
+          "in_src": {
+            "type": "string",
+            "title": "In Src",
+            "description": "Отправитель входящего перевода (gid строкой)"
+          },
+          "out_dst": {
+            "type": "string",
+            "title": "Out Dst",
+            "description": "Получатель исходящего перевода (gid строкой)"
+          },
+          "in_date": {
+            "type": "string",
+            "format": "date",
+            "title": "In Date"
+          },
+          "out_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Out Date"
+          },
+          "in_sum": {
+            "type": "number",
+            "title": "In Sum"
+          },
+          "out_sum": {
+            "type": "number",
+            "title": "Out Sum"
+          },
+          "lag_days": {
+            "type": "integer",
+            "title": "Lag Days",
+            "description": "День выхода − день входа; отрицательный: выход раньше входа"
+          },
+          "chronology_status": {
+            "type": "string",
+            "enum": [
+              "вход раньше выхода",
+              "тот же день, порядок неизвестен",
+              "выход раньше входа"
+            ],
+            "title": "Chronology Status"
+          },
+          "matched_1to1": {
+            "type": "boolean",
+            "title": "Matched 1To1",
+            "description": "Пара вошла в быстрый транзит (сопоставление 1-к-1, лаг 0–2 дня)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "in_src",
+          "out_dst",
+          "in_date",
+          "out_date",
+          "in_sum",
+          "out_sum",
+          "lag_days",
+          "chronology_status",
+          "matched_1to1"
+        ],
+        "title": "TransferPair",
+        "description": "Пара переводов через узел: вход A→узел и выход узел→C, A ≠ C.\n\nОтношение сумм out/in в [0,8; 1,2], |лаг| ≤ 3 дня. Даты с точностью до дня."
       },
       "ValidationError": {
         "properties": {

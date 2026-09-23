@@ -13,10 +13,13 @@ NODE_REQUIRED = ["gid", "role", "role_score", "cluster_id", "priority_score", "e
 NODE_EXTRA = ["is_seed", "depth", "in_deg", "out_deg", "in_kzt", "out_kzt", "in_tx", "out_tx",
               "pass_kzt", "pass_through", "pagerank", "betweenness", "n_seed_upstream",
               "active_days", "first_date", "last_date", "truncated_by_depth", "flags"]
+# I2 (v1): при v0 заполняются умолчаниями, чтобы схема CSV не зависела от метода
+NODE_V1 = {"fast_transit_pairs": 0, "fast_transit_flag": 0, "priority_raw": 0.0, "score_terms": "",
+           "role_checks": "", "next_request": "", "limitations": "", "method": ""}
 CLUSTER_REQUIRED = ["cluster_id", "n_nodes", "n_seed", "sum_kzt_internal", "top_gids", "hypothesis"]
 CLUSTER_EXTRA = ["n_edges_internal", "share_depth4"]
 TOP_REQUIRED = ["rank", "gid", "role", "priority_score", "why"]
-TOP_EXTRA = ["cluster_id"]
+TOP_EXTRA = ["cluster_id", "priority_raw", "score_terms"]
 
 
 def _atomic_text(path: Path, text: str) -> None:
@@ -36,8 +39,19 @@ def _atomic_csv(df: pd.DataFrame, path: Path) -> None:
     _atomic_text(path, df.to_csv(index=False, lineterminator="\n"))
 
 
+def _with_v1_defaults(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    for c, v in NODE_V1.items():
+        if c not in df.columns:
+            df[c] = v
+    return df
+
+
 def nodes_frame(df: pd.DataFrame) -> pd.DataFrame:
-    out = df[NODE_REQUIRED + NODE_EXTRA].copy()
+    out = _with_v1_defaults(df)[NODE_REQUIRED + NODE_EXTRA + list(NODE_V1)].copy()
+    out["fast_transit_pairs"] = out.fast_transit_pairs.astype(int)
+    out["fast_transit_flag"] = out.fast_transit_flag.astype(bool).astype(int)
+    out["priority_raw"] = out.priority_raw.astype(float).round(4)
     out["gid"] = out.gid.astype("int64")
     out["cluster_id"] = out.cluster_id.astype(int)
     out["role_score"] = out.role_score.round(4)
@@ -57,8 +71,11 @@ def write_all(out_dir: Path, nodes: pd.DataFrame, clusters: pd.DataFrame, top: p
     _atomic_csv(nodes_frame(nodes), paths[0])
     c = clusters[CLUSTER_REQUIRED + CLUSTER_EXTRA].copy()
     _atomic_csv(c, paths[1])
-    t = top[TOP_REQUIRED + TOP_EXTRA].copy()
+    t = _with_v1_defaults(top)[TOP_REQUIRED + TOP_EXTRA].copy()
     t["gid"] = t.gid.astype("int64")
     _atomic_csv(t, paths[2])
+    meta = dict(meta)
+    if "stages_s" in meta:
+        meta["stages"] = meta["stages_s"]   # алиас: metrics.py читает ключ stages
     _atomic_text(out_dir / "run_meta.json", json.dumps(meta, ensure_ascii=False, indent=2) + "\n")
     return paths + [out_dir / "run_meta.json"]

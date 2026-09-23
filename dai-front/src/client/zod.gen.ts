@@ -79,7 +79,16 @@ export const zNodeOut = z.object({
     out_kzt: z.number(),
     in_tx: z.int(),
     out_tx: z.int(),
-    truncated_by_depth: z.boolean()
+    truncated_by_depth: z.boolean(),
+    priority_raw: z.number().optional().default(0),
+    score_terms: z.string().optional().default(''),
+    role_checks: z.string().optional().default(''),
+    fast_transit_pairs: z.int().optional().default(0),
+    fast_transit_flag: z.boolean().optional().default(false),
+    n_seed_upstream: z.int().optional().default(0),
+    betweenness: z.number().optional().default(0),
+    next_request: z.string().optional().default(''),
+    limitations: z.string().optional().default('')
 });
 
 /**
@@ -137,7 +146,11 @@ export const zMetaResponse = z.object({
     period_start: z.iso.date(),
     period_end: z.iso.date(),
     total_kzt: z.number(),
-    roles: z.array(zRoleInfo)
+    roles: z.array(zRoleInfo),
+    method: z.string().optional().default('mock'),
+    threshold_score: z.number().nullish(),
+    threshold_raw: z.number().nullish(),
+    elapsed_s: z.number().nullish()
 });
 
 /**
@@ -186,15 +199,39 @@ export const zTransferOut = z.object({
 });
 
 /**
+ * TransferPair
+ *
+ * Пара переводов через узел: вход A→узел и выход узел→C, A ≠ C.
+ *
+ * Отношение сумм out/in в [0,8; 1,2], |лаг| ≤ 3 дня. Даты с точностью до дня.
+ */
+export const zTransferPair = z.object({
+    in_src: z.string(),
+    out_dst: z.string(),
+    in_date: z.iso.date(),
+    out_date: z.iso.date(),
+    in_sum: z.number(),
+    out_sum: z.number(),
+    lag_days: z.int(),
+    chronology_status: z.enum([
+        'вход раньше выхода',
+        'тот же день, порядок неизвестен',
+        'выход раньше входа'
+    ]),
+    matched_1to1: z.boolean()
+});
+
+/**
  * NodeCard
  *
- * Карточка узла: сам узел, его рёбра и отдельные переводы.
+ * Карточка узла: сам узел, его рёбра, отдельные переводы и пары вход→выход.
  */
 export const zNodeCard = z.object({
     node: zNodeOut,
     in_edges: z.array(zEdgeOut),
     out_edges: z.array(zEdgeOut),
-    transfers: z.array(zTransferOut)
+    transfers: z.array(zTransferOut),
+    pairs: z.array(zTransferPair).optional()
 });
 
 /**

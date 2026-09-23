@@ -11,15 +11,25 @@
 
 from __future__ import annotations
 
+import sys
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 import networkx as nx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import schemas as s
-from .data import ROLE_INFO, Store, load_store
+# Пайплайн лежит в корне репозитория (pipeline/); корень первым в sys.path, чтобы не подхватить
+# одноимённый пакет из PYTHONPATH.
+_ROOT = str(Path(__file__).resolve().parents[2])
+if sys.path[:1] != [_ROOT]:
+    sys.path.insert(0, _ROOT)
+
+from pipeline.temporal import pairs_for_node  # noqa: E402
+
+from . import schemas as s  # noqa: E402
+from .data import ROLE_INFO, Store, load_store  # noqa: E402
 
 app = FastAPI(
     title="DAI — Граф денег API",
@@ -79,11 +89,20 @@ def get_health() -> s.HealthResponse:
 def get_meta() -> s.MetaResponse:
     """Сводка по выгрузке, источник ролей и словарь ролей для легенды."""
     st = get_store()
+    rm = st.run_meta
+
+    def _num(key: str) -> float | None:
+        v = rm.get(key)
+        return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
     return s.MetaResponse(
         mock=st.mock, source=st.source, n_nodes=len(st.nodes), n_edges=len(st.edges),
         n_transactions=len(st.tx), n_seed=st.n_seed, n_clusters=len(st.clusters),
         period_start=st.period_start, period_end=st.period_end, total_kzt=st.total_kzt,
         roles=[s.RoleInfo(role=r, title=t, description=d) for r, t, d in ROLE_INFO],
+        method=str(rm.get("method") or ("mock" if st.mock else "v0")),
+        threshold_score=_num("threshold_score"), threshold_raw=_num("threshold_raw"),
+        elapsed_s=_num("elapsed_s"),
     )
 
 
@@ -144,6 +163,7 @@ def get_node(gid: str) -> s.NodeCard:
         out_edges=_edges_out(st, st.edges[st.edges.src == gid]),
         transfers=[s.TransferOut(src=r.src, dst=r.dst, date=r.date, sum_kzt=float(r.sum_kzt))
                    for r in tx.itertuples(index=False)],
+        pairs=[s.TransferPair(**p) for p in pairs_for_node(tx, gid)],
     )
 
 

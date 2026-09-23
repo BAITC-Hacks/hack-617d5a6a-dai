@@ -10,8 +10,9 @@
 
 from __future__ import annotations
 
+import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
@@ -40,6 +41,19 @@ NODE_COLUMNS = [
     "truncated_by_depth",
 ]
 
+# Колонки v1: берутся из nodes_roles.csv, если есть; иначе (v0, заглушка) — умолчания.
+EXTRA_NODE_DEFAULTS: dict[str, object] = {
+    "priority_raw": 0.0,
+    "score_terms": "",
+    "role_checks": "",
+    "fast_transit_pairs": 0,
+    "fast_transit_flag": False,
+    "n_seed_upstream": 0,
+    "betweenness": 0.0,
+    "next_request": "",
+    "limitations": "",
+}
+
 
 @dataclass
 class Store:
@@ -55,6 +69,7 @@ class Store:
     period_end: date
     total_kzt: float
     n_seed: int
+    run_meta: dict = field(default_factory=dict)  # outputs/run_meta.json, если есть
 
 
 # ------------------------------------------------------------------ загрузка parquet
@@ -170,6 +185,7 @@ def _load_outputs(out_dir: Path, feat: pd.DataFrame):
     roles = pd.read_csv(out_dir / "nodes_roles.csv", dtype={"gid": "int64"})
     roles["gid"] = roles.gid.astype(str)
     keep = ["gid", "role", "role_score", "cluster_id", "priority_score", "evidence"]
+    keep += [c for c in EXTRA_NODE_DEFAULTS if c in roles.columns and c not in feat.columns]
     df = feat.merge(roles[keep], on="gid", how="left")
     if df.role.isna().any():
         missing = int(df.role.isna().sum())
@@ -189,6 +205,34 @@ def _load_outputs(out_dir: Path, feat: pd.DataFrame):
     return df, clusters, top
 
 
+def _apply_extra_defaults(df: pd.DataFrame) -> pd.DataFrame:
+    """Дописывает колонки v1 умолчаниями и приводит типы (пустая строка в CSV читается как NaN)."""
+    df = df.copy()
+    for col, default in EXTRA_NODE_DEFAULTS.items():
+        if col not in df.columns:
+            df[col] = default
+            continue
+        if isinstance(default, str):
+            df[col] = df[col].fillna("").astype(str)
+        elif isinstance(default, bool):
+            df[col] = df[col].fillna(0).astype(int).astype(bool)
+        elif isinstance(default, int):
+            df[col] = df[col].fillna(0).astype(int)
+        else:
+            df[col] = df[col].fillna(0.0).astype(float)
+    return df
+
+
+def _load_run_meta(out_dir: Path) -> dict:
+    path = out_dir / "run_meta.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
 # ------------------------------------------------------------------ точка входа
 
 def load_store(data_dir: Path = DATA_DIR, out_dir: Path = OUTPUTS_DIR) -> Store:
@@ -203,15 +247,19 @@ def load_store(data_dir: Path = DATA_DIR, out_dir: Path = OUTPUTS_DIR) -> Store:
     if _outputs_present(out_dir):
         df, clusters, top = _load_outputs(out_dir, feat)
         mock, source = False, "outputs"
+        run_meta = _load_run_meta(out_dir)
     else:
         df, clusters, top = _mock_outputs(feat, g, edges)
         mock, source = True, "mock"
+        run_meta = {}
 
-    df = df[NODE_COLUMNS].set_index("gid", drop=False)
+    df = _apply_extra_defaults(df)
+    df = df[NODE_COLUMNS + list(EXTRA_NODE_DEFAULTS)].set_index("gid", drop=False)
     df.index.name = None  # gid остаётся колонкой; индекс без имени, чтобы sort_values не путал их
     return Store(
         mock=mock, source=source, nodes=df, edges=edges, tx=tx.sort_values(["date", "src", "dst"]),
         clusters=clusters, top=top, graph=g,
         period_start=min(tx.date), period_end=max(tx.date),
         total_kzt=float(edges.sum_kzt.sum()), n_seed=int(nodes.is_seed.sum()),
+        run_meta=run_meta,
     )

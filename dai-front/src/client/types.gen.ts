@@ -203,12 +203,36 @@ export type MetaResponse = {
      * Roles
      */
     roles: Array<RoleInfo>;
+    /**
+     * Method
+     *
+     * Метод пайплайна из run_meta.json (v1, v0) или mock
+     */
+    method?: string;
+    /**
+     * Threshold Score
+     *
+     * Порог приоритета на шкале priority_score 0–1
+     */
+    threshold_score?: number | null;
+    /**
+     * Threshold Raw
+     *
+     * Порог приоритета на сырой шкале priority_raw
+     */
+    threshold_raw?: number | null;
+    /**
+     * Elapsed S
+     *
+     * Время прогона пайплайна, с
+     */
+    elapsed_s?: number | null;
 };
 
 /**
  * NodeCard
  *
- * Карточка узла: сам узел, его рёбра и отдельные переводы.
+ * Карточка узла: сам узел, его рёбра, отдельные переводы и пары вход→выход.
  */
 export type NodeCard = {
     node: NodeOut;
@@ -226,6 +250,12 @@ export type NodeCard = {
      * Все переводы с участием узла, по дате
      */
     transfers: Array<TransferOut>;
+    /**
+     * Pairs
+     *
+     * Пары вход→выход узла, по дате входа
+     */
+    pairs?: Array<TransferPair>;
 };
 
 /**
@@ -318,6 +348,60 @@ export type NodeOut = {
      * Узел на 4-м колене без исходящих: граница выгрузки, не сток
      */
     truncated_by_depth: boolean;
+    /**
+     * Priority Raw
+     *
+     * Сырой скор до нормировки: сумма −ln(доли узлов не ниже) + вес быстрого транзита
+     */
+    priority_raw?: number;
+    /**
+     * Score Terms
+     *
+     * Два наибольших вклада в скор, например «in_deg=24 (P99, +7.7)»
+     */
+    score_terms?: string;
+    /**
+     * Role Checks
+     *
+     * Условия назначенной роли с фактическими значениями, до 200 символов
+     */
+    role_checks?: string;
+    /**
+     * Fast Transit Pairs
+     *
+     * Пар вход→выход 1-к-1 с лагом 0–2 дня и отношением сумм 0,8–1,2
+     */
+    fast_transit_pairs?: number;
+    /**
+     * Fast Transit Flag
+     *
+     * Быстрый транзит: пар не меньше двух
+     */
+    fast_transit_flag?: boolean;
+    /**
+     * N Seed Upstream
+     *
+     * Из скольких seed узел достижим по исходящим переводам
+     */
+    n_seed_upstream?: number;
+    /**
+     * Betweenness
+     *
+     * Посредничество в графе выгрузки
+     */
+    betweenness?: number;
+    /**
+     * Next Request
+     *
+     * Какой запрос данных закрыл бы главный пробел по узлу
+     */
+    next_request?: string;
+    /**
+     * Limitations
+     *
+     * Ограничения данных по узлу через «; »; пусто, если их нет
+     */
+    limitations?: string;
 };
 
 /**
@@ -432,6 +516,60 @@ export type TransferOut = {
      * Sum Kzt
      */
     sum_kzt: number;
+};
+
+/**
+ * TransferPair
+ *
+ * Пара переводов через узел: вход A→узел и выход узел→C, A ≠ C.
+ *
+ * Отношение сумм out/in в [0,8; 1,2], |лаг| ≤ 3 дня. Даты с точностью до дня.
+ */
+export type TransferPair = {
+    /**
+     * In Src
+     *
+     * Отправитель входящего перевода (gid строкой)
+     */
+    in_src: string;
+    /**
+     * Out Dst
+     *
+     * Получатель исходящего перевода (gid строкой)
+     */
+    out_dst: string;
+    /**
+     * In Date
+     */
+    in_date: string;
+    /**
+     * Out Date
+     */
+    out_date: string;
+    /**
+     * In Sum
+     */
+    in_sum: number;
+    /**
+     * Out Sum
+     */
+    out_sum: number;
+    /**
+     * Lag Days
+     *
+     * День выхода − день входа; отрицательный: выход раньше входа
+     */
+    lag_days: number;
+    /**
+     * Chronology Status
+     */
+    chronology_status: 'вход раньше выхода' | 'тот же день, порядок неизвестен' | 'выход раньше входа';
+    /**
+     * Matched 1To1
+     *
+     * Пара вошла в быстрый транзит (сопоставление 1-к-1, лаг 0–2 дня)
+     */
+    matched_1to1: boolean;
 };
 
 /**

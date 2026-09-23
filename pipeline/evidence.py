@@ -7,6 +7,19 @@ import pandas as pd
 MAX_LEN = 200
 
 
+def plural(n: int, one: str, few: str, many: str) -> str:
+    """Согласование числа со словом: 1 узел, 4 узла, 63 узла, 11 узлов."""
+    n = int(n)
+    m10, m100 = abs(n) % 10, abs(n) % 100
+    if m10 == 1 and m100 != 11:
+        w = one
+    elif 2 <= m10 <= 4 and not 12 <= m100 <= 14:
+        w = few
+    else:
+        w = many
+    return f"{n} {w}"
+
+
 def kzt(v: float) -> str:
     v = float(v)
     if abs(v) >= 1e6:
@@ -75,16 +88,100 @@ def top_why(r) -> str:
 
 def cluster_hypothesis(c) -> str:
     n = c.n_nodes
-    head = f"{n} {'узел' if n == 1 else 'узлов'}, {c.n_seed} seed, внутренний оборот {kzt(c.sum_kzt_internal)}"
+    head = f"{plural(n, 'узел', 'узла', 'узлов')}, {c.n_seed} seed, внутренний оборот {kzt(c.sum_kzt_internal)}"
     if c.in_gid and c.sum_kzt_internal > 0:
         share = c.in_kzt / c.sum_kzt_internal * 100
         mid = f"вход сосредоточен у {c.in_gid} ({kzt(c.in_kzt)}, {share:.0f}% внутреннего оборота)"
     else:
         mid = "внутренних переводов нет"
-    return f"{head}; {mid}; {c.n_boundary} узлов на границе выгрузки"
+    return f"{head}; {mid}; {plural(c.n_boundary, 'узел', 'узла', 'узлов')} на границе выгрузки"
 
 
-def apply(df: pd.DataFrame) -> pd.DataFrame:
+# ------------------------------------------------------------------ v1
+
+TERM_FACT = {
+    "in_kzt": lambda v: f"вход {kzt(v)}",
+    "out_kzt": lambda v: f"выход {kzt(v)}",
+    "pass_kzt": lambda v: f"проход {kzt(v)}",
+    "in_deg": lambda v: f"входов {int(v)}",
+    "out_deg": lambda v: f"выходов {int(v)}",
+    "betweenness": lambda v: f"betweenness {v:.4f}".replace(".", ","),
+    "n_seed_upstream": lambda v: f"достижим от {int(v)} seed",
+}
+
+REQ_BOUNDARY = "Запросить исходящие переводы клиента за июль 2026: в выгрузке их нет по условиям сбора"
+REQ_SEED = "Запросить входящие переводы клиента: выгрузка содержит только исходящие"
+REQ_REVERSED = "Запросить остаток счёта до раннего платежа и полную историю поступлений"
+REQ_FAST = "Запросить назначения платежей и остатки на даты пар вход→выход"
+REQ_ISOLATED = "Запросить переводы ниже 5 000 KZT и переводы в другие банки: в выгрузке операций клиента нет"
+REQ_DEFAULT = "Запросить контрагентов вне выгрузки по крупнейшей паре переводов"
+
+LIM_BOUNDARY = "исходящие не выгружены (глубина 4)"
+LIM_SEED = "входы неполны (seed)"
+LIM_ISOLATED = "переводов в выгрузке нет"
+LIM_SAME_DAY = "порядок внутри дня неизвестен"
+
+
+def _num1(v: float) -> str:
+    return f"{v:.1f}".replace(".", ",")
+
+
+def node_evidence_v1(r) -> str:
+    from .priority import pct_label, top_terms
+    from .rules import PRIORITY_THRESHOLD_RAW, ROLE_RU, ROLE_TYPOLOGY
+
+    head = f"{ROLE_RU[r.role]} ({ROLE_TYPOLOGY[r.role]})"
+    facts = [f"{TERM_FACT[t](v)} (P{pct_label(p)})" for t, v, p, _ in top_terms(r)]
+    first = head + (": " + ", ".join(facts) if facts else "")
+    parts = [first, f"скор {_num1(r.priority_raw)} (порог {_num1(PRIORITY_THRESHOLD_RAW)})"]
+    n_ft = int(getattr(r, "fast_transit_pairs", 0))
+    if n_ft > 0:
+        parts.append(f"быстрый транзит: {plural(n_ft, 'пара', 'пары', 'пар')} за 0–2 дня")
+    tail = []
+    if r.depth4_boundary:
+        tail.append("граница выгрузки")
+    if r.is_seed:
+        tail.append("seed, входы неполны")
+    if r.isolated:
+        tail.append("переводов в выгрузке нет")
+    return _fit(parts, tail)
+
+
+def next_request(r) -> str:
+    if r.depth4_boundary:
+        return REQ_BOUNDARY
+    # все 19 изолятов — seed; без этой строки правило seed их перехватывает, а им нужен запрос про порог 5 000 KZT
+    if r.isolated:
+        return REQ_ISOLATED
+    if r.is_seed:
+        return REQ_SEED
+    if getattr(r, "has_reversed_pair", False):
+        return REQ_REVERSED
+    if getattr(r, "fast_transit_flag", False):
+        return REQ_FAST
+    return REQ_DEFAULT
+
+
+def limitations(r) -> str:
+    lim = []
+    if r.depth4_boundary:
+        lim.append(LIM_BOUNDARY)
+    if r.is_seed:
+        lim.append(LIM_SEED)
+    if r.isolated:
+        lim.append(LIM_ISOLATED)
+    if getattr(r, "has_same_day_pair", False):
+        lim.append(LIM_SAME_DAY)
+    return "; ".join(lim)
+
+
+def apply(df: pd.DataFrame, method: str = "v0") -> pd.DataFrame:
     df = df.copy()
-    df["evidence"] = [node_evidence(r) for r in df.itertuples(index=False)]
+    if method == "v1":
+        rows = list(df.itertuples(index=False))
+        df["evidence"] = [node_evidence_v1(r) for r in rows]
+        df["next_request"] = [next_request(r) for r in rows]
+        df["limitations"] = [limitations(r) for r in rows]
+    else:
+        df["evidence"] = [node_evidence(r) for r in df.itertuples(index=False)]
     return df

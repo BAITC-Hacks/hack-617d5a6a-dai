@@ -61,6 +61,8 @@ def compute(g: nx.DiGraph, nodes: pd.DataFrame, tx: pd.DataFrame, timer=None) ->
     df["truncated_by_depth"] = df.depth4_boundary
     df["seed_inflow_incomplete"] = df.is_seed.astype(bool)
     df["isolated"] = (df.in_deg == 0) & (df.out_deg == 0)
+    # pass_kzt = min(in_kzt, out_kzt); у граничных узлов исходящие не наблюдаемы, у изолятов переводов нет
+    df.loc[df.depth4_boundary | df.isolated, "pass_kzt"] = 0.0
 
     def _flags(r) -> str:
         f = []
