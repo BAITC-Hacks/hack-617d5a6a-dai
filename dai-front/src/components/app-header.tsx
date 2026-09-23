@@ -39,7 +39,7 @@ export function AppHeader() {
       <header className="flex h-14 flex-none items-center gap-6 border-b bg-background px-5">
         <div className="flex items-center gap-2.5">
           <div className="grid size-7 place-items-center rounded-[7px] bg-primary text-[15px] font-semibold text-primary-foreground">₸</div>
-          <div className="text-[17px] font-semibold tracking-tight whitespace-nowrap">Граф денег</div>
+          <div className="text-[17px] font-semibold tracking-tight whitespace-nowrap">Координатор казны · Граф денег</div>
         </div>
         <nav className="flex gap-1">
           <span className="flex h-8 items-center rounded-[7px] bg-muted px-3 text-sm font-semibold">Узел</span>
