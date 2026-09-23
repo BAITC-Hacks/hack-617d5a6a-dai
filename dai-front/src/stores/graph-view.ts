@@ -1,26 +1,78 @@
 import { create } from 'zustand'
-import type { NodeOut } from '@/client/types.gen'
+import type { Role } from '@/lib/roles'
 
-type Role = NodeOut['role']
+/** Настройки схемы сети. Меняются тулбаром и панелью «Настройки графа», читаются MoneyGraph. */
+export type GraphView = {
+  mode: 'local' | 'overview'
+  /** Окружение узла: сколько хопов от выбранного, 1–4 */
+  depth: number
+  dirIn: boolean
+  dirOut: boolean
+  /** Показывать связи между соседями, а не только дерево от выбранного */
+  between: boolean
+  layout: 'layers' | 'force'
+  colorBy: 'role' | 'cluster'
+  /** null — все роли */
+  roles: Role[] | null
+  /** null — все кластеры */
+  clusters: number[] | null
+  showIsolated: boolean
+  hideTrunc: boolean
+  flow: 'dash' | 'arrows'
+  labelZoom: number
+  nodeScale: number
+  edgeScale: number
+  charge: number
+  linkDist: number
+  clusterPull: number
+}
 
-// Только состояние просмотра. Узлы, рёбра и карточки — в TanStack Query; выбранный gid и radius — в URL.
+export const DEFAULT_VIEW: GraphView = {
+  mode: 'local',
+  depth: 1,
+  dirIn: true,
+  dirOut: true,
+  between: true,
+  layout: 'layers',
+  colorBy: 'role',
+  roles: null,
+  clusters: null,
+  showIsolated: true,
+  hideTrunc: false,
+  flow: 'dash',
+  labelZoom: 1.6,
+  nodeScale: 1,
+  edgeScale: 1,
+  charge: 60,
+  linkDist: 40,
+  clusterPull: 0.2,
+}
+
+// Только состояние просмотра. Узлы, рёбра и карточки — в TanStack Query; выбранный gid — в URL.
 type GraphViewState = {
-  /** Узел под курсором: подсвечивается сразу на графе, в топ-листе и в карточке */
-  hoveredGid: string | null
-  /** Роли, скрытые кликом по легенде */
-  hiddenRoles: Role[]
-  setHovered: (gid: string | null) => void
-  toggleRole: (role: Role) => void
+  view: GraphView
+  settingsOpen: boolean
+  /** Таймлапс: день июля 1–31, до которого показаны связи; null — выключен */
+  play: number | null
+  playing: boolean
+  /** Выбранный на гистограмме диапазон дней [от, до]; null — весь июль */
+  range: [number, number] | null
+  setView: (patch: Partial<GraphView>) => void
+  toggleSettings: () => void
+  setPlay: (play: number | null, playing?: boolean) => void
+  setRange: (range: [number, number] | null) => void
+  resetTimeline: () => void
 }
 
 export const useGraphView = create<GraphViewState>()((set) => ({
-  hoveredGid: null,
-  hiddenRoles: [],
-  setHovered: (gid) => set({ hoveredGid: gid }),
-  toggleRole: (role) =>
-    set((s) => ({
-      hiddenRoles: s.hiddenRoles.includes(role)
-        ? s.hiddenRoles.filter((r) => r !== role)
-        : [...s.hiddenRoles, role],
-    })),
+  view: DEFAULT_VIEW,
+  settingsOpen: false,
+  play: null,
+  playing: false,
+  range: null,
+  setView: (patch) => set((s) => ({ view: { ...s.view, ...patch } })),
+  toggleSettings: () => set((s) => ({ settingsOpen: !s.settingsOpen })),
+  setPlay: (play, playing = false) => set({ play, playing, range: null }),
+  setRange: (range) => set({ range, play: null, playing: false }),
+  resetTimeline: () => set({ play: null, playing: false, range: null }),
 }))
