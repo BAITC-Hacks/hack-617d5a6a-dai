@@ -8,7 +8,7 @@ import { GraphSettings, Segmented } from '@/components/graph/graph-settings'
 import { GraphTimeline } from '@/components/graph/graph-timeline'
 import { getErrorMessage } from '@/lib/api-error'
 import { count } from '@/lib/format'
-import { errorKind, graphQuery, nodeQuery, topQuery } from '@/lib/graph-data'
+import { errorKind, graphQuery, nodeQuery, topQuery, useNodeIndex } from '@/lib/graph-data'
 import { cn } from '@/lib/utils'
 import { useGraphView } from '@/stores/graph-view'
 
@@ -54,10 +54,21 @@ export function GraphPanel({ gid }: { gid: string | null }) {
   const play = useGraphView((s) => s.play)
   const range = useGraphView((s) => s.range)
 
-  // Фокус — gid, чья карточка загрузилась; пока новая грузится или не нашлась, граф держит прежний. Узел не выбран — фокуса нет.
+  // Фокус — выбранный gid, если он есть в загруженной сети или его карточка пришла; пока неизвестный gid грузится
+  // или не нашёлся (404), граф держит прежний. Узел не выбран — фокуса нет.
+  const index = useNodeIndex()
   const [focus, setFocus] = useState<string | null>(null)
   if (!gid && focus !== null) setFocus(null)
-  if (gid && nodeQ.isSuccess && focus !== gid) setFocus(gid)
+  if (gid && (index.has(gid) || nodeQ.isSuccess) && focus !== gid) setFocus(gid)
+
+  // Открыли карточку (очередь, клик по графу, ссылка) — сразу показываем окружение узла; закрыли — обратно к общему виду.
+  // Вручную переключить режим при открытой карточке можно — он сменится только при выборе следующего узла.
+  const prevGid = useRef<string | null>(null)
+  useEffect(() => {
+    if (gid === prevGid.current) return
+    prevGid.current = gid
+    setView({ mode: gid ? 'local' : 'overview' })
+  }, [gid, setView])
 
   // Один MoneyGraph на смонтированный контейнер; ref-cleanup React 19 уничтожает его при размонтировании.
   const [graph, setGraph] = useState<MoneyGraph | null>(null)
