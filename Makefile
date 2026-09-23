@@ -34,5 +34,5 @@ contract:
 	$(PY) backend/export_openapi.py && cd dai-front && npm run gen && npm run typecheck
 
 # dev-сервер интерфейса
-web:
-	cd dai-front && npm ci && npm run dev
+web:  ## интерфейс: .env.development из примера (если нет), npm ci, dev-сервер на 5173
+	cd dai-front && ([ -f .env.development ] || cp .env.example .env.development) && npm ci && npm run dev
