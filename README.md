@@ -21,6 +21,7 @@
 | `task/` | Исходные материалы организаторов, без изменений |
 | `pipeline/` | Воспроизводимый анализ графа и генерация CSV |
 | `dai-front/` | Интерфейс; [запуск и настройка](dai-front/README.md) |
+| `backend/` | API для интерфейса: роли, кластеры, приоритеты, связи узла; [запуск и эндпоинты](backend/README.md). Контракт `dai-front/openapi.json` генерируется из него |
 | `docs/` | Схема решения, критерии ролей и ограничения; [гипотеза для данных и UI](docs/hypothesis_ivan_din.md), [порядок переводов](docs/temporal_research.md) |
 | `outputs/` | Итоговые `nodes_roles.csv`, `clusters.csv`, `top_nodes.csv` |
 
@@ -31,6 +32,7 @@
 | Часть | Стек |
 | --- | --- |
 | Пайплайн | Python 3; пока только стартовый код организаторов: pandas, pyarrow, networkx, numpy |
+| API | Python 3, FastAPI + uvicorn; до готовности пайплайна отдаёт заглушку по порогам на реальных `gid` (`mock: true`) — [подробнее](backend/README.md) |
 | Интерфейс | React 19, TypeScript, Vite, Tailwind CSS, TanStack Router/Query — [подробнее](dai-front/README.md#стек) |
 
 ## Проверка исходного стартового кода

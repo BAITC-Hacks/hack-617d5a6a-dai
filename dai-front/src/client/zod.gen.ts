@@ -3,51 +3,198 @@
 import * as z from 'zod';
 
 /**
- * Body_login
+ * ClusterOut
  */
-export const zBodyLogin = z.object({
-    grant_type: z.string().regex(/^password$/).nullish(),
-    username: z.string(),
-    password: z.string(),
-    scope: z.string().optional().default(''),
-    client_id: z.string().nullish(),
-    client_secret: z.string().nullish()
+export const zClusterOut = z.object({
+    cluster_id: z.int(),
+    n_nodes: z.int(),
+    n_seed: z.int(),
+    sum_kzt_internal: z.number(),
+    top_gids: z.array(z.string()),
+    hypothesis: z.string()
 });
 
 /**
- * Order
+ * ClustersResponse
  */
-export const zOrder = z.object({
-    id: z.int(),
-    service_id: z.int(),
-    address: z.string(),
-    status: z.string()
+export const zClustersResponse = z.object({
+    items: z.array(zClusterOut)
 });
 
 /**
- * OrderCreate
+ * EdgeOut
+ *
+ * Направленное ребро: агрегат переводов src → dst за период.
  */
-export const zOrderCreate = z.object({
-    service_id: z.int(),
-    address: z.string()
+export const zEdgeOut = z.object({
+    src: z.string(),
+    dst: z.string(),
+    sum_kzt: z.number(),
+    n_tx: z.int(),
+    depth: z.int()
 });
 
 /**
- * Service
+ * GraphMeta
  */
-export const zService = z.object({
-    id: z.int(),
+export const zGraphMeta = z.object({
+    mock: z.boolean(),
+    n_nodes: z.int(),
+    n_edges: z.int(),
+    truncated: z.boolean()
+});
+
+/**
+ * HealthResponse
+ */
+export const zHealthResponse = z.object({
+    status: z.literal('ok'),
+    mock: z.boolean()
+});
+
+/**
+ * NodeOut
+ *
+ * Узел графа с ролью, приоритетом и наблюдаемыми метриками внутри выгрузки.
+ */
+export const zNodeOut = z.object({
+    gid: z.string(),
+    role: z.enum([
+        'consolidator',
+        'transit',
+        'distributor',
+        'terminal',
+        'coordinator',
+        'peripheral'
+    ]),
+    role_score: z.number().gte(0).lte(1),
+    cluster_id: z.int(),
+    priority_score: z.number().gte(0).lte(1),
+    evidence: z.string().max(200),
+    depth: z.int().gte(0).lte(4),
+    is_seed: z.boolean(),
+    in_deg: z.int(),
+    out_deg: z.int(),
+    in_kzt: z.number(),
+    out_kzt: z.number(),
+    in_tx: z.int(),
+    out_tx: z.int(),
+    truncated_by_depth: z.boolean()
+});
+
+/**
+ * GraphResponse
+ */
+export const zGraphResponse = z.object({
+    nodes: z.array(zNodeOut),
+    edges: z.array(zEdgeOut),
+    meta: zGraphMeta
+});
+
+/**
+ * ClusterDetail
+ */
+export const zClusterDetail = z.object({
+    cluster: zClusterOut,
+    graph: zGraphResponse
+});
+
+/**
+ * ReloadResponse
+ */
+export const zReloadResponse = z.object({
+    source: z.enum(['outputs', 'mock']),
+    n_nodes: z.int()
+});
+
+/**
+ * RoleInfo
+ */
+export const zRoleInfo = z.object({
+    role: z.enum([
+        'consolidator',
+        'transit',
+        'distributor',
+        'terminal',
+        'coordinator',
+        'peripheral'
+    ]),
     title: z.string(),
-    price: z.number(),
-    description: z.string().nullish()
+    description: z.string()
 });
 
 /**
- * Token
+ * MetaResponse
  */
-export const zToken = z.object({
-    access_token: z.string(),
-    token_type: z.string().optional().default('bearer')
+export const zMetaResponse = z.object({
+    mock: z.boolean(),
+    source: z.enum(['outputs', 'mock']),
+    n_nodes: z.int(),
+    n_edges: z.int(),
+    n_transactions: z.int(),
+    n_seed: z.int(),
+    n_clusters: z.int(),
+    period_start: z.iso.date(),
+    period_end: z.iso.date(),
+    total_kzt: z.number(),
+    roles: z.array(zRoleInfo)
+});
+
+/**
+ * SearchResponse
+ */
+export const zSearchResponse = z.object({
+    items: z.array(zNodeOut),
+    total: z.int()
+});
+
+/**
+ * TopNode
+ */
+export const zTopNode = z.object({
+    rank: z.int(),
+    gid: z.string(),
+    role: z.enum([
+        'consolidator',
+        'transit',
+        'distributor',
+        'terminal',
+        'coordinator',
+        'peripheral'
+    ]),
+    priority_score: z.number(),
+    why: z.string()
+});
+
+/**
+ * TopResponse
+ */
+export const zTopResponse = z.object({
+    items: z.array(zTopNode)
+});
+
+/**
+ * TransferOut
+ *
+ * Отдельный перевод; дата с точностью до дня, порядок внутри дня неизвестен.
+ */
+export const zTransferOut = z.object({
+    src: z.string(),
+    dst: z.string(),
+    date: z.iso.date(),
+    sum_kzt: z.number()
+});
+
+/**
+ * NodeCard
+ *
+ * Карточка узла: сам узел, его рёбра и отдельные переводы.
+ */
+export const zNodeCard = z.object({
+    node: zNodeOut,
+    in_edges: z.array(zEdgeOut),
+    out_edges: z.array(zEdgeOut),
+    transfers: z.array(zTransferOut)
 });
 
 /**
@@ -68,37 +215,91 @@ export const zHttpValidationError = z.object({
     detail: z.array(zValidationError).optional()
 });
 
-export const zLoginBody = zBodyLogin;
+/**
+ * Successful Response
+ */
+export const zGetHealthResponse = zHealthResponse;
 
 /**
  * Successful Response
  */
-export const zLoginResponse = zToken;
+export const zGetMetaResponse = zMetaResponse;
 
-export const zListServicesQuery = z.object({
-    q: z.string().nullish(),
-    limit: z.int().optional().default(20)
+/**
+ * Successful Response
+ */
+export const zReloadDataResponse = zReloadResponse;
+
+export const zGetGraphQuery = z.object({
+    cluster_id: z.int().nullish(),
+    role: z.enum([
+        'consolidator',
+        'transit',
+        'distributor',
+        'terminal',
+        'coordinator',
+        'peripheral'
+    ]).nullish(),
+    min_priority: z.number().gte(0).lte(1).optional().default(0),
+    limit: z.int().gte(1).lte(5000).optional().default(2500)
 });
 
 /**
- * Response List Services
- *
  * Successful Response
  */
-export const zListServicesResponse = z.array(zService);
+export const zGetGraphResponse = zGraphResponse;
 
-export const zGetServicePath = z.object({
-    service_id: z.int()
+export const zSearchNodesQuery = z.object({
+    q: z.string().min(1),
+    limit: z.int().gte(1).lte(200).optional().default(20)
 });
 
 /**
  * Successful Response
  */
-export const zGetServiceResponse = zService;
+export const zSearchNodesResponse = zSearchResponse;
 
-export const zCreateOrderBody = zOrderCreate;
+export const zGetNodePath = z.object({
+    gid: z.string()
+});
 
 /**
  * Successful Response
  */
-export const zCreateOrderResponse = zOrder;
+export const zGetNodeResponse = zNodeCard;
+
+export const zGetNodeSubgraphPath = z.object({
+    gid: z.string()
+});
+
+export const zGetNodeSubgraphQuery = z.object({
+    radius: z.int().gte(1).lte(3).optional().default(1)
+});
+
+/**
+ * Successful Response
+ */
+export const zGetNodeSubgraphResponse = zGraphResponse;
+
+export const zGetTopNodesQuery = z.object({
+    limit: z.int().gte(1).lte(2248).optional().default(20)
+});
+
+/**
+ * Successful Response
+ */
+export const zGetTopNodesResponse = zTopResponse;
+
+/**
+ * Successful Response
+ */
+export const zListClustersResponse = zClustersResponse;
+
+export const zGetClusterPath = z.object({
+    cluster_id: z.int()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetClusterResponse = zClusterDetail;

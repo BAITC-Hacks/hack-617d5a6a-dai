@@ -1,426 +1,1081 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "FastAPI",
-        "version": "0.1.0"
-    },
-    "paths": {
-        "/auth/token": {
-            "post": {
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Login",
-                "operationId": "login",
-                "requestBody": {
-                    "content": {
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Body_login"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Token"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DAI — Граф денег API",
+    "description": "Роли, кластеры и приоритеты проверки по графу переводов. gid всегда строкой.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Get Health",
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
                 }
+              }
             }
-        },
-        "/services": {
-            "get": {
-                "tags": [
-                    "services"
-                ],
-                "summary": "List Services",
-                "operationId": "list_services",
-                "parameters": [
-                    {
-                        "name": "q",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ],
-                            "title": "Q"
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 20,
-                            "title": "Limit"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Service"
-                                    },
-                                    "title": "Response List Services"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/services/{service_id}": {
-            "get": {
-                "tags": [
-                    "services"
-                ],
-                "summary": "Get Service",
-                "operationId": "get_service",
-                "parameters": [
-                    {
-                        "name": "service_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "title": "Service Id"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Service"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/orders": {
-            "post": {
-                "tags": [
-                    "orders"
-                ],
-                "summary": "Create Order",
-                "operationId": "create_order",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/OrderCreate"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Order"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "OAuth2PasswordBearer": []
-                    }
-                ]
-            }
+          }
         }
+      }
     },
-    "components": {
-        "schemas": {
-            "Body_login": {
-                "properties": {
-                    "grant_type": {
-                        "anyOf": [
-                            {
-                                "type": "string",
-                                "pattern": "^password$"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Grant Type"
-                    },
-                    "username": {
-                        "type": "string",
-                        "title": "Username"
-                    },
-                    "password": {
-                        "type": "string",
-                        "format": "password",
-                        "title": "Password"
-                    },
-                    "scope": {
-                        "type": "string",
-                        "title": "Scope",
-                        "default": ""
-                    },
-                    "client_id": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Client Id"
-                    },
-                    "client_secret": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "format": "password",
-                        "title": "Client Secret"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "username",
-                    "password"
-                ],
-                "title": "Body_login"
-            },
-            "HTTPValidationError": {
-                "properties": {
-                    "detail": {
-                        "items": {
-                            "$ref": "#/components/schemas/ValidationError"
-                        },
-                        "type": "array",
-                        "title": "Detail"
-                    }
-                },
-                "type": "object",
-                "title": "HTTPValidationError"
-            },
-            "Order": {
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "title": "Id"
-                    },
-                    "service_id": {
-                        "type": "integer",
-                        "title": "Service Id"
-                    },
-                    "address": {
-                        "type": "string",
-                        "title": "Address"
-                    },
-                    "status": {
-                        "type": "string",
-                        "title": "Status"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "service_id",
-                    "address",
-                    "status"
-                ],
-                "title": "Order"
-            },
-            "OrderCreate": {
-                "properties": {
-                    "service_id": {
-                        "type": "integer",
-                        "title": "Service Id"
-                    },
-                    "address": {
-                        "type": "string",
-                        "title": "Address"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "service_id",
-                    "address"
-                ],
-                "title": "OrderCreate"
-            },
-            "Service": {
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "title": "Id"
-                    },
-                    "title": {
-                        "type": "string",
-                        "title": "Title"
-                    },
-                    "price": {
-                        "type": "number",
-                        "title": "Price"
-                    },
-                    "description": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Description"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "title",
-                    "price"
-                ],
-                "title": "Service"
-            },
-            "Token": {
-                "properties": {
-                    "access_token": {
-                        "type": "string",
-                        "title": "Access Token"
-                    },
-                    "token_type": {
-                        "type": "string",
-                        "title": "Token Type",
-                        "default": "bearer"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "access_token"
-                ],
-                "title": "Token"
-            },
-            "ValidationError": {
-                "properties": {
-                    "loc": {
-                        "items": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                }
-                            ]
-                        },
-                        "type": "array",
-                        "title": "Location"
-                    },
-                    "msg": {
-                        "type": "string",
-                        "title": "Message"
-                    },
-                    "type": {
-                        "type": "string",
-                        "title": "Error Type"
-                    },
-                    "input": {
-                        "title": "Input"
-                    },
-                    "ctx": {
-                        "type": "object",
-                        "title": "Context"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "loc",
-                    "msg",
-                    "type"
-                ],
-                "title": "ValidationError"
-            }
-        },
-        "securitySchemes": {
-            "OAuth2PasswordBearer": {
-                "type": "oauth2",
-                "flows": {
-                    "password": {
-                        "scopes": {},
-                        "tokenUrl": "/auth/token"
-                    }
+    "/meta": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Get Meta",
+        "description": "Сводка по выгрузке, источник ролей и словарь ролей для легенды.",
+        "operationId": "get_meta",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaResponse"
                 }
+              }
             }
+          }
         }
+      }
+    },
+    "/reload": {
+      "post": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Reload Data",
+        "description": "Перечитать outputs/ после прогона пайплайна, без перезапуска сервера.",
+        "operationId": "reload_data",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReloadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graph": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Get Graph",
+        "description": "Весь граф или его срез. Рёбра — только между возвращёнными узлами.",
+        "operationId": "get_graph",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Только узлы этого кластера",
+              "title": "Cluster Id"
+            },
+            "description": "Только узлы этого кластера"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "consolidator",
+                    "transit",
+                    "distributor",
+                    "terminal",
+                    "coordinator",
+                    "peripheral"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Только узлы этой роли",
+              "title": "Role"
+            },
+            "description": "Только узлы этой роли"
+          },
+          {
+            "name": "min_priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "minimum": 0,
+              "description": "Порог priority_score",
+              "default": 0.0,
+              "title": "Min Priority"
+            },
+            "description": "Порог priority_score"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "description": "Максимум узлов, по убыванию priority_score",
+              "default": 2500,
+              "title": "Limit"
+            },
+            "description": "Максимум узлов, по убыванию priority_score"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Search Nodes",
+        "description": "Поиск по началу gid; точное совпадение идёт первым.",
+        "operationId": "search_nodes",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Начало строки gid",
+              "title": "Q"
+            },
+            "description": "Начало строки gid"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nodes/{gid}": {
+      "get": {
+        "tags": [
+          "nodes"
+        ],
+        "summary": "Get Node",
+        "description": "Карточка узла: роль с основанием, входящие и исходящие рёбра, отдельные переводы.",
+        "operationId": "get_node",
+        "parameters": [
+          {
+            "name": "gid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeCard"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nodes/{gid}/subgraph": {
+      "get": {
+        "tags": [
+          "nodes"
+        ],
+        "summary": "Get Node Subgraph",
+        "description": "Окрестность узла для экрана: узлы в radius шагов (без учёта направления), рёбра — исходные направленные.",
+        "operationId": "get_node_subgraph",
+        "parameters": [
+          {
+            "name": "gid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gid"
+            }
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3,
+              "minimum": 1,
+              "description": "Сколько шагов от узла в любую сторону",
+              "default": 1,
+              "title": "Radius"
+            },
+            "description": "Сколько шагов от узла в любую сторону"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/top": {
+      "get": {
+        "tags": [
+          "priority"
+        ],
+        "summary": "Get Top Nodes",
+        "description": "Ранжированный список приоритетов (top_nodes.csv).",
+        "operationId": "get_top_nodes",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2248,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clusters": {
+      "get": {
+        "tags": [
+          "clusters"
+        ],
+        "summary": "List Clusters",
+        "operationId": "list_clusters",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClustersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clusters/{cluster_id}": {
+      "get": {
+        "tags": [
+          "clusters"
+        ],
+        "summary": "Get Cluster",
+        "description": "Паспорт кластера и его подграф.",
+        "operationId": "get_cluster",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cluster Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClusterDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "ClusterDetail": {
+        "properties": {
+          "cluster": {
+            "$ref": "#/components/schemas/ClusterOut"
+          },
+          "graph": {
+            "$ref": "#/components/schemas/GraphResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster",
+          "graph"
+        ],
+        "title": "ClusterDetail"
+      },
+      "ClusterOut": {
+        "properties": {
+          "cluster_id": {
+            "type": "integer",
+            "title": "Cluster Id"
+          },
+          "n_nodes": {
+            "type": "integer",
+            "title": "N Nodes"
+          },
+          "n_seed": {
+            "type": "integer",
+            "title": "N Seed"
+          },
+          "sum_kzt_internal": {
+            "type": "number",
+            "title": "Sum Kzt Internal",
+            "description": "Сумма рёбер, у которых оба конца внутри кластера"
+          },
+          "top_gids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Top Gids"
+          },
+          "hypothesis": {
+            "type": "string",
+            "title": "Hypothesis",
+            "description": "Гипотеза о назначении кластера, для проверки"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "n_nodes",
+          "n_seed",
+          "sum_kzt_internal",
+          "top_gids",
+          "hypothesis"
+        ],
+        "title": "ClusterOut"
+      },
+      "ClustersResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ClusterOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ClustersResponse"
+      },
+      "EdgeOut": {
+        "properties": {
+          "src": {
+            "type": "string",
+            "title": "Src"
+          },
+          "dst": {
+            "type": "string",
+            "title": "Dst"
+          },
+          "sum_kzt": {
+            "type": "number",
+            "title": "Sum Kzt"
+          },
+          "n_tx": {
+            "type": "integer",
+            "title": "N Tx"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth",
+            "description": "Колено обхода, на котором найдено ребро (1–4)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "src",
+          "dst",
+          "sum_kzt",
+          "n_tx",
+          "depth"
+        ],
+        "title": "EdgeOut",
+        "description": "Направленное ребро: агрегат переводов src → dst за период."
+      },
+      "GraphMeta": {
+        "properties": {
+          "mock": {
+            "type": "boolean",
+            "title": "Mock",
+            "description": "True: роли и скоры — заглушка по простым порогам, не результат пайплайна"
+          },
+          "n_nodes": {
+            "type": "integer",
+            "title": "N Nodes"
+          },
+          "n_edges": {
+            "type": "integer",
+            "title": "N Edges"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "description": "True, если список узлов обрезан параметром limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mock",
+          "n_nodes",
+          "n_edges",
+          "truncated"
+        ],
+        "title": "GraphMeta"
+      },
+      "GraphResponse": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/NodeOut"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/EdgeOut"
+            },
+            "type": "array",
+            "title": "Edges",
+            "description": "Только рёбра, у которых оба конца есть в nodes"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/GraphMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges",
+          "meta"
+        ],
+        "title": "GraphResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "mock": {
+            "type": "boolean",
+            "title": "Mock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "mock"
+        ],
+        "title": "HealthResponse"
+      },
+      "MetaResponse": {
+        "properties": {
+          "mock": {
+            "type": "boolean",
+            "title": "Mock"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "outputs",
+              "mock"
+            ],
+            "title": "Source",
+            "description": "outputs: CSV пайплайна; mock: заглушка по порогам"
+          },
+          "n_nodes": {
+            "type": "integer",
+            "title": "N Nodes"
+          },
+          "n_edges": {
+            "type": "integer",
+            "title": "N Edges"
+          },
+          "n_transactions": {
+            "type": "integer",
+            "title": "N Transactions"
+          },
+          "n_seed": {
+            "type": "integer",
+            "title": "N Seed"
+          },
+          "n_clusters": {
+            "type": "integer",
+            "title": "N Clusters"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Period End"
+          },
+          "total_kzt": {
+            "type": "number",
+            "title": "Total Kzt"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleInfo"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mock",
+          "source",
+          "n_nodes",
+          "n_edges",
+          "n_transactions",
+          "n_seed",
+          "n_clusters",
+          "period_start",
+          "period_end",
+          "total_kzt",
+          "roles"
+        ],
+        "title": "MetaResponse"
+      },
+      "NodeCard": {
+        "properties": {
+          "node": {
+            "$ref": "#/components/schemas/NodeOut"
+          },
+          "in_edges": {
+            "items": {
+              "$ref": "#/components/schemas/EdgeOut"
+            },
+            "type": "array",
+            "title": "In Edges"
+          },
+          "out_edges": {
+            "items": {
+              "$ref": "#/components/schemas/EdgeOut"
+            },
+            "type": "array",
+            "title": "Out Edges"
+          },
+          "transfers": {
+            "items": {
+              "$ref": "#/components/schemas/TransferOut"
+            },
+            "type": "array",
+            "title": "Transfers",
+            "description": "Все переводы с участием узла, по дате"
+          }
+        },
+        "type": "object",
+        "required": [
+          "node",
+          "in_edges",
+          "out_edges",
+          "transfers"
+        ],
+        "title": "NodeCard",
+        "description": "Карточка узла: сам узел, его рёбра и отдельные переводы."
+      },
+      "NodeOut": {
+        "properties": {
+          "gid": {
+            "type": "string",
+            "title": "Gid",
+            "description": "Идентификатор клиента строкой (int64 в данных)"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "consolidator",
+              "transit",
+              "distributor",
+              "terminal",
+              "coordinator",
+              "peripheral"
+            ],
+            "title": "Role",
+            "description": "Основная роль из словаря ТЗ"
+          },
+          "role_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Role Score",
+            "description": "Сила поддержки правила роли, 0–1; не вероятность"
+          },
+          "cluster_id": {
+            "type": "integer",
+            "title": "Cluster Id",
+            "description": "Номер кластера из clusters.csv"
+          },
+          "priority_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Priority Score",
+            "description": "Приоритет проверки для аналитика, 0–1"
+          },
+          "evidence": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Evidence",
+            "description": "Почему такая роль: числа из расчёта, до 200 символов"
+          },
+          "depth": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 0.0,
+            "title": "Depth",
+            "description": "Колено обхода, 0 = seed"
+          },
+          "is_seed": {
+            "type": "boolean",
+            "title": "Is Seed"
+          },
+          "in_deg": {
+            "type": "integer",
+            "title": "In Deg",
+            "description": "От скольких разных клиентов получал"
+          },
+          "out_deg": {
+            "type": "integer",
+            "title": "Out Deg",
+            "description": "Скольким разным клиентам отправлял"
+          },
+          "in_kzt": {
+            "type": "number",
+            "title": "In Kzt",
+            "description": "Получено внутри графа, KZT"
+          },
+          "out_kzt": {
+            "type": "number",
+            "title": "Out Kzt",
+            "description": "Отправлено внутри графа, KZT"
+          },
+          "in_tx": {
+            "type": "integer",
+            "title": "In Tx"
+          },
+          "out_tx": {
+            "type": "integer",
+            "title": "Out Tx"
+          },
+          "truncated_by_depth": {
+            "type": "boolean",
+            "title": "Truncated By Depth",
+            "description": "Узел на 4-м колене без исходящих: граница выгрузки, не сток"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gid",
+          "role",
+          "role_score",
+          "cluster_id",
+          "priority_score",
+          "evidence",
+          "depth",
+          "is_seed",
+          "in_deg",
+          "out_deg",
+          "in_kzt",
+          "out_kzt",
+          "in_tx",
+          "out_tx",
+          "truncated_by_depth"
+        ],
+        "title": "NodeOut",
+        "description": "Узел графа с ролью, приоритетом и наблюдаемыми метриками внутри выгрузки."
+      },
+      "ReloadResponse": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "outputs",
+              "mock"
+            ],
+            "title": "Source"
+          },
+          "n_nodes": {
+            "type": "integer",
+            "title": "N Nodes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "n_nodes"
+        ],
+        "title": "ReloadResponse"
+      },
+      "RoleInfo": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "consolidator",
+              "transit",
+              "distributor",
+              "terminal",
+              "coordinator",
+              "peripheral"
+            ],
+            "title": "Role"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Название по-русски для легенды"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "title",
+          "description"
+        ],
+        "title": "RoleInfo"
+      },
+      "SearchResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NodeOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Совпадения по началу строки gid, по убыванию priority_score"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Сколько всего совпадений (items может быть короче из-за limit)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "SearchResponse"
+      },
+      "TopNode": {
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "gid": {
+            "type": "string",
+            "title": "Gid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "consolidator",
+              "transit",
+              "distributor",
+              "terminal",
+              "coordinator",
+              "peripheral"
+            ],
+            "title": "Role"
+          },
+          "priority_score": {
+            "type": "number",
+            "title": "Priority Score"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why",
+            "description": "Обоснование текстом"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank",
+          "gid",
+          "role",
+          "priority_score",
+          "why"
+        ],
+        "title": "TopNode"
+      },
+      "TopResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TopNode"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "TopResponse"
+      },
+      "TransferOut": {
+        "properties": {
+          "src": {
+            "type": "string",
+            "title": "Src"
+          },
+          "dst": {
+            "type": "string",
+            "title": "Dst"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "sum_kzt": {
+            "type": "number",
+            "title": "Sum Kzt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "src",
+          "dst",
+          "date",
+          "sum_kzt"
+        ],
+        "title": "TransferOut",
+        "description": "Отдельный перевод; дата с точностью до дня, порядок внутри дня неизвестен."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
 }

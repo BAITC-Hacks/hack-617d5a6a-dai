@@ -5,33 +5,128 @@ export type ClientOptions = {
 };
 
 /**
- * Body_login
+ * ClusterDetail
  */
-export type BodyLogin = {
+export type ClusterDetail = {
+    cluster: ClusterOut;
+    graph: GraphResponse;
+};
+
+/**
+ * ClusterOut
+ */
+export type ClusterOut = {
     /**
-     * Grant Type
+     * Cluster Id
      */
-    grant_type?: string | null;
+    cluster_id: number;
     /**
-     * Username
+     * N Nodes
      */
-    username: string;
+    n_nodes: number;
     /**
-     * Password
+     * N Seed
      */
-    password: string;
+    n_seed: number;
     /**
-     * Scope
+     * Sum Kzt Internal
+     *
+     * Сумма рёбер, у которых оба конца внутри кластера
      */
-    scope?: string;
+    sum_kzt_internal: number;
     /**
-     * Client Id
+     * Top Gids
      */
-    client_id?: string | null;
+    top_gids: Array<string>;
     /**
-     * Client Secret
+     * Hypothesis
+     *
+     * Гипотеза о назначении кластера, для проверки
      */
-    client_secret?: string | null;
+    hypothesis: string;
+};
+
+/**
+ * ClustersResponse
+ */
+export type ClustersResponse = {
+    /**
+     * Items
+     */
+    items: Array<ClusterOut>;
+};
+
+/**
+ * EdgeOut
+ *
+ * Направленное ребро: агрегат переводов src → dst за период.
+ */
+export type EdgeOut = {
+    /**
+     * Src
+     */
+    src: string;
+    /**
+     * Dst
+     */
+    dst: string;
+    /**
+     * Sum Kzt
+     */
+    sum_kzt: number;
+    /**
+     * N Tx
+     */
+    n_tx: number;
+    /**
+     * Depth
+     *
+     * Колено обхода, на котором найдено ребро (1–4)
+     */
+    depth: number;
+};
+
+/**
+ * GraphMeta
+ */
+export type GraphMeta = {
+    /**
+     * Mock
+     *
+     * True: роли и скоры — заглушка по простым порогам, не результат пайплайна
+     */
+    mock: boolean;
+    /**
+     * N Nodes
+     */
+    n_nodes: number;
+    /**
+     * N Edges
+     */
+    n_edges: number;
+    /**
+     * Truncated
+     *
+     * True, если список узлов обрезан параметром limit
+     */
+    truncated: boolean;
+};
+
+/**
+ * GraphResponse
+ */
+export type GraphResponse = {
+    /**
+     * Nodes
+     */
+    nodes: Array<NodeOut>;
+    /**
+     * Edges
+     *
+     * Только рёбра, у которых оба конца есть в nodes
+     */
+    edges: Array<EdgeOut>;
+    meta: GraphMeta;
 };
 
 /**
@@ -45,75 +140,298 @@ export type HttpValidationError = {
 };
 
 /**
- * Order
+ * HealthResponse
  */
-export type Order = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Service Id
-     */
-    service_id: number;
-    /**
-     * Address
-     */
-    address: string;
+export type HealthResponse = {
     /**
      * Status
      */
-    status: string;
+    status: 'ok';
+    /**
+     * Mock
+     */
+    mock: boolean;
 };
 
 /**
- * OrderCreate
+ * MetaResponse
  */
-export type OrderCreate = {
+export type MetaResponse = {
     /**
-     * Service Id
+     * Mock
      */
-    service_id: number;
+    mock: boolean;
     /**
-     * Address
+     * Source
+     *
+     * outputs: CSV пайплайна; mock: заглушка по порогам
      */
-    address: string;
+    source: 'outputs' | 'mock';
+    /**
+     * N Nodes
+     */
+    n_nodes: number;
+    /**
+     * N Edges
+     */
+    n_edges: number;
+    /**
+     * N Transactions
+     */
+    n_transactions: number;
+    /**
+     * N Seed
+     */
+    n_seed: number;
+    /**
+     * N Clusters
+     */
+    n_clusters: number;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Total Kzt
+     */
+    total_kzt: number;
+    /**
+     * Roles
+     */
+    roles: Array<RoleInfo>;
 };
 
 /**
- * Service
+ * NodeCard
+ *
+ * Карточка узла: сам узел, его рёбра и отдельные переводы.
  */
-export type Service = {
+export type NodeCard = {
+    node: NodeOut;
     /**
-     * Id
+     * In Edges
      */
-    id: number;
+    in_edges: Array<EdgeOut>;
+    /**
+     * Out Edges
+     */
+    out_edges: Array<EdgeOut>;
+    /**
+     * Transfers
+     *
+     * Все переводы с участием узла, по дате
+     */
+    transfers: Array<TransferOut>;
+};
+
+/**
+ * NodeOut
+ *
+ * Узел графа с ролью, приоритетом и наблюдаемыми метриками внутри выгрузки.
+ */
+export type NodeOut = {
+    /**
+     * Gid
+     *
+     * Идентификатор клиента строкой (int64 в данных)
+     */
+    gid: string;
+    /**
+     * Role
+     *
+     * Основная роль из словаря ТЗ
+     */
+    role: 'consolidator' | 'transit' | 'distributor' | 'terminal' | 'coordinator' | 'peripheral';
+    /**
+     * Role Score
+     *
+     * Сила поддержки правила роли, 0–1; не вероятность
+     */
+    role_score: number;
+    /**
+     * Cluster Id
+     *
+     * Номер кластера из clusters.csv
+     */
+    cluster_id: number;
+    /**
+     * Priority Score
+     *
+     * Приоритет проверки для аналитика, 0–1
+     */
+    priority_score: number;
+    /**
+     * Evidence
+     *
+     * Почему такая роль: числа из расчёта, до 200 символов
+     */
+    evidence: string;
+    /**
+     * Depth
+     *
+     * Колено обхода, 0 = seed
+     */
+    depth: number;
+    /**
+     * Is Seed
+     */
+    is_seed: boolean;
+    /**
+     * In Deg
+     *
+     * От скольких разных клиентов получал
+     */
+    in_deg: number;
+    /**
+     * Out Deg
+     *
+     * Скольким разным клиентам отправлял
+     */
+    out_deg: number;
+    /**
+     * In Kzt
+     *
+     * Получено внутри графа, KZT
+     */
+    in_kzt: number;
+    /**
+     * Out Kzt
+     *
+     * Отправлено внутри графа, KZT
+     */
+    out_kzt: number;
+    /**
+     * In Tx
+     */
+    in_tx: number;
+    /**
+     * Out Tx
+     */
+    out_tx: number;
+    /**
+     * Truncated By Depth
+     *
+     * Узел на 4-м колене без исходящих: граница выгрузки, не сток
+     */
+    truncated_by_depth: boolean;
+};
+
+/**
+ * ReloadResponse
+ */
+export type ReloadResponse = {
+    /**
+     * Source
+     */
+    source: 'outputs' | 'mock';
+    /**
+     * N Nodes
+     */
+    n_nodes: number;
+};
+
+/**
+ * RoleInfo
+ */
+export type RoleInfo = {
+    /**
+     * Role
+     */
+    role: 'consolidator' | 'transit' | 'distributor' | 'terminal' | 'coordinator' | 'peripheral';
     /**
      * Title
+     *
+     * Название по-русски для легенды
      */
     title: string;
     /**
-     * Price
-     */
-    price: number;
-    /**
      * Description
      */
-    description?: string | null;
+    description: string;
 };
 
 /**
- * Token
+ * SearchResponse
  */
-export type Token = {
+export type SearchResponse = {
     /**
-     * Access Token
+     * Items
+     *
+     * Совпадения по началу строки gid, по убыванию priority_score
      */
-    access_token: string;
+    items: Array<NodeOut>;
     /**
-     * Token Type
+     * Total
+     *
+     * Сколько всего совпадений (items может быть короче из-за limit)
      */
-    token_type?: string;
+    total: number;
+};
+
+/**
+ * TopNode
+ */
+export type TopNode = {
+    /**
+     * Rank
+     */
+    rank: number;
+    /**
+     * Gid
+     */
+    gid: string;
+    /**
+     * Role
+     */
+    role: 'consolidator' | 'transit' | 'distributor' | 'terminal' | 'coordinator' | 'peripheral';
+    /**
+     * Priority Score
+     */
+    priority_score: number;
+    /**
+     * Why
+     *
+     * Обоснование текстом
+     */
+    why: string;
+};
+
+/**
+ * TopResponse
+ */
+export type TopResponse = {
+    /**
+     * Items
+     */
+    items: Array<TopNode>;
+};
+
+/**
+ * TransferOut
+ *
+ * Отдельный перевод; дата с точностью до дня, порядок внутри дня неизвестен.
+ */
+export type TransferOut = {
+    /**
+     * Src
+     */
+    src: string;
+    /**
+     * Dst
+     */
+    dst: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Sum Kzt
+     */
+    sum_kzt: number;
 };
 
 /**
@@ -144,118 +462,279 @@ export type ValidationError = {
     };
 };
 
-export type LoginData = {
-    body: BodyLogin;
+export type GetHealthData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/auth/token';
+    url: '/health';
 };
 
-export type LoginErrors = {
+export type GetHealthResponses = {
+    /**
+     * Successful Response
+     */
+    200: HealthResponse;
+};
+
+export type GetHealthResponse = GetHealthResponses[keyof GetHealthResponses];
+
+export type GetMetaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/meta';
+};
+
+export type GetMetaResponses = {
+    /**
+     * Successful Response
+     */
+    200: MetaResponse;
+};
+
+export type GetMetaResponse = GetMetaResponses[keyof GetMetaResponses];
+
+export type ReloadDataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/reload';
+};
+
+export type ReloadDataResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReloadResponse;
+};
+
+export type ReloadDataResponse = ReloadDataResponses[keyof ReloadDataResponses];
+
+export type GetGraphData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Cluster Id
+         *
+         * Только узлы этого кластера
+         */
+        cluster_id?: number | null;
+        /**
+         * Role
+         *
+         * Только узлы этой роли
+         */
+        role?: 'consolidator' | 'transit' | 'distributor' | 'terminal' | 'coordinator' | 'peripheral' | null;
+        /**
+         * Min Priority
+         *
+         * Порог priority_score
+         */
+        min_priority?: number;
+        /**
+         * Limit
+         *
+         * Максимум узлов, по убыванию priority_score
+         */
+        limit?: number;
+    };
+    url: '/graph';
+};
+
+export type GetGraphErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type LoginError = LoginErrors[keyof LoginErrors];
+export type GetGraphError = GetGraphErrors[keyof GetGraphErrors];
 
-export type LoginResponses = {
+export type GetGraphResponses = {
     /**
      * Successful Response
      */
-    200: Token;
+    200: GraphResponse;
 };
 
-export type LoginResponse = LoginResponses[keyof LoginResponses];
+export type GetGraphResponse = GetGraphResponses[keyof GetGraphResponses];
 
-export type ListServicesData = {
+export type SearchNodesData = {
     body?: never;
     path?: never;
-    query?: {
+    query: {
         /**
          * Q
+         *
+         * Начало строки gid
          */
-        q?: string | null;
+        q: string;
         /**
          * Limit
          */
         limit?: number;
     };
-    url: '/services';
+    url: '/search';
 };
 
-export type ListServicesErrors = {
+export type SearchNodesErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListServicesError = ListServicesErrors[keyof ListServicesErrors];
+export type SearchNodesError = SearchNodesErrors[keyof SearchNodesErrors];
 
-export type ListServicesResponses = {
+export type SearchNodesResponses = {
     /**
-     * Response List Services
-     *
      * Successful Response
      */
-    200: Array<Service>;
+    200: SearchResponse;
 };
 
-export type ListServicesResponse = ListServicesResponses[keyof ListServicesResponses];
+export type SearchNodesResponse = SearchNodesResponses[keyof SearchNodesResponses];
 
-export type GetServiceData = {
+export type GetNodeData = {
     body?: never;
     path: {
         /**
-         * Service Id
+         * Gid
          */
-        service_id: number;
+        gid: string;
     };
     query?: never;
-    url: '/services/{service_id}';
+    url: '/nodes/{gid}';
 };
 
-export type GetServiceErrors = {
+export type GetNodeErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetServiceError = GetServiceErrors[keyof GetServiceErrors];
+export type GetNodeError = GetNodeErrors[keyof GetNodeErrors];
 
-export type GetServiceResponses = {
+export type GetNodeResponses = {
     /**
      * Successful Response
      */
-    200: Service;
+    200: NodeCard;
 };
 
-export type GetServiceResponse = GetServiceResponses[keyof GetServiceResponses];
+export type GetNodeResponse = GetNodeResponses[keyof GetNodeResponses];
 
-export type CreateOrderData = {
-    body: OrderCreate;
+export type GetNodeSubgraphData = {
+    body?: never;
+    path: {
+        /**
+         * Gid
+         */
+        gid: string;
+    };
+    query?: {
+        /**
+         * Radius
+         *
+         * Сколько шагов от узла в любую сторону
+         */
+        radius?: number;
+    };
+    url: '/nodes/{gid}/subgraph';
+};
+
+export type GetNodeSubgraphErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetNodeSubgraphError = GetNodeSubgraphErrors[keyof GetNodeSubgraphErrors];
+
+export type GetNodeSubgraphResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphResponse;
+};
+
+export type GetNodeSubgraphResponse = GetNodeSubgraphResponses[keyof GetNodeSubgraphResponses];
+
+export type GetTopNodesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/top';
+};
+
+export type GetTopNodesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetTopNodesError = GetTopNodesErrors[keyof GetTopNodesErrors];
+
+export type GetTopNodesResponses = {
+    /**
+     * Successful Response
+     */
+    200: TopResponse;
+};
+
+export type GetTopNodesResponse = GetTopNodesResponses[keyof GetTopNodesResponses];
+
+export type ListClustersData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/orders';
+    url: '/clusters';
 };
 
-export type CreateOrderErrors = {
+export type ListClustersResponses = {
+    /**
+     * Successful Response
+     */
+    200: ClustersResponse;
+};
+
+export type ListClustersResponse = ListClustersResponses[keyof ListClustersResponses];
+
+export type GetClusterData = {
+    body?: never;
+    path: {
+        /**
+         * Cluster Id
+         */
+        cluster_id: number;
+    };
+    query?: never;
+    url: '/clusters/{cluster_id}';
+};
+
+export type GetClusterErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreateOrderError = CreateOrderErrors[keyof CreateOrderErrors];
+export type GetClusterError = GetClusterErrors[keyof GetClusterErrors];
 
-export type CreateOrderResponses = {
+export type GetClusterResponses = {
     /**
      * Successful Response
      */
-    201: Order;
+    200: ClusterDetail;
 };
 
-export type CreateOrderResponse = CreateOrderResponses[keyof CreateOrderResponses];
+export type GetClusterResponse = GetClusterResponses[keyof GetClusterResponses];

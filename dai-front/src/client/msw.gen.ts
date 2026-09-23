@@ -2,23 +2,23 @@
 
 import { http, type HttpHandler, HttpResponse, type HttpResponseResolver, type RequestHandlerOptions as RequestHandlerOptions2 } from 'msw';
 
-import type { ClientOptions, CreateOrderData, CreateOrderResponses, GetServiceResponses, ListServicesResponses, LoginData, LoginResponses } from './types.gen';
+import type { ClientOptions, GetClusterResponses, GetGraphResponses, GetHealthResponses, GetMetaResponses, GetNodeResponses, GetNodeSubgraphResponses, GetTopNodesResponses, ListClustersResponses, ReloadDataResponses, SearchNodesResponses } from './types.gen';
 
 export type RequestHandlerOptions = RequestHandlerOptions2 & {
     baseUrl?: ClientOptions['baseUrl'];
     responseFallback?: 'error' | 'passthrough';
 };
 
-export type HandleLoginResponse = {
-    body: LoginResponses[200];
+export type HandleGetHealthResponse = {
+    body: GetHealthResponses[200];
     status?: 200;
 };
 
 /**
- * Handler for the `POST /auth/token` operation.
+ * Handler for the `GET /health` operation.
  */
-export function handleLogin(response?: HandleLoginResponse | HttpResponseResolver<never, LoginData['body']>, options?: RequestHandlerOptions): HttpHandler {
-    return http.post<never, LoginData['body']>(`${options?.baseUrl ?? '*'}/auth/token`, info => {
+export function handleGetHealth(response?: HandleGetHealthResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<never, never>(`${options?.baseUrl ?? '*'}/health`, info => {
         if (typeof response === 'function') {
             return response(info);
         }
@@ -36,16 +36,16 @@ export function handleLogin(response?: HandleLoginResponse | HttpResponseResolve
     }, options);
 }
 
-export type HandleListServicesResponse = {
-    body: ListServicesResponses[200];
+export type HandleGetMetaResponse = {
+    body: GetMetaResponses[200];
     status?: 200;
 };
 
 /**
- * Handler for the `GET /services` operation.
+ * Handler for the `GET /meta` operation.
  */
-export function handleListServices(response?: HandleListServicesResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
-    return http.get<never, never>(`${options?.baseUrl ?? '*'}/services`, info => {
+export function handleGetMeta(response?: HandleGetMetaResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<never, never>(`${options?.baseUrl ?? '*'}/meta`, info => {
         if (typeof response === 'function') {
             return response(info);
         }
@@ -63,20 +63,101 @@ export function handleListServices(response?: HandleListServicesResponse | HttpR
     }, options);
 }
 
-export type HandleGetServiceResponse = {
-    body: GetServiceResponses[200];
+export type HandleReloadDataResponse = {
+    body: ReloadDataResponses[200];
     status?: 200;
 };
 
 /**
- * Handler for the `GET /services/{service_id}` operation.
+ * Handler for the `POST /reload` operation.
  */
-export function handleGetService(response?: HandleGetServiceResponse | HttpResponseResolver<{
-    service_id: string;
+export function handleReloadData(response?: HandleReloadDataResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.post<never, never>(`${options?.baseUrl ?? '*'}/reload`, info => {
+        if (typeof response === 'function') {
+            return response(info);
+        }
+        const body = response?.body;
+        if (body !== undefined) {
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
+        }
+        if (options?.responseFallback === 'passthrough') {
+            return;
+        }
+        return new Response('Not Implemented', {
+            status: 501,
+            statusText: 'Not Implemented'
+        });
+    }, options);
+}
+
+export type HandleGetGraphResponse = {
+    body: GetGraphResponses[200];
+    status?: 200;
+};
+
+/**
+ * Handler for the `GET /graph` operation.
+ */
+export function handleGetGraph(response?: HandleGetGraphResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<never, never>(`${options?.baseUrl ?? '*'}/graph`, info => {
+        if (typeof response === 'function') {
+            return response(info);
+        }
+        const body = response?.body;
+        if (body !== undefined) {
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
+        }
+        if (options?.responseFallback === 'passthrough') {
+            return;
+        }
+        return new Response('Not Implemented', {
+            status: 501,
+            statusText: 'Not Implemented'
+        });
+    }, options);
+}
+
+export type HandleSearchNodesResponse = {
+    body: SearchNodesResponses[200];
+    status?: 200;
+};
+
+/**
+ * Handler for the `GET /search` operation.
+ */
+export function handleSearchNodes(response?: HandleSearchNodesResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<never, never>(`${options?.baseUrl ?? '*'}/search`, info => {
+        if (typeof response === 'function') {
+            return response(info);
+        }
+        const body = response?.body;
+        if (body !== undefined) {
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
+        }
+        if (options?.responseFallback === 'passthrough') {
+            return;
+        }
+        return new Response('Not Implemented', {
+            status: 501,
+            statusText: 'Not Implemented'
+        });
+    }, options);
+}
+
+export type HandleGetNodeResponse = {
+    body: GetNodeResponses[200];
+    status?: 200;
+};
+
+/**
+ * Handler for the `GET /nodes/{gid}` operation.
+ */
+export function handleGetNode(response?: HandleGetNodeResponse | HttpResponseResolver<{
+    gid: string;
 }, never>, options?: RequestHandlerOptions): HttpHandler {
     return http.get<{
-        service_id: string;
-    }, never>(`${options?.baseUrl ?? '*'}/services/:service_id`, info => {
+        gid: string;
+    }, never>(`${options?.baseUrl ?? '*'}/nodes/:gid`, info => {
         if (typeof response === 'function') {
             return response(info);
         }
@@ -94,22 +175,111 @@ export function handleGetService(response?: HandleGetServiceResponse | HttpRespo
     }, options);
 }
 
-export type HandleCreateOrderResponse = {
-    body: CreateOrderResponses[201];
-    status?: 201;
+export type HandleGetNodeSubgraphResponse = {
+    body: GetNodeSubgraphResponses[200];
+    status?: 200;
 };
 
 /**
- * Handler for the `POST /orders` operation.
+ * Handler for the `GET /nodes/{gid}/subgraph` operation.
  */
-export function handleCreateOrder(response?: HandleCreateOrderResponse | HttpResponseResolver<never, CreateOrderData['body']>, options?: RequestHandlerOptions): HttpHandler {
-    return http.post<never, CreateOrderData['body']>(`${options?.baseUrl ?? '*'}/orders`, info => {
+export function handleGetNodeSubgraph(response?: HandleGetNodeSubgraphResponse | HttpResponseResolver<{
+    gid: string;
+}, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<{
+        gid: string;
+    }, never>(`${options?.baseUrl ?? '*'}/nodes/:gid/subgraph`, info => {
         if (typeof response === 'function') {
             return response(info);
         }
         const body = response?.body;
         if (body !== undefined) {
-            return HttpResponse.json(body, { status: response?.status ?? 201 });
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
+        }
+        if (options?.responseFallback === 'passthrough') {
+            return;
+        }
+        return new Response('Not Implemented', {
+            status: 501,
+            statusText: 'Not Implemented'
+        });
+    }, options);
+}
+
+export type HandleGetTopNodesResponse = {
+    body: GetTopNodesResponses[200];
+    status?: 200;
+};
+
+/**
+ * Handler for the `GET /top` operation.
+ */
+export function handleGetTopNodes(response?: HandleGetTopNodesResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<never, never>(`${options?.baseUrl ?? '*'}/top`, info => {
+        if (typeof response === 'function') {
+            return response(info);
+        }
+        const body = response?.body;
+        if (body !== undefined) {
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
+        }
+        if (options?.responseFallback === 'passthrough') {
+            return;
+        }
+        return new Response('Not Implemented', {
+            status: 501,
+            statusText: 'Not Implemented'
+        });
+    }, options);
+}
+
+export type HandleListClustersResponse = {
+    body: ListClustersResponses[200];
+    status?: 200;
+};
+
+/**
+ * Handler for the `GET /clusters` operation.
+ */
+export function handleListClusters(response?: HandleListClustersResponse | HttpResponseResolver<never, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<never, never>(`${options?.baseUrl ?? '*'}/clusters`, info => {
+        if (typeof response === 'function') {
+            return response(info);
+        }
+        const body = response?.body;
+        if (body !== undefined) {
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
+        }
+        if (options?.responseFallback === 'passthrough') {
+            return;
+        }
+        return new Response('Not Implemented', {
+            status: 501,
+            statusText: 'Not Implemented'
+        });
+    }, options);
+}
+
+export type HandleGetClusterResponse = {
+    body: GetClusterResponses[200];
+    status?: 200;
+};
+
+/**
+ * Handler for the `GET /clusters/{cluster_id}` operation.
+ */
+export function handleGetCluster(response?: HandleGetClusterResponse | HttpResponseResolver<{
+    cluster_id: string;
+}, never>, options?: RequestHandlerOptions): HttpHandler {
+    return http.get<{
+        cluster_id: string;
+    }, never>(`${options?.baseUrl ?? '*'}/clusters/:cluster_id`, info => {
+        if (typeof response === 'function') {
+            return response(info);
+        }
+        const body = response?.body;
+        if (body !== undefined) {
+            return HttpResponse.json(body, { status: response?.status ?? 200 });
         }
         if (options?.responseFallback === 'passthrough') {
             return;
@@ -123,21 +293,45 @@ export function handleCreateOrder(response?: HandleCreateOrderResponse | HttpRes
 
 export type MswHandlerFactories = {
     /**
-     * Handler for the `POST /auth/token` operation.
+     * Handler for the `GET /health` operation.
      */
-    login: typeof handleLogin;
+    getHealth: typeof handleGetHealth;
     /**
-     * Handler for the `GET /services` operation.
+     * Handler for the `GET /meta` operation.
      */
-    listServices: typeof handleListServices;
+    getMeta: typeof handleGetMeta;
     /**
-     * Handler for the `GET /services/{service_id}` operation.
+     * Handler for the `POST /reload` operation.
      */
-    getService: typeof handleGetService;
+    reloadData: typeof handleReloadData;
     /**
-     * Handler for the `POST /orders` operation.
+     * Handler for the `GET /graph` operation.
      */
-    createOrder: typeof handleCreateOrder;
+    getGraph: typeof handleGetGraph;
+    /**
+     * Handler for the `GET /search` operation.
+     */
+    searchNodes: typeof handleSearchNodes;
+    /**
+     * Handler for the `GET /nodes/{gid}` operation.
+     */
+    getNode: typeof handleGetNode;
+    /**
+     * Handler for the `GET /nodes/{gid}/subgraph` operation.
+     */
+    getNodeSubgraph: typeof handleGetNodeSubgraph;
+    /**
+     * Handler for the `GET /top` operation.
+     */
+    getTopNodes: typeof handleGetTopNodes;
+    /**
+     * Handler for the `GET /clusters` operation.
+     */
+    listClusters: typeof handleListClusters;
+    /**
+     * Handler for the `GET /clusters/{cluster_id}` operation.
+     */
+    getCluster: typeof handleGetCluster;
 };
 
 export type CreateMswHandlersResult = {
@@ -155,10 +349,16 @@ export function createMswHandlers(config: RequestHandlerOptions = {}): CreateMsw
         return (response, options) => handler(response, { ...config, ...options });
     }
     const pick: CreateMswHandlersResult['pick'] = {
-        login: wrap(handleLogin),
-        listServices: wrap(handleListServices),
-        getService: wrap(handleGetService),
-        createOrder: wrap(handleCreateOrder)
+        getHealth: wrap(handleGetHealth),
+        getMeta: wrap(handleGetMeta),
+        reloadData: wrap(handleReloadData),
+        getGraph: wrap(handleGetGraph),
+        searchNodes: wrap(handleSearchNodes),
+        getNode: wrap(handleGetNode),
+        getNodeSubgraph: wrap(handleGetNodeSubgraph),
+        getTopNodes: wrap(handleGetTopNodes),
+        listClusters: wrap(handleListClusters),
+        getCluster: wrap(handleGetCluster)
     };
     const all: CreateMswHandlersResult['all'] = (options = {}) => {
         type OverrideValue<R> = R | [
@@ -170,10 +370,16 @@ export function createMswHandlers(config: RequestHandlerOptions = {}): CreateMsw
         }
         const overrides = options.pick ?? {};
         return [
-            invoke(pick.login, overrides.login),
-            invoke(pick.getService, overrides.getService),
-            invoke(pick.listServices, overrides.listServices),
-            invoke(pick.createOrder, overrides.createOrder)
+            invoke(pick.getNodeSubgraph, overrides.getNodeSubgraph),
+            invoke(pick.getNode, overrides.getNode),
+            invoke(pick.getCluster, overrides.getCluster),
+            invoke(pick.getHealth, overrides.getHealth),
+            invoke(pick.getMeta, overrides.getMeta),
+            invoke(pick.reloadData, overrides.reloadData),
+            invoke(pick.getGraph, overrides.getGraph),
+            invoke(pick.searchNodes, overrides.searchNodes),
+            invoke(pick.getTopNodes, overrides.getTopNodes),
+            invoke(pick.listClusters, overrides.listClusters)
         ];
     };
     return { all, pick };
