@@ -145,7 +145,7 @@ def assign_role(r, bc_thr: float) -> tuple[str, float, str]:
             if s > best:
                 best_role, best = role, s
     score = round(min(1.0, max(0.0, 1.0 - best)), 3)
-    checks = f"peripheral:{_peripheral_note(r)}; ближе всего {best_role}, поддержка {best:.3f}"
+    checks = f"peripheral:{_peripheral_note(r)}; ни одно правило роли не выполнено; ближе всего к {best_role}"
     return "peripheral", score, checks[:MAX_CHECKS]
 
 
