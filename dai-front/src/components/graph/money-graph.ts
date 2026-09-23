@@ -1,7 +1,7 @@
 import * as d3 from 'd3'
 import type { ClusterOut, EdgeOut, NodeOut, TransferOut } from '@/client/types.gen'
 import { formatInt, formatKztCompact, formatScore, gidParts } from '@/lib/format'
-import { ROLE_FALLBACK_TITLE, roleVar } from '@/lib/roles'
+import { ROLE_FALLBACK_TITLE, roleSymbolPath, roleVar } from '@/lib/roles'
 import { DEFAULT_VIEW, type GraphView } from '@/stores/graph-view'
 
 // Схема сети: D3 (force, zoom, drag) + SVG, порт design-outputs/money-graph.js (доработанный движок из макета Claude Design).
@@ -137,7 +137,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
   const merge = glow.append('feMerge')
   merge.append('feMergeNode').attr('in', 'blur')
   merge.append('feMergeNode').attr('in', 'SourceGraphic')
-  defs
+  const arrow = defs
     .append('marker')
     .attr('id', `${uid}-arr`)
     .attr('viewBox', '0 -4 8 8')
@@ -147,9 +147,12 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     .attr('markerHeight', 7)
     .attr('markerUnits', 'userSpaceOnUse')
     .attr('orient', 'auto')
-    .append('path')
-    .attr('d', 'M0,-3.5L8,0L0,3.5')
-    .attr('fill', '#9a9aa0')
+  arrow.append('path').attr('d', 'M0,-3.5L8,0L0,3.5').attr('fill', '#b4b4be')
+  /** Наконечник на экране 3,5–10 px при любом зуме: в координатах графа его размер обратно пропорционален масштабу */
+  const arrowSize = () => {
+    const px = Math.min(10, Math.max(3.5, 7 * k))
+    arrow.attr('markerWidth', px / k).attr('markerHeight', px / k)
+  }
   const g = svg.append('g')
   const gH = g.append('g')
   const gL = g.append('g')
@@ -188,6 +191,16 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
   let k = 1
   let camT: d3.Timer | null = null
   let layoutT: d3.Timer | null = null
+  // Общий вид: раскладка всей сети считается заранее в фоне (пока открыто окружение узла) и запоминается.
+  // Переключение режимов не перекладывает сеть заново: позиции и камера каждого режима восстанавливаются.
+  type ONode = d3.SimulationNodeDatum & { id: string; o: GNode }
+  const ovPos = new Map<string, { x: number; y: number }>()
+  let ovAlpha = 0
+  /** Какой режим сейчас в основной симуляции: её alpha — «недоигранная физика» только своего режима */
+  let simMode: GraphView['mode'] | null = null
+  let ovSim: d3.Simulation<ONode, undefined> | null = null
+  let ovT: d3.Timer | null = null
+  const cams = new Map<string, { t: d3.ZoomTransform; focus: string | null }>()
 
   let linkSel = gL.selectAll<SVGPathElement, GLink>('path')
   let nodeSel = gN.selectAll<SVGGElement, GNode>('g.n')
@@ -200,6 +213,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     .on('zoom', (e: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
       g.attr('transform', e.transform.toString())
       k = e.transform.k
+      arrowSize()
       labels(0)
     })
   svg.call(zoom).on('dblclick.zoom', null)
@@ -273,6 +287,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     for (const l of E) l.recip = keys.has(l.e.dst + '|' + l.e.src)
     if (prevN.size === 0) first = true
     else if (reused !== prevN.size + prevE.size || N.size !== prevN.size || E.length !== prevE.size) dirty = true
+    if (first || dirty) precomputeOverview()
   }
 
   const R = (o: GNode) => (o.n.priority_score == null ? 2.5 : 2.5 + 8 * o.n.priority_score) * V.nodeScale
@@ -317,7 +332,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       for (const id of N.keys()) ids.set(id, 0)
     }
     const pass = (o: GNode) => {
-      if (o.id === V.focus) return true
+      if (V.mode === 'local' && o.id === V.focus) return true
       if (V.roles && o.n.role && !V.roles.includes(o.n.role)) return false
       if (V.clusters && o.n.cluster_id != null && !V.clusters.includes(o.n.cluster_id)) return false
       if (V.hideTrunc && o.n.truncated_by_depth) return false
@@ -401,7 +416,130 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     return T
   }
 
-  function place(animate: boolean) {
+  /** Центр кластера узла в общем виде; в окружении — начало координат. */
+  function centers(nodes: GNode[]) {
+    const C = V.mode === 'overview' ? clusterCenters(nodes) : null
+    return (o: GNode) => (C ? C.get(o.n.cluster_id ?? -1)! : ORIGIN)
+  }
+
+  function forces<T extends d3.SimulationNodeDatum & { id: string }>(
+    s: d3.Simulation<T, undefined>,
+    links: { source: string | T; target: string | T }[],
+    center: (d: T) => { x: number; y: number },
+    radius: (d: T) => number,
+    pull: number,
+  ) {
+    s.force('charge', d3.forceManyBody<T>().strength(-V.charge).distanceMax(400))
+      .force(
+        'link',
+        d3
+          .forceLink<T, { source: string | T; target: string | T }>(links)
+          .id((d) => d.id)
+          .distance(V.linkDist)
+          .strength(0.6),
+      )
+      .force(
+        'collide',
+        d3.forceCollide<T>((d) => radius(d) + 2),
+      )
+      .force('cx', d3.forceX<T>((d) => center(d).x).strength(pull))
+      .force('cy', d3.forceY<T>((d) => center(d).y).strength(pull))
+  }
+
+  /** Фоновый расчёт раскладки общего вида: ~10 мс физики на кадр, результат — в ovPos. */
+  function precomputeOverview() {
+    ovT?.stop()
+    ovSim?.stop()
+    const all = [...N.values()]
+    const C = clusterCenters(all)
+    const center = (d: ONode) => C.get(d.o.n.cluster_id ?? -1)!
+    const nodes: ONode[] = all.map((o) => {
+      const c = C.get(o.n.cluster_id ?? -1)!
+      const p = ovPos.get(o.id) ?? { x: c.x + (Math.random() - 0.5) * 60, y: c.y + (Math.random() - 0.5) * 60 }
+      return { id: o.id, o, x: p.x, y: p.y }
+    })
+    const s = d3.forceSimulation(nodes).alphaMin(0.02).stop()
+    forces(
+      s,
+      E.map((l) => ({ source: l.source.id, target: l.target.id })),
+      center,
+      (d) => R(d.o),
+      V.clusterPull,
+    )
+    ovSim = s
+    const save = () => {
+      for (const d of s.nodes()) ovPos.set(d.id, { x: d.x!, y: d.y! })
+    }
+    ovT = d3.timer(() => {
+      const t0 = performance.now()
+      while (performance.now() - t0 < 10 && s.alpha() >= s.alphaMin()) s.tick()
+      if (s.alpha() < s.alphaMin()) {
+        save()
+        stopPrecompute()
+      }
+    })
+  }
+  function stopPrecompute() {
+    ovT?.stop()
+    ovSim?.stop()
+    ovT = null
+    ovSim = null
+  }
+  /** Забрать фоновую раскладку (даже недосчитанную). Возвращает alpha, с которой её надо доигрывать. */
+  function takeOverview() {
+    let alpha = ovAlpha
+    ovAlpha = 0
+    if (ovSim) {
+      for (const d of ovSim.nodes()) ovPos.set(d.id, { x: d.x!, y: d.y! })
+      alpha = Math.max(alpha, ovSim.alpha())
+      stopPrecompute()
+    }
+    return alpha
+  }
+
+  /** Плавно перевести узлы в целевые позиции (послойная раскладка, возврат к общему виду). */
+  function morph(nodes: GNode[], target: (o: GNode) => { x: number; y: number }, animate: boolean, done?: () => void) {
+    for (const o of nodes) {
+      const t = target(o)
+      o.tx = t.x
+      o.ty = t.y
+      // впервые показанный узел сразу встаёт на место и проявляется, а не вылетает из центра
+      if (isNaN(o.x)) {
+        o.x = t.x
+        o.y = t.y
+      }
+      o.sx = o.x
+      o.sy = o.y
+    }
+    if (!animate) {
+      for (const o of nodes) {
+        o.x = o.tx
+        o.y = o.ty
+      }
+      draw()
+      done?.()
+      return
+    }
+    const t0 = performance.now()
+    const tm = d3.timer(() => {
+      const p = Math.min(1, (performance.now() - t0) / 700)
+      const e = d3.easeCubicInOut(p)
+      for (const o of nodes) {
+        o.x = o.sx + (o.tx - o.sx) * e
+        o.y = o.sy + (o.ty - o.sy) * e
+      }
+      draw()
+      if (p >= 1) {
+        tm.stop()
+        layoutT = null
+        done?.()
+      }
+    })
+    layoutT = tm
+  }
+
+  /** Раскладка видимых узлов. Возвращает true, если запущена заметная физика (камеру стоит довписать в конце). */
+  function place(animate: boolean, entering: boolean): boolean {
     const { nodes, edges } = vis
     sim.stop()
     layoutT?.stop()
@@ -412,82 +550,65 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       for (const o of nodes) {
         o.fx = null
         o.fy = null
-        const t = T.get(o.id)!
-        o.tx = t.x
-        o.ty = t.y
-        if (isNaN(o.x)) {
-          o.x = 0
-          o.y = 0
-        }
-        o.sx = o.x
-        o.sy = o.y
       }
-      if (!animate) {
-        for (const o of nodes) {
-          o.x = o.tx
-          o.y = o.ty
-        }
-        draw()
-        return
-      }
-      const t0 = performance.now()
-      const tm = d3.timer(() => {
-        const p = Math.min(1, (performance.now() - t0) / 700)
-        const e = d3.easeCubicInOut(p)
-        for (const o of nodes) {
-          o.x = o.sx + (o.tx - o.sx) * e
-          o.y = o.sy + (o.ty - o.sy) * e
-        }
-        draw()
-        if (p >= 1) {
-          tm.stop()
-          layoutT = null
-        }
-      })
-      layoutT = tm
-      return
+      morph(nodes, (o) => T.get(o.id)!, animate)
+      return false
     }
-    const C = V.mode === 'overview' ? clusterCenters(nodes) : null
-    const center = (o: GNode) => (C ? C.get(o.n.cluster_id ?? -1)! : ORIGIN)
+    const center = centers(nodes)
+    const pull = V.mode === 'overview' ? V.clusterPull : 0.04
+    const configure = () => {
+      for (const o of nodes) {
+        o.fx = V.mode === 'local' && o.id === V.focus ? 0 : null
+        o.fy = o.fx
+      }
+      sim.nodes(nodes)
+      forces(sim, edges, center, R, pull)
+      simMode = V.mode
+    }
+
+    if (V.mode === 'overview' && entering) {
+      let alpha = takeOverview()
+      let fresh = 0
+      for (const o of nodes) {
+        if (ovPos.has(o.id)) continue
+        const c = center(o)
+        ovPos.set(o.id, { x: c.x + (Math.random() - 0.5) * 60, y: c.y + (Math.random() - 0.5) * 60 })
+        fresh++
+      }
+      if (fresh) alpha = Math.max(alpha, fresh > nodes.length * 0.5 ? 1 : 0.3)
+      if (alpha > 0.5) {
+        // Фон не успел: досчитываем начало синхронно, остаток оседает на глазах
+        for (const o of nodes) Object.assign(o, ovPos.get(o.id))
+        configure()
+        sim.alpha(alpha)
+        for (let i = 0; i < (reduced ? 240 : 55) && sim.alpha() > 0.45; i++) sim.tick()
+        draw()
+        if (!reduced) sim.restart()
+        return !reduced
+      }
+      morph(nodes, (o) => ovPos.get(o.id)!, animate, () => {
+        configure()
+        if (alpha >= sim.alphaMin() && !reduced) sim.alpha(alpha).restart()
+      })
+      return false
+    }
+
+    // Окружение узла в force или перекладка общего вида после смены фильтров/сил: подогрев от текущих позиций
     const fresh = nodes.filter((o) => isNaN(o.x))
     for (const o of fresh) {
       const c = center(o)
       o.x = c.x + (Math.random() - 0.5) * 60
       o.y = c.y + (Math.random() - 0.5) * 60
     }
-    for (const o of nodes) {
-      o.fx = V.mode === 'local' && o.id === V.focus ? 0 : null
-      o.fy = o.fx
-    }
-    const pull = C ? V.clusterPull : 0.04
-    sim
-      .nodes(nodes)
-      .force('charge', d3.forceManyBody<GNode>().strength(-V.charge).distanceMax(400))
-      .force(
-        'link',
-        d3
-          .forceLink<GNode, GLink>(edges)
-          .id((o) => o.id)
-          .distance(V.linkDist)
-          .strength(0.6),
-      )
-      .force(
-        'collide',
-        d3.forceCollide<GNode>((o) => R(o) + 2),
-      )
-      .force('cx', d3.forceX<GNode>((o) => center(o).x).strength(pull))
-      .force('cy', d3.forceY<GNode>((o) => center(o).y).strength(pull))
-    // Почти всё новое — часть раскладки досчитываем синхронно, остаток доигрывается анимацией
-    if (fresh.length > nodes.length * 0.5) {
-      sim.alpha(1)
-      for (let i = 0; i < (reduced ? 240 : 55); i++) sim.tick()
-      draw()
-      if (!reduced) sim.alpha(0.45).restart()
-    } else if (reduced) {
+    configure()
+    if (reduced) {
       sim.alpha(0.5)
       for (let i = 0; i < 180; i++) sim.tick()
       draw()
-    } else sim.alpha(animate ? 0.5 : 0.3).restart()
+      return false
+    }
+    sim.alpha(animate ? 0.5 : 0.3).restart()
+    return true
   }
 
   // ---------- отрисовка ----------
@@ -497,19 +618,20 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       .selectAll<SVGPathElement, GLink>('path')
       .data(vis.edges, (l) => l.id)
       .join(
-        (en) => en.append('path').attr('fill', 'none').attr('stroke-opacity', 0).style('stroke', EDGE),
+        (en) => en.append('path').attr('fill', 'none').attr('opacity', 0).style('stroke', EDGE),
         (up) => up,
-        (ex) => ex.transition().duration(dur).attr('stroke-opacity', 0).remove(),
+        (ex) => ex.transition().duration(dur).attr('opacity', 0).remove(),
       )
       .attr('stroke-width', ew)
-      .attr('marker-end', V.flow === 'arrows' ? `url(#${uid}-arr)` : null)
+      // Наконечник есть всегда: направление денег видно и на паузе, и на скриншоте; пунктир — только дополнение
+      .attr('marker-end', `url(#${uid}-arr)`)
     nodeSel = gN
       .selectAll<SVGGElement, GNode>('g.n')
       .data(vis.nodes, (o) => o.id)
       .join(
         (en) => {
           const s = en.append('g').attr('class', 'n').style('cursor', 'pointer').attr('opacity', 0)
-          s.append('circle').attr('class', 'c')
+          s.append('path').attr('class', 'c')
           return s
         },
         (up) => up,
@@ -527,9 +649,15 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       })
       .on('focus', (_e, o) => hover(o.id))
       .on('blur', () => hover(null))
+    // Форма узла = роль (◆ ✱ ▼ ▶ ■ ●), площадь — как у круга радиуса R
     nodeSel
-      .select<SVGCircleElement>('circle.c')
-      .attr('r', R)
+      .select<SVGPathElement>('path.c')
+      .each(function (o) {
+        const sym = roleSymbolPath(o.stub ? null : o.n.role, R(o))
+        this.setAttribute('d', sym.d)
+        if (sym.rotate) this.setAttribute('transform', `rotate(${sym.rotate})`)
+        else this.removeAttribute('transform')
+      })
       .style('fill', color)
       .attr('stroke', (o) => (o.n.is_seed ? '#ffffff' : o.n.truncated_by_depth ? '#d4d4d8' : BG))
       .attr('stroke-width', (o) => (o.n.is_seed ? 2 : o.n.truncated_by_depth ? 1.4 : 0.8))
@@ -538,7 +666,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     nodeSel.selectAll('circle.f').remove()
     nodeSel
       .filter((o) => o.id === V.focus)
-      .insert('circle', 'circle.c')
+      .insert('circle', 'path.c')
       .attr('class', 'f')
       .attr('r', (o) => R(o) + 6)
       .attr('fill', 'none')
@@ -671,7 +799,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     const dx = t.x - s.x
     const dy = t.y - s.y
     const len = Math.hypot(dx, dy) || 1
-    const rt = R(t) + (V.flow === 'arrows' ? 2 : 0)
+    const rt = R(t) + 2
     const ux = dx / len
     const uy = dy / len
     const ex = t.x - ux * rt
@@ -700,7 +828,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
 
   function opac(ms: number) {
     const dur = duration(ms)
-    nodeSel.select('circle.c').attr('filter', (o) => (o.id === hoverId || o.id === V.focus ? `url(#${uid}-glow)` : null))
+    nodeSel.select('path.c').attr('filter', (o) => (o.id === hoverId || o.id === V.focus ? `url(#${uid}-glow)` : null))
     const H = hoverId ? nb(hoverId) : null
     const hot = (l: GLink) => l.source.id === hoverId || l.target.id === hoverId
     nodeSel
@@ -710,7 +838,8 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     linkSel
       .transition()
       .duration(dur)
-      .attr('stroke-opacity', (l) => {
+      // opacity, а не stroke-opacity: так гаснет и наконечник-маркер
+      .attr('opacity', (l) => {
         if (l.ghost) return 0.03
         if (H) return hot(l) ? 0.95 : 0.04
         if (V.focus && (l.source.id === V.focus || l.target.id === V.focus)) return 0.7
@@ -797,7 +926,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       `<div style="display:flex;gap:14px;justify-content:space-between;white-space:nowrap"><span style="color:#a1a1aa">${a}</span><span style="font-family:${MONO}">${b}</span></div>`
     tip.html(
       `<div style="font:600 13px ${MONO};margin-bottom:4px">${esc(o.id)}</div>` +
-        `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:${n.role ? roleVar(n.role) : STUB}"></span>` +
+        `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">${tipIcon(o)}` +
         roleTitle(o) +
         (n.is_seed ? ' · seed' : '') +
         (n.truncated_by_depth ? ' · граница выгрузки' : '') +
@@ -815,6 +944,11 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       placeTip(t.applyX(o.x), t.applyY(o.y))
     }
   }
+  function tipIcon(o: GNode) {
+    const sym = roleSymbolPath(o.stub ? null : o.n.role, 5.6)
+    const rot = sym.rotate ? ` transform="rotate(${sym.rotate})"` : ''
+    return `<svg viewBox="-8 -8 16 16" width="12" height="12" style="flex:none"><path d="${sym.d}"${rot} style="fill:${o.n.role && !o.stub ? roleVar(o.n.role) : STUB}"/></svg>`
+  }
   function moveTip(e: MouseEvent) {
     const [x, y] = d3.pointer(e, el)
     placeTip(x, y)
@@ -827,10 +961,11 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
   }
 
   // ---------- камера ----------
+  // Пока идёт переход (morph), камера целится в конечные позиции, а не в промежуточные
+  const px = (o: GNode) => ((layoutT || !usesSim()) && !isNaN(o.tx) ? o.tx : o.x)
+  const py = (o: GNode) => ((layoutT || !usesSim()) && !isNaN(o.ty) ? o.ty : o.y)
+
   function fit(ms = 600) {
-    const lay = !usesSim()
-    const px = (o: GNode) => (lay && !isNaN(o.tx) ? o.tx : o.x)
-    const py = (o: GNode) => (lay && !isNaN(o.ty) ? o.ty : o.y)
     const ns = vis.nodes.filter((o) => !isNaN(px(o)))
     if (!ns.length) return
     const W = el.clientWidth || 600
@@ -869,13 +1004,12 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     camT = tm
   }
 
-  function flyTo(id: string) {
+  function flyTo(id: string, scale = Math.max(k, 1.8)) {
     const o = N.get(id)
-    if (!o || isNaN(o.x)) return
+    if (!o || isNaN(px(o))) return
     const W = el.clientWidth || 600
     const H = el.clientHeight || 500
-    const s = Math.max(k, 1.8)
-    cam(d3.zoomIdentity.translate(W / 2 - s * o.x, H / 2 - s * o.y).scale(s), 750, () => pulse(o))
+    cam(d3.zoomIdentity.translate(W / 2 - scale * px(o), H / 2 - scale * py(o)).scale(scale), 750, () => pulse(o))
   }
 
   function pulse(o: GNode) {
@@ -894,24 +1028,43 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     rep(0)
   }
 
+  // В общем виде выбранный узел и настройки окружения не влияют на раскладку: клик по узлу не перетряхивает сеть
   const layoutKey = (v: MoneyGraphViewState) =>
-    [v.mode, v.focus, v.depth, v.dirIn, v.dirOut, v.between, v.layout, v.roles, v.clusters, v.showIsolated, v.hideTrunc].join('|')
+    (v.mode === 'overview'
+      ? ['overview', v.roles, v.clusters, v.showIsolated, v.hideTrunc]
+      : [v.mode, v.focus, v.depth, v.dirIn, v.dirOut, v.between, v.layout, v.roles, v.clusters, v.showIsolated, v.hideTrunc]
+    ).join('|')
   const forceKey = (v: MoneyGraphViewState) => [v.charge, v.linkDist, v.clusterPull, v.nodeScale].join('|')
+  const camKey = (v: MoneyGraphViewState) => (v.mode === 'overview' ? 'overview' : `local|${v.layout}`)
 
   function setView(nv: MoneyGraphViewState, opts?: { fit?: boolean }) {
     if (destroyed) return
     const prev = V
+    const modeChanged = !first && prev.mode !== nv.mode
+    if (modeChanged) {
+      // Уходя из режима, запоминаем его камеру, а из общего вида — ещё и позиции с недоигранной физикой
+      cams.set(camKey(prev), { t: d3.zoomTransform(svg.node()!), focus: prev.focus })
+      if (prev.mode === 'overview') {
+        for (const o of vis.nodes) if (!isNaN(px(o))) ovPos.set(o.id, { x: px(o), y: py(o) })
+        ovAlpha = simMode === 'overview' && sim.alpha() >= sim.alphaMin() ? sim.alpha() : 0
+      }
+    }
     V = { ...V, ...nv }
     compute()
     const relayout = first || dirty || layoutKey(prev) !== layoutKey(V) || forceKey(prev) !== forceKey(V)
     dirty = false
     // Сначала раскладка, потом отрисовка: иначе новые узлы рисуются с NaN-координатами (в макете было наоборот)
-    if (relayout) place(!first)
+    const settling = relayout ? place(!first, first || modeChanged) : false
     render(!first)
     if (relayout && (first || opts?.fit)) {
-      fit(first ? 0 : 600)
-      // при reduced motion раскладка уже досчитана синхронно, симуляция не запускается
-      if (usesSim() && !reduced) pendingFit = true
+      const saved = modeChanged ? cams.get(camKey(V)) : undefined
+      if (saved && saved.focus === V.focus) cam(saved.t, 600)
+      else if (saved && V.mode === 'overview' && V.focus && N.has(V.focus)) flyTo(V.focus, saved.t.k)
+      else {
+        fit(first ? 0 : 600)
+        // при reduced motion раскладка уже досчитана синхронно, симуляция не запускается
+        if (settling) pendingFit = true
+      }
     }
     if (first) {
       nodeSel.attr('opacity', 0)
@@ -920,8 +1073,17 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     }
   }
 
+  // Размер холста изменился (тулбар, окно): сдвигаем камеру так, чтобы центр вида остался на месте, без перевписывания
+  let size = { w: el.clientWidth, h: el.clientHeight }
   const resize = new ResizeObserver(() => {
-    if (!first && !destroyed) fit(0)
+    const w = el.clientWidth
+    const h = el.clientHeight
+    const dw = w - size.w
+    const dh = h - size.h
+    size = { w, h }
+    if (first || destroyed || (!dw && !dh)) return
+    const t = d3.zoomTransform(svg.node()!)
+    svg.call(zoom.transform, d3.zoomIdentity.translate(t.x + dw / 2, t.y + dh / 2).scale(t.k))
   })
   resize.observe(el)
   svg.on('click', () => cb.onBackground?.())
@@ -938,6 +1100,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     counts: () => ({ n: vis.nodes.filter((o) => !o.ghost).length, e: vis.edges.filter((l) => !l.ghost).length }),
     destroy: () => {
       destroyed = true
+      stopPrecompute()
       resize.disconnect()
       camT?.stop()
       layoutT?.stop()

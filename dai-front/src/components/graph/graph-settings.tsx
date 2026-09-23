@@ -192,7 +192,7 @@ export function GraphSettings() {
         <div className="flex items-center justify-between gap-2">
           <span className={rowLabel}>Направление</span>
           <Segmented
-            options={[['arrows', 'Стрелки'], ['dash', 'Пунктир']]}
+            options={[['arrows', 'Стрелки'], ['dash', 'Стрелки + пунктир']]}
             value={view.flow}
             onChange={(flow) => setView({ flow })}
           />

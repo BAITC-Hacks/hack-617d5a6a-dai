@@ -27,19 +27,29 @@ export type GraphView = {
   clusterPull: number
 }
 
+// Раскладку окружения аналитик выбирает один раз — помним её между сессиями (по умолчанию Force).
+const LAYOUT_KEY = 'dai.graph.layout'
+function savedLayout(): GraphView['layout'] {
+  try {
+    return localStorage.getItem(LAYOUT_KEY) === 'layers' ? 'layers' : 'force'
+  } catch {
+    return 'force'
+  }
+}
+
 export const DEFAULT_VIEW: GraphView = {
-  mode: 'local',
+  mode: 'overview',
   depth: 1,
   dirIn: true,
   dirOut: true,
   between: true,
-  layout: 'layers',
+  layout: savedLayout(),
   colorBy: 'role',
   roles: null,
   clusters: null,
   showIsolated: true,
   hideTrunc: false,
-  // При «уменьшить движение» в ОС — стрелки вместо бегущего пунктира
+  // Стрелки на рёбрах есть всегда; 'dash' добавляет бегущий пунктир у выбранных связей. При «уменьшить движение» — без него.
   flow: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'arrows' : 'dash',
   labelZoom: 1.6,
   nodeScale: 1,
@@ -71,7 +81,16 @@ export const useGraphView = create<GraphViewState>()((set) => ({
   play: null,
   playing: false,
   range: null,
-  setView: (patch) => set((s) => ({ view: { ...s.view, ...patch } })),
+  setView: (patch) => {
+    if (patch.layout) {
+      try {
+        localStorage.setItem(LAYOUT_KEY, patch.layout)
+      } catch {
+        // приватный режим или запрет хранилища — просто не запоминаем
+      }
+    }
+    set((s) => ({ view: { ...s.view, ...patch } }))
+  },
   toggleSettings: () => set((s) => ({ settingsOpen: !s.settingsOpen })),
   setPlay: (play, playing = false) => set({ play, playing, range: null }),
   setRange: (range) => set({ range, play: null, playing: false }),

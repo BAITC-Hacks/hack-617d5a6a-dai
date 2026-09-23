@@ -39,12 +39,12 @@ function useLoadedTransfers() {
 
 const toolBtn = 'h-[30px] cursor-pointer whitespace-nowrap rounded-lg border px-2.5 text-xs font-medium'
 
-export function GraphPanel({ gid }: { gid: string }) {
+export function GraphPanel({ gid }: { gid: string | null }) {
   const navigate = useNavigate()
   const graphQ = useQuery(graphQuery())
   const topQ = useQuery(topQuery())
   const clustersQ = useQuery({ ...listClustersOptions(), meta: { silent: true } })
-  const nodeQ = useQuery(nodeQuery(gid))
+  const nodeQ = useQuery({ ...nodeQuery(gid ?? ''), enabled: !!gid })
   const transfers = useLoadedTransfers()
 
   const view = useGraphView((s) => s.view)
@@ -54,9 +54,10 @@ export function GraphPanel({ gid }: { gid: string }) {
   const play = useGraphView((s) => s.play)
   const range = useGraphView((s) => s.range)
 
-  // Фокус — gid, чья карточка загрузилась; пока новая грузится или не нашлась, граф держит прежний.
+  // Фокус — gid, чья карточка загрузилась; пока новая грузится или не нашлась, граф держит прежний. Узел не выбран — фокуса нет.
   const [focus, setFocus] = useState<string | null>(null)
-  if (nodeQ.isSuccess && focus !== gid) setFocus(gid)
+  if (!gid && focus !== null) setFocus(null)
+  if (gid && nodeQ.isSuccess && focus !== gid) setFocus(gid)
 
   // Один MoneyGraph на смонтированный контейнер; ref-cleanup React 19 уничтожает его при размонтировании.
   const [graph, setGraph] = useState<MoneyGraph | null>(null)
@@ -106,14 +107,14 @@ export function GraphPanel({ gid }: { gid: string }) {
     setCounts((p) => (p && p.n === c.n && p.e === c.e ? p : c))
   }, [graph, data, view, focus, play, range])
 
-  const nodeErr = errorKind(nodeQ.error)
+  const nodeErr = gid ? errorKind(nodeQ.error) : null
   const isDown = nodeErr === 'down' || graphQ.isError
   const is404 = !isDown && nodeErr === 'notFound'
   const isLocal = view.mode === 'local'
   const isIsolated = nodeQ.isSuccess && isLocal && nodeQ.data.in_edges.length + nodeQ.data.out_edges.length === 0
 
   const retry = () => {
-    void nodeQ.refetch()
+    if (gid) void nodeQ.refetch()
     if (!graphQ.data) void graphQ.refetch()
     if (topQ.isError) void topQ.refetch()
     if (clustersQ.isError) void clustersQ.refetch()
@@ -133,51 +134,60 @@ export function GraphPanel({ gid }: { gid: string }) {
           value={view.mode}
           onChange={(mode) => setView({ mode })}
         />
-        {isLocal && (
-          <div className="order-3 flex basis-full flex-wrap items-center gap-2">
-            <label className="flex h-[30px] items-center gap-2 rounded-lg border border-border bg-muted px-2.5 text-xs font-medium whitespace-nowrap text-foreground/85">
-              Глубина
-              <input
-                type="range"
-                min={1}
-                max={4}
-                step={1}
-                value={view.depth}
-                onChange={(e) => setView({ depth: +e.target.value })}
-                className="w-[70px] accent-foreground"
-              />
-              <span className="font-mono text-[13px] font-semibold text-foreground">{count(view.depth, 'хоп', 'хопа', 'хопов')}</span>
-            </label>
-            {dirChips.map(([label, on, toggle]) => (
-              <button
-                key={label}
-                type="button"
-                aria-pressed={on}
-                onClick={toggle}
+        {/* Строка окружения видна всегда (в общем виде неактивна): высота холста не меняется, граф не прыгает */}
+        <fieldset
+          disabled={!isLocal}
+          title={isLocal ? undefined : 'Настройки окружения узла — в режиме «Окружение узла»'}
+          className="order-3 flex basis-full flex-wrap items-center gap-2 transition-opacity disabled:opacity-40"
+        >
+          <label className="flex h-[30px] items-center gap-2 rounded-lg border border-border bg-muted px-2.5 text-xs font-medium whitespace-nowrap text-foreground/85">
+            Глубина
+            <input
+              type="range"
+              min={1}
+              max={4}
+              step={1}
+              value={view.depth}
+              onChange={(e) => setView({ depth: +e.target.value })}
+              className="w-[70px] accent-foreground"
+            />
+            <span className="font-mono text-[13px] font-semibold text-foreground">{count(view.depth, 'хоп', 'хопа', 'хопов')}</span>
+          </label>
+          {dirChips.map(([label, on, toggle]) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={on}
+              onClick={toggle}
+              className={cn(
+                toolBtn,
+                'flex items-center gap-1.5',
+                on ? 'border-foreground/25 bg-muted text-foreground' : 'border-border text-muted-foreground',
+              )}
+            >
+              <span
                 className={cn(
-                  toolBtn,
-                  'flex items-center gap-1.5',
-                  on ? 'border-foreground/25 bg-muted text-foreground' : 'border-border text-muted-foreground',
+                  'grid size-3 place-items-center rounded-[3px] border-[1.5px] border-current text-[9px] leading-none font-bold',
+                  on && 'bg-foreground text-background',
                 )}
               >
-                <span
-                  className={cn(
-                    'grid size-3 place-items-center rounded-[3px] border-[1.5px] border-current text-[9px] leading-none font-bold',
-                    on && 'bg-foreground text-background',
-                  )}
-                >
-                  {on && '✓'}
-                </span>
-                {label}
-              </button>
-            ))}
-            <Segmented
-              options={[['layers', 'Слои'], ['force', 'Force']]}
-              value={view.layout}
-              onChange={(layout) => setView({ layout })}
-            />
-          </div>
-        )}
+                {on && '✓'}
+              </span>
+              {label}
+            </button>
+          ))}
+        </fieldset>
+        <fieldset
+          disabled={!isLocal}
+          title="Раскладка окружения узла; выбор запоминается"
+          className="order-1 transition-opacity disabled:opacity-40"
+        >
+          <Segmented
+            options={[['force', 'Force'], ['layers', 'Слои']]}
+            value={view.layout}
+            onChange={(layout) => setView({ layout })}
+          />
+        </fieldset>
         <div className="order-2 ml-auto flex items-center gap-2">
           {counts && (
             <span className="text-xs whitespace-nowrap text-muted-foreground">
@@ -235,6 +245,16 @@ export function GraphPanel({ gid }: { gid: string }) {
             </div>
           </div>
         )}
+        {isLocal && !gid && graphQ.isSuccess && (
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="flex max-w-[380px] flex-col items-center gap-2 text-center">
+              <div className="text-lg font-semibold">Узел не выбран</div>
+              <div className="text-sm leading-normal text-foreground/75">
+                Выберите клиента в очереди «Кого проверить первым», найдите по gid или кликните по узлу в «Общем виде».
+              </div>
+            </div>
+          </div>
+        )}
         {isIsolated && (
           <div className="absolute top-4 left-1/2 flex -translate-x-1/2 items-center gap-2.5 rounded-[10px] border border-border bg-muted px-3.5 py-2 whitespace-nowrap">
             <span className="text-sm font-semibold">Связей в выгрузке нет</span>
@@ -259,15 +279,18 @@ export function GraphPanel({ gid }: { gid: string }) {
             граница выгрузки
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-0 w-[34px] border-t-2 border-dashed border-foreground/90" />
-            {view.flow === 'dash' ? 'бегущий пунктир — направление денег' : 'стрелка — направление денег'}
+            <span className="flex w-[34px] items-center">
+              <span className="h-0 flex-1 border-t-2 border-foreground/80" />
+              <span className="size-0 border-y-[4px] border-l-[7px] border-y-transparent border-l-foreground/80" />
+            </span>
+            {view.flow === 'dash' ? 'стрелка — направление денег, у выбранного бежит пунктир' : 'стрелка — направление денег'}
           </div>
         </div>
 
-        <div className="absolute right-3 bottom-3 flex items-end gap-2">
-          <span className="pointer-events-none pb-1 text-[11.5px] text-muted-foreground">
-            Прокрутка — масштаб · Перетаскивание — движение · Клик — узел
-          </span>
+        <span className="pointer-events-none absolute top-2.5 right-3 text-[11.5px] text-muted-foreground">
+          Прокрутка — масштаб · Перетаскивание — движение · Клик — узел
+        </span>
+        <div className="absolute right-3 bottom-3">
           <div className="flex flex-col overflow-hidden rounded-lg border border-border bg-card/90">
             {(
               [

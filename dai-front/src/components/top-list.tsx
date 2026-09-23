@@ -33,7 +33,7 @@ const shortRule = (rule: string) => {
 /** evidence без префикса роли («координатор (gather-scatter): …») — роль уже видна бейджем. */
 const evidenceBody = (evidence: string) => evidence.replace(/^[^:;]*:\s*/, '')
 
-export function TopList({ activeGid }: { activeGid: string }) {
+export function TopList({ activeGid }: { activeGid: string | null }) {
   const { queue, isPending, error } = useQueue()
   const { data: meta } = useQuery(metaQuery())
   const roleInfo = useRoleInfo()
@@ -48,8 +48,10 @@ export function TopList({ activeGid }: { activeGid: string }) {
     <section className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-col gap-1 px-4 pt-3.5 pb-2.5">
         <div className="flex items-baseline gap-2">
-          <h2 className="text-[15px] font-semibold whitespace-nowrap">Очередь проверки{queue.length > 0 && ` · ${queue.length}`}</h2>
-          <div className="ml-auto text-[12.5px] whitespace-nowrap text-muted-foreground">по priority_score</div>
+          <h2 className="text-[15px] font-semibold whitespace-nowrap">Кого проверить первым</h2>
+          <div className="ml-auto text-[12.5px] whitespace-nowrap text-muted-foreground">
+            очередь{queue.length > 0 && ` · ${queue.length}`}
+          </div>
         </div>
         {meta?.queue_rule && (
           <p title={meta.queue_rule} className="line-clamp-2 text-xs/[1.45] text-muted-foreground">
