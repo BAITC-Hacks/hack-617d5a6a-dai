@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { RoleIcon } from '@/components/role-icon'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatScore, gidParts } from '@/lib/format'
+import { formatScore, gidParts, humanize } from '@/lib/format'
 import { errorKind, metaQuery, useQueue, useRoleInfo } from '@/lib/graph-data'
 import { roleClass } from '@/lib/roles'
 import { cn } from '@/lib/utils'
@@ -24,14 +24,14 @@ export function SeedPill() {
   return <span className="rounded-full border-[1.5px] border-primary px-1.5 font-mono text-[11px] font-semibold">SEED</span>
 }
 
-/** Правило очереди коротко: первая фраза до скобок, с заглавной. Полный текст — в title. */
+/** Правило очереди коротко: первая фраза до скобок, с заглавной. Формула в скобках для аналитика не нужна. */
 const shortRule = (rule: string) => {
-  const s = rule.split(' (')[0]
+  const s = humanize(rule).split(' (')[0]
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-/** evidence без префикса роли («координатор (gather-scatter): …») — роль уже видна бейджем. */
-const evidenceBody = (evidence: string) => evidence.replace(/^[^:;]*:\s*/, '')
+/** evidence простыми словами и без префикса роли («координатор (сбор и раздача средств): …») — роль уже видна бейджем. */
+const evidenceBody = (evidence: string) => humanize(evidence).replace(/^[^:;]*:\s*/, '')
 
 export function TopList({ activeGid }: { activeGid: string | null }) {
   const { queue, isPending, error } = useQueue()
@@ -54,7 +54,7 @@ export function TopList({ activeGid }: { activeGid: string | null }) {
           </div>
         </div>
         {meta?.queue_rule && (
-          <p title={meta.queue_rule} className="line-clamp-2 text-xs/[1.45] text-muted-foreground">
+          <p className="line-clamp-2 text-xs/[1.45] text-muted-foreground">
             {shortRule(meta.queue_rule)}
           </p>
         )}
@@ -103,7 +103,7 @@ export function TopList({ activeGid }: { activeGid: string | null }) {
                 </span>
               </div>
               <div />
-              <div title={n.evidence} className="col-span-2 line-clamp-2 font-mono text-xs/[1.45] text-muted-foreground">
+              <div title={humanize(n.evidence)} className="col-span-2 line-clamp-2 text-xs/[1.45] text-muted-foreground">
                 {evidenceBody(n.evidence)}
               </div>
             </button>

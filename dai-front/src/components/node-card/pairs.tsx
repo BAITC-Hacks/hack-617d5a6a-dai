@@ -50,7 +50,7 @@ export function Pairs({ pairs }: { pairs: TransferPair[] }) {
               </span>
               <span className="font-mono text-muted-foreground">{lag(p.lag_days)}</span>
               {p.matched_1to1 && (
-                <span title="Пара вошла в быстрый транзит: сопоставление 1-к-1, лаг 0–2 дня" className="rounded-md border px-1.5 text-[11.5px] font-semibold">
+                <span title="Пара вошла в быстрый транзит: сопоставление 1-к-1, разница 0–2 дня" className="rounded-md border px-1.5 text-[11.5px] font-semibold">
                   1-к-1
                 </span>
               )}

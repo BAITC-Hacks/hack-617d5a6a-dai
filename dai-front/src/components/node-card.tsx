@@ -6,7 +6,7 @@ import { RoleIcon } from '@/components/role-icon'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getErrorMessage } from '@/lib/api-error'
-import { count, formatDayLong, formatKzt, formatScore } from '@/lib/format'
+import { count, formatDayLong, formatKzt, formatScore, humanize } from '@/lib/format'
 import { errorKind, nodeQuery, useNodeIndex, useQueue, useRoleInfo } from '@/lib/graph-data'
 import { roleClass } from '@/lib/roles'
 import { cn } from '@/lib/utils'
@@ -99,7 +99,7 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
           )}
           {nd.fast_transit_flag && (
             <span
-              title="Пары вход → выход 1-к-1 с лагом 0–2 дня и близкими суммами (0,8–1,2)"
+              title="Пары вход → выход 1-к-1 с разницей 0–2 дня и близкими суммами (0,8–1,2)"
               className="inline-flex h-6.5 items-center rounded-md border-[1.5px] px-2.5 text-[12.5px] font-medium whitespace-nowrap"
             >
               признаки быстрого транзита
@@ -134,7 +134,7 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
       <div className="flex flex-col gap-2">
         <Label>Основание роли</Label>
         <div className="min-h-29.5 rounded-xl bg-muted px-4 py-3.5 text-[16.5px]/normal font-medium text-pretty wrap-anywhere">
-          {nd.evidence}
+          {humanize(nd.evidence)}
         </div>
         {nd.role_checks && <RoleChecks checks={nd.role_checks} />}
         <div className="flex flex-wrap gap-4 text-[13.5px] text-muted-foreground">

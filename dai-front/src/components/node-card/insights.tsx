@@ -1,4 +1,5 @@
 import type { NodeOut } from '@/client/types.gen'
+import { formatPct, humanize } from '@/lib/format'
 import { useRoleInfo } from '@/lib/graph-data'
 import { ROLE_ORDER } from '@/lib/roles'
 import { Label } from './parts'
@@ -7,14 +8,14 @@ import { Label } from './parts'
 const METRIC: Record<string, string> = {
   in_deg: 'отправителей',
   out_deg: 'получателей',
-  in_kzt: 'вход',
-  out_kzt: 'выход',
-  pass_kzt: 'проход',
-  betweenness: 'посредничество',
-  n_seed_upstream: 'seed выше по потоку',
-  seeds: 'seed выше по потоку',
+  in_kzt: 'сумма входящих',
+  out_kzt: 'сумма исходящих',
+  pass_kzt: 'сквозная сумма',
+  betweenness: 'посредничество между клиентами',
+  n_seed_upstream: 'связанных seed',
+  seeds: 'связанных seed',
   depth: 'колено',
-  'out/in': 'выход / вход',
+  'out/in': 'исходящие / входящие',
 }
 const metric = (code: string) => METRIC[code] ?? code
 
@@ -30,14 +31,15 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 // «in_deg=24 (P99, +7.7)» — один вклад из score_terms
 const TERM = /^(\S+)=(\S+) \((P\d+), ([+-]?[\d.]+)\)$/
 
-/** Почему такой приоритет: два наибольших вклада (score_terms), признаки выше P95, сырой скор. */
+/** Почему такой приоритет: два показателя с наибольшим вкладом (score_terms), сколько показателей в верхних 5 %, сумма баллов. */
 export function PriorityWhy({ node }: { node: NodeOut }) {
   const raw = node.score_terms ?? ''
   const terms = raw ? raw.split('; ').map((t) => TERM.exec(t.trim())) : []
   const parsed = terms.length > 0 && terms.every((m) => m !== null)
   const facts = [
-    node.n_terms_above_p95 != null && `выше P95: ${node.n_terms_above_p95} из 7 признаков`,
-    node.priority_raw != null && `сырой скор ${ru(node.priority_raw.toFixed(1))}`,
+    node.n_terms_above_p95 != null &&
+      `${node.n_terms_above_p95 ? `${node.n_terms_above_p95} из 7` : 'нет'} показателей среди 5\u00a0% самых заметных`,
+    node.priority_raw != null && `сумма баллов ${ru(node.priority_raw.toFixed(1))}`,
   ].filter(Boolean)
   if (!raw && facts.length === 0) return null
 
@@ -46,27 +48,28 @@ export function PriorityWhy({ node }: { node: NodeOut }) {
       <Label>Почему такой приоритет</Label>
       <div className="flex flex-col gap-2 rounded-xl border px-4 py-3">
         {parsed ? (
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-baseline gap-x-3 gap-y-1.5">
-            <span className="text-xs text-muted-foreground">признак</span>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-x-3 gap-y-1.5">
+            <span className="text-xs text-muted-foreground">показатель</span>
             <span className="text-right text-xs text-muted-foreground">значение</span>
-            <span className="text-right text-xs text-muted-foreground">перцентиль</span>
-            <span className="text-right text-xs text-muted-foreground">вклад</span>
+            <span className="text-right text-xs text-muted-foreground">даёт баллов</span>
             {terms.map((m) =>
               m ? (
                 <div key={m[1]} className="contents">
-                  <span className="text-[14px] font-medium">{metric(m[1])}</span>
+                  <span className="flex flex-col">
+                    <span className="text-[14px] font-medium">{metric(m[1])}</span>
+                    <span className="text-[12.5px] text-muted-foreground">{formatPct(Number(m[3].slice(1)))}</span>
+                  </span>
                   <span className="text-right font-mono text-[14px] font-semibold whitespace-nowrap">
                     {ru(m[2])}
                     {m[1].endsWith('_kzt') && ' ₸'}
                   </span>
-                  <span className="text-right font-mono text-[13px] text-muted-foreground">{m[3]}</span>
                   <span className="text-right font-mono text-[14px] font-semibold">{ru(m[4])}</span>
                 </div>
               ) : null,
             )}
           </div>
         ) : (
-          raw && <div className="font-mono text-[13px]/relaxed wrap-anywhere">{raw}</div>
+          raw && <div className="text-[13px]/relaxed wrap-anywhere">{humanize(raw)}</div>
         )}
         {facts.length > 0 && <div className="text-[12.5px] text-muted-foreground">{facts.join(' · ')}</div>}
       </div>
@@ -75,8 +78,9 @@ export function PriorityWhy({ node }: { node: NodeOut }) {
 }
 
 /** Проверка правила роли из role_checks: «coordinator:in_deg 24≥3 ✓, out_deg 62≥5 ✓». Не разобралось — текст как есть. */
-export function RoleChecks({ checks }: { checks: string }) {
+export function RoleChecks({ checks: raw }: { checks: string }) {
   const roleInfo = useRoleInfo()
+  const checks = humanize(raw)
   const i = checks.indexOf(':')
   const body = checks.slice(i + 1).trim()
   const items = body.split(', ')
@@ -130,14 +134,14 @@ export function CaseLink({ node }: { node: NodeOut }) {
 
 /** Что запросить дальше (next_request) и ограничения данных по узлу (limitations через «; »). */
 export function NextStep({ node }: { node: NodeOut }) {
-  const limits = node.limitations ? node.limitations.split('; ') : []
+  const limits = node.limitations ? humanize(node.limitations).split('; ') : []
   if (!node.next_request && limits.length === 0) return null
   return (
     <div className="flex flex-col divide-y rounded-xl border">
       {node.next_request && (
         <div className="flex flex-col gap-1.5 px-4 py-3">
           <Label>Рекомендуется запросить</Label>
-          <div className="text-[15px]/snug font-medium">{node.next_request}</div>
+          <div className="text-[15px]/snug font-medium">{humanize(node.next_request)}</div>
         </div>
       )}
       {limits.length > 0 && (
