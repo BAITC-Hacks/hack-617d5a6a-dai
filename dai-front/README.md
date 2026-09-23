@@ -1,21 +1,39 @@
-# dai-front
+# dai-front — интерфейс «Граф денег»
 
-Фронтенд DAI: SPA на React 19.3 + Vite 8 + Tailwind 4 + shadcn/ui + TanStack Router/Query + Zustand + Hey API. Бэкенд — FastAPI, контракт — [`openapi.json`](openapi.json).
+Экран просмотра для AML-аналитика: схема сети с направлением переводов, роли и кластеры узлов, поиск по `gid`, топ-лист приоритетов с обоснованием (ТЗ, must have 5). Контекст кейса и запуск всего решения — в [корневом README](../README.md).
 
-Правила для агентов: [`CLAUDE.md`](CLAUDE.md). Скилы — в [`../.claude/skills`](../.claude/skills).
+## Состояние
 
-## Быстрый старт
+Каркас: стек настроен, проект собирается и запускается, данные — моки. Экраны кейса ещё не реализованы.
+
+| Экран | Что показывает | Статус |
+|---|---|---|
+| Поиск по `gid` | переход к узлу по идентификатору | план |
+| Схема сети | направленные переводы, подсветка ролей и кластеров | план |
+| Карточка узла | роль, `role_score`, кластер, `priority_score`, `evidence`, входящие и исходящие связи | план |
+| Топ-лист | ≥ 20 узлов по `priority_score` с обоснованием | план |
+
+## Запуск
 
 Нужен Node ≥ 22.18 (проверено на 24.x, см. `.nvmrc`).
 
 ```bash
 cd dai-front
-npm ci                                # ровно версии из package-lock.json, не npm install
+npm ci                                # ровно версии из package-lock.json
 cp .env.example .env.development      # локальные переменные, включает моки
 npm run dev                           # http://localhost:5173
 ```
 
-С моками (`VITE_MOCKS=true`) фронт работает без бэкенда: запросы перехватывает MSW.
+С моками (`VITE_MOCKS=true`) интерфейс работает без бэкенда: запросы перехватывает MSW.
+
+## Данные
+
+- Источник: пока моки MSW (`src/mocks/`) по примерной схеме `openapi.json`. Контракт с пайплайном (роли, кластеры, связи) появится вместе с ним — см. [гипотезу по передаче данных](../docs/hypothesis_ivan_din.md#3-передача-между-иваном-и-дином).
+- `gid` в браузере — всегда строка: часть значений больше `Number.MAX_SAFE_INTEGER`. Поиск сравнивает строки.
+
+## Стек
+
+React 19.3 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · shadcn/ui (Base UI) · TanStack Router + Query · Zustand · Hey API (типизированный клиент из OpenAPI) · MSW (моки) · react-hook-form + zod · oxlint.
 
 ## Команды
 
@@ -43,8 +61,6 @@ npm run dev                           # http://localhost:5173
 
 ## Подключение бэкенда
 
-Когда бэкенд поднят:
-
 ```bash
 curl -o openapi.json http://<IP-бэкенда>:8000/openapi.json
 npm run gen
@@ -56,17 +72,15 @@ API_PROXY_TARGET=http://<IP-бэкенда>:8000 npm run dev
 
 ## Деплой
 
-- Root directory: `dai-front`
-- Install: `npm ci`, build: `npm run build`, output: `dist`
-- Node: 24
-- Env: `VITE_API_URL=https://<бэкенд>` в настройках хостинга
-- SPA: все пути должны отдавать `index.html` (rewrite `/* → /index.html`), иначе прямые ссылки на страницы дадут 404
+- Root directory: `dai-front`; install `npm ci`, build `npm run build`, output `dist`, Node 24
+- Env в настройках хостинга: `VITE_API_URL=https://<бэкенд>`
+- SPA: все пути отдают `index.html` (rewrite `/* → /index.html`), иначе прямые ссылки дадут 404
 - Бэкенд должен разрешить CORS для домена фронта: в проде запросы идут напрямую, без прокси
 
 ## Структура
 
 ```
-openapi.json              контракт с FastAPI
+openapi.json              контракт с бэкендом
 src/client/               сгенерировано Hey API — не редактировать
 src/routeTree.gen.ts      сгенерировано роутером — не редактировать
 src/routes/               файловые маршруты TanStack Router
