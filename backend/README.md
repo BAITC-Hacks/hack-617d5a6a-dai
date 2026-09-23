@@ -7,12 +7,12 @@ FastAPI-сервис, который отдаёт интерфейсу роли,
 Из корня репозитория (Python 3.11–3.13):
 
 ```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r backend/requirements.txt
-uvicorn backend.app.main:app --reload --port 8000
+make setup && make pipeline && make api     # то же, что в корневом README
 ```
 
-Проверка: `curl localhost:8000/health` → `{"status":"ok","mock":true}`; схема — `localhost:8000/openapi.json`, документация — `localhost:8000/docs`.
+Без make: `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt && uvicorn backend.app.main:app --port 8000`.
+
+Проверка: `curl localhost:8000/health` → `{"status":"ok","mock":false}` (после `make pipeline`; без выгрузок будет `mock:true`); схема — `localhost:8000/openapi.json`, документация — `localhost:8000/docs`.
 
 ## Источник данных
 
