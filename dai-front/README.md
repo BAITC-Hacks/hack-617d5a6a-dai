@@ -4,7 +4,7 @@
 
 ## Состояние
 
-Каркас: стек настроен, проект собирается и запускается, данные — моки. Экраны кейса ещё не реализованы.
+Каркас: стек настроен, проект собирается и запускается, клиент API сгенерирован из контракта бэкенда. Экраны кейса ещё не реализованы.
 
 | Экран | Что показывает | Статус |
 |---|---|---|
@@ -15,20 +15,33 @@
 
 ## Запуск
 
-Нужен Node ≥ 22.18 (проверено на 24.x, см. `.nvmrc`).
+Нужны Node ≥ 22.18 (проверено на 24.x, см. `.nvmrc`) и Python 3.11–3.13 для бэкенда.
+
+Бэкенд (терминал 1, из корня репозитория; подробнее в [backend/README.md](../backend/README.md)):
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
+```
+
+Фронт (терминал 2):
 
 ```bash
 cd dai-front
 npm ci                                # ровно версии из package-lock.json
-cp .env.example .env.development      # локальные переменные, включает моки
+cp .env.example .env.development      # локальные переменные
 npm run dev                           # http://localhost:5173
 ```
 
-С моками (`VITE_MOCKS=true`) интерфейс работает без бэкенда: запросы перехватывает MSW.
+Запросы `/api/*` Vite проксирует на `localhost:8000`. MSW включён (`VITE_MOCKS=true`), но своих обработчиков пока нет, поэтому все запросы уходят на бэкенд. Без запущенного бэкенда запросы падают сетевой ошибкой.
 
 ## Данные
 
-- Источник: API из [`backend/`](../backend/README.md) (порт 8000, в dev через прокси `/api`). Контракт `openapi.json` генерируется из него; клиент в `src/client/` — через `npm run gen`. Эндпоинты: `/graph`, `/search`, `/nodes/{gid}`, `/nodes/{gid}/subgraph`, `/top`, `/clusters`, `/meta`. До готовности пайплайна бэкенд отдаёт заглушку на реальных `gid` (`meta.mock: true`); моки MSW (`src/mocks/`) — через сгенерированные `handle*`.
+- Источник: API из [`backend/`](../backend/README.md) (порт 8000, в dev через прокси `/api`). Контракт `openapi.json` генерируется из бэкенда. Бэкенд сам обновляет `openapi.json` и `src/client/` в одном коммите со своими изменениями, поэтому после `git pull` запускать `npm run gen` не нужно.
+- Эндпоинты: `/meta`, `/graph`, `/search`, `/nodes/{gid}`, `/nodes/{gid}/subgraph`, `/top`, `/clusters`, `/clusters/{cluster_id}`, `/health`. Хуки — из `@/client/@tanstack/react-query.gen` (`getNodeOptions`, `searchNodesOptions`, `getTopNodesOptions` и т. д.).
+- До готовности пайплайна бэкенд отдаёт заглушку на реальных `gid` (`meta.mock: true`, в `evidence` префикс `mock`). Роли и скоры в ней — простые пороги, не результат анализа.
+- Чтобы работать без бэкенда, регистрируй моки в `src/mocks/browser.ts` через сгенерированные `handle*` из `@/client/msw.gen`.
 - Смысл полей и статусы хронологии — в [гипотезе по передаче данных](../docs/hypothesis_ivan_din.md).
 - `gid` в браузере — всегда строка: часть значений больше `Number.MAX_SAFE_INTEGER`. Поиск сравнивает строки.
 
@@ -60,16 +73,19 @@ React 19.3 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · shadcn/ui (Base UI) ·
 
 `VITE_*` попадают в бандл — секреты туда не класть.
 
-## Подключение бэкенда
+## Бэкенд на другой машине
+
+```bash
+API_PROXY_TARGET=http://<IP-бэкенда>:8000 npm run dev
+```
+
+Если схема на той машине новее закоммиченной:
 
 ```bash
 curl -o openapi.json http://<IP-бэкенда>:8000/openapi.json
 npm run gen
 npm run typecheck                     # покажет, что сломалось после смены схемы
-API_PROXY_TARGET=http://<IP-бэкенда>:8000 npm run dev
 ```
-
-Для работы с живым бэкендом поставь `VITE_MOCKS=false` в `.env.development`.
 
 ## Деплой
 
