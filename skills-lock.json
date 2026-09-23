@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "skills": {
+    "router-core": {
+      "source": "@tanstack/router-core",
+      "sourceType": "node_modules",
+      "computedHash": "62eb2d9340f84c2eb01294935d9e707ca2e95cc31c17c1f2754f4f1245790218"
+    },
+    "router-plugin": {
+      "source": "@tanstack/router-plugin",
+      "sourceType": "node_modules",
+      "computedHash": "9954f6c52398cb2a84cd67cf79eac683e6e72848a3eb10c5bf79e14ac056e3a5"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "f615de216e085a84e31593ad0fa9062232adc40cd87b7c7ab2b8e49abf6500be"
+    }
+  }
+}

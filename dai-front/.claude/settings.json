@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run gen)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(npm run build)",
+      "Bash(npx shadcn@4.21.0 add:*)",
+      "Bash(npx shadcn@4.21.0 view:*)",
+      "Bash(npx shadcn@4.21.0 info:*)"
+    ],
+    "deny": [
+      "Bash(npm audit fix --force)",
+      "Bash(npm install typescript@7:*)",
+      "Read(./.env.*.local)"
+    ]
+  }
+}
