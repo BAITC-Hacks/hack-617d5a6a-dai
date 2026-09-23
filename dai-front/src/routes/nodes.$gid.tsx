@@ -21,9 +21,9 @@ export const Route = createFileRoute('/nodes/$gid')({
 function NodePage() {
   const { gid } = Route.useParams()
   return (
-    <div className="flex h-svh min-h-[880px] min-w-[1440px] flex-col">
+    <div className="flex h-svh min-h-[880px] min-w-[1180px] flex-col">
       <AppHeader />
-      <div className="grid min-h-0 flex-1 grid-cols-[344px_minmax(0,1fr)_440px]">
+      <div className="grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)_360px] min-[1440px]:grid-cols-[344px_minmax(0,1fr)_440px]">
         <aside className="flex min-h-0 flex-col border-r bg-background">
           <GidSearch />
           <TopList activeGid={gid} />
