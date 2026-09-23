@@ -9,3 +9,4 @@ task/starter/out/
 .env
 .env.*
 !.env.example
+.idea
