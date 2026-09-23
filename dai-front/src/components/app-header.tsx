@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { InfoIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { LegendEntry, LegendSheet, type LegendItem } from '@/components/role-legend'
+import { useGraphView } from '@/stores/graph-view'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDayLong, formatInt, formatKztCompact } from '@/lib/format'
 import { metaQuery } from '@/lib/graph-data'
@@ -16,7 +18,10 @@ function formatPeriod(start: string, end: string) {
 
 export function AppHeader() {
   const { data: meta } = useQuery(metaQuery())
-  const [legendItem, setLegendItem] = useState<LegendItem | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const highlight = useGraphView((s) => s.view.highlight)
+  const setView = useGraphView((s) => s.setView)
+  const toggle = (item: LegendItem) => setView({ highlight: highlight === item ? null : item })
 
   const stats = meta
     ? [
@@ -56,13 +61,32 @@ export function AppHeader() {
       <div className="flex min-h-11 flex-none flex-wrap items-center gap-[18px] border-b bg-muted/40 px-5 py-1.5">
         <div className="flex flex-wrap items-center gap-4">
           {ROLE_ORDER.map((role) => (
-            <LegendEntry key={role} item={role} onOpen={setLegendItem} />
+            <LegendEntry key={role} item={role} highlight={highlight} onToggle={toggle} />
           ))}
         </div>
         <span className="h-5 w-px bg-border" />
-        <LegendEntry item="seed" onOpen={setLegendItem} />
-        <LegendEntry item="boundary" onOpen={setLegendItem} />
-        <LegendSheet item={legendItem} onClose={() => setLegendItem(null)} />
+        <LegendEntry item="seed" highlight={highlight} onToggle={toggle} />
+        <LegendEntry item="boundary" highlight={highlight} onToggle={toggle} />
+        {highlight && (
+          <button
+            type="button"
+            onClick={() => setView({ highlight: null })}
+            className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <XIcon className="size-3.5" />
+            снять подсветку
+          </button>
+        )}
+        <button
+          type="button"
+          aria-label="Справочник узлов"
+          title="Справочник узлов"
+          onClick={() => setSheetOpen(true)}
+          className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          <InfoIcon className="size-[18px]" />
+        </button>
+        <LegendSheet open={sheetOpen} item={highlight} onClose={() => setSheetOpen(false)} />
         {meta?.mock && (
           // Статус данных, а не элемент темы — поэтому янтарные утилиты.
           <div className="ml-auto flex h-[30px] items-center gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 pr-3 pl-1">

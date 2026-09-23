@@ -49,6 +49,7 @@ const SANS = 'var(--font-sans)'
 const BG = '#17171c'
 const CL = ['#8ec5ff', '#ffb86b', '#b8e986', '#f5a3c7', '#c9b6ff', '#7fe0d4', '#ffd86b', '#ff9e9e']
 const STUB = '#5a5a60'
+const DIM = '#3c3c44'
 const EDGE = '#777786'
 const ORIGIN = { x: 0, y: 0 }
 const NO_ROLE = 'роль не загружена'
@@ -213,6 +214,9 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     .on('zoom', (e: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
       g.attr('transform', e.transform.toString())
       k = e.transform.k
+      // Пользователь сам двигает камеру (колесо, перетаскивание) — отложенное «вписать после оседания» больше не нужно,
+      // иначе через несколько секунд камера отъедет и узел, который он рассматривал, потеряется
+      if (e.sourceEvent) pendingFit = false
       arrowSize()
       labels(0)
     })
@@ -291,7 +295,16 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
   }
 
   const R = (o: GNode) => (o.n.priority_score == null ? 2.5 : 2.5 + 8 * o.n.priority_score) * V.nodeScale
+  const lit = (o: GNode) => {
+    const h = V.highlight
+    if (!h) return true
+    if (h === 'seed') return !!o.n.is_seed
+    if (h === 'boundary') return !!o.n.truncated_by_depth
+    return o.n.role === h
+  }
   const color = (o: GNode) => {
+    // Подсветка из легенды: неподходящие узлы бесцветные, но на месте
+    if (!lit(o)) return DIM
     if (o.stub || !o.n.role) return STUB
     if (V.colorBy === 'cluster') return CL[(o.n.cluster_id || 0) % CL.length]
     return roleVar(o.n.role)
@@ -416,10 +429,14 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     return T
   }
 
-  /** Центр кластера узла в общем виде; в окружении — начало координат. */
+  /**
+   * Центр кластера узла в общем виде; в окружении — начало координат.
+   * Симуляция одна на все режимы: sim.nodes(новые) переинициализирует прежние силы, чей аксессор помнит карту центров
+   * старого набора узлов. Поэтому кластер, которого в карте нет (включили фильтром), получает центр по умолчанию, а не падает.
+   */
   function centers(nodes: GNode[]) {
     const C = V.mode === 'overview' ? clusterCenters(nodes) : null
-    return (o: GNode) => (C ? C.get(o.n.cluster_id ?? -1)! : ORIGIN)
+    return (o: GNode) => (C && C.get(o.n.cluster_id ?? -1)) || ORIGIN
   }
 
   function forces<T extends d3.SimulationNodeDatum & { id: string }>(
@@ -452,9 +469,9 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
     ovSim?.stop()
     const all = [...N.values()]
     const C = clusterCenters(all)
-    const center = (d: ONode) => C.get(d.o.n.cluster_id ?? -1)!
+    const center = (d: ONode) => C.get(d.o.n.cluster_id ?? -1) ?? ORIGIN
     const nodes: ONode[] = all.map((o) => {
-      const c = C.get(o.n.cluster_id ?? -1)!
+      const c = C.get(o.n.cluster_id ?? -1) ?? ORIGIN
       const p = ovPos.get(o.id) ?? { x: c.x + (Math.random() - 0.5) * 60, y: c.y + (Math.random() - 0.5) * 60 }
       return { id: o.id, o, x: p.x, y: p.y }
     })
@@ -659,7 +676,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
         else this.removeAttribute('transform')
       })
       .style('fill', color)
-      .attr('stroke', (o) => (o.n.is_seed ? '#ffffff' : o.n.truncated_by_depth ? '#d4d4d8' : BG))
+      .attr('stroke', (o) => (!lit(o) ? BG : o.n.is_seed ? '#ffffff' : o.n.truncated_by_depth ? '#d4d4d8' : BG))
       .attr('stroke-width', (o) => (o.n.is_seed ? 2 : o.n.truncated_by_depth ? 1.4 : 0.8))
       .attr('stroke-dasharray', (o) => (o.n.truncated_by_depth ? '2.5 2' : null))
       .attr('class', (o) => 'c' + (o.n.is_seed ? ' dai-seed' : ''))
@@ -685,6 +702,7 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
       d3
         .drag<SVGGElement, GNode>()
         .on('start', (_e, o) => {
+          pendingFit = false
           svg.style('cursor', 'grabbing')
           if (usesSim()) sim.alphaTarget(0.25).restart()
           o.fx = o.x
@@ -980,6 +998,8 @@ export function createMoneyGraph(el: HTMLElement, cb: MoneyGraphCallbacks = {}):
   }
 
   function cam(t1: d3.ZoomTransform, ms: number, done?: () => void) {
+    // любой новый ход камеры (перелёт к узлу, восстановление) отменяет отложенное вписывание; fit ставит его заново после вызова
+    pendingFit = false
     const dur = duration(ms)
     camT?.stop()
     camT = null

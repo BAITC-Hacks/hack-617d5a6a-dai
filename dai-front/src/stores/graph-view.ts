@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 import type { Role } from '@/lib/roles'
 
+/** Что подсвечено из легенды: роль, seed или граница выгрузки. Остальные узлы серые, но остаются на месте. */
+export type Highlight = Role | 'seed' | 'boundary'
+
 /** Настройки схемы сети. Меняются тулбаром и панелью «Настройки графа», читаются MoneyGraph. */
 export type GraphView = {
+  highlight: Highlight | null
   mode: 'local' | 'overview'
   /** Окружение узла: сколько хопов от выбранного, 1–4 */
   depth: number
@@ -38,6 +42,7 @@ function savedLayout(): GraphView['layout'] {
 }
 
 export const DEFAULT_VIEW: GraphView = {
+  highlight: null,
   mode: 'overview',
   depth: 1,
   dirIn: true,

@@ -3,10 +3,11 @@ import { RoleIcon } from '@/components/role-icon'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRoleInfo } from '@/lib/graph-data'
-import { ROLE_ORDER, type Role } from '@/lib/roles'
+import { ROLE_ORDER } from '@/lib/roles'
 import { cn } from '@/lib/utils'
+import type { Highlight } from '@/stores/graph-view'
 
-export type LegendItem = Role | 'seed' | 'boundary'
+export type LegendItem = Highlight
 
 // Подсказки «как читать» — гипотезы для аналитика, без порогов (пороги — в карточке узла).
 const LEGEND: Record<LegendItem, { hint: string; graph: string; title?: string }> = {
@@ -46,7 +47,7 @@ const LEGEND: Record<LegendItem, { hint: string; graph: string; title?: string }
   },
 }
 
-const isRole = (item: LegendItem): item is Role => item !== 'seed' && item !== 'boundary'
+const isRole = (item: LegendItem): item is Exclude<LegendItem, 'seed' | 'boundary'> => item !== 'seed' && item !== 'boundary'
 
 /** Значок пункта легенды: форма роли, двойное кольцо seed или пунктир границы. */
 export function LegendIcon({ item }: { item: LegendItem }) {
@@ -55,8 +56,8 @@ export function LegendIcon({ item }: { item: LegendItem }) {
   return <RoleIcon role={item} className="size-4" />
 }
 
-/** Подсказка легенды поверх любого фокусируемого элемента (children — кнопка). */
-export function LegendTooltip({ item, children }: { item: LegendItem; children: ReactElement }) {
+/** Подсказка легенды поверх любого фокусируемого элемента (children — кнопка). `action` — что делает клик по нему. */
+export function LegendTooltip({ item, action, children }: { item: LegendItem; action?: string; children: ReactElement }) {
   const roleInfo = useRoleInfo()
   const { hint, graph } = LEGEND[item]
   const { title, description } = isRole(item) ? roleInfo(item) : { title: LEGEND[item].title, description: '' }
@@ -73,22 +74,31 @@ export function LegendTooltip({ item, children }: { item: LegendItem; children: 
           {isRole(item) && <span className="font-semibold text-background/90">Как читать: </span>}
           {hint}
         </p>
-        <p className="mt-0.5 border-t border-background/15 pt-1.5 text-[11.5px] text-background/60">На графе — {graph}</p>
+        <p className="mt-0.5 border-t border-background/15 pt-1.5 text-[11.5px] text-background/60">
+          На графе — {graph}
+          {action && ` · ${action}`}
+        </p>
       </TooltipContent>
     </Tooltip>
   )
 }
 
-/** Пункт легенды в шапке: значок + подпись, подсказка по наведению и фокусу, клик открывает справочник. */
-export function LegendEntry({ item, onOpen }: { item: LegendItem; onOpen: (item: LegendItem) => void }) {
+/** Пункт легенды в шапке: значок + подпись, подсказка по наведению и фокусу, клик подсвечивает этот тип узлов на графе. */
+export function LegendEntry({ item, highlight, onToggle }: { item: LegendItem; highlight: LegendItem | null; onToggle: (item: LegendItem) => void }) {
   const roleInfo = useRoleInfo()
   const label = isRole(item) ? roleInfo(item).title : LEGEND[item].title
+  const active = highlight === item
   return (
-    <LegendTooltip item={item}>
+    <LegendTooltip item={item} action={active ? 'клик снимает подсветку' : 'клик подсвечивает на графе'}>
       <button
         type="button"
-        onClick={() => onOpen(item)}
-        className="flex cursor-pointer items-center gap-[7px] rounded-sm text-[13.5px] font-medium whitespace-nowrap outline-none hover:text-foreground/75 focus-visible:ring-3 focus-visible:ring-ring/50"
+        aria-pressed={active}
+        onClick={() => onToggle(item)}
+        className={cn(
+          '-mx-1.5 flex cursor-pointer items-center gap-[7px] rounded-md px-1.5 py-0.5 text-[13.5px] font-medium whitespace-nowrap transition-opacity outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50',
+          active && 'bg-muted ring-1 ring-foreground/15',
+          highlight && !active && 'opacity-45 hover:opacity-100',
+        )}
       >
         <LegendIcon item={item} />
         {label}
@@ -97,13 +107,13 @@ export function LegendEntry({ item, onOpen }: { item: LegendItem; onOpen: (item:
   )
 }
 
-/** Справочник узлов: все роли и отметки с пояснениями, выезжает справа. `item` — пункт, по которому кликнули: подсвечен и прокручен в видимую область. */
-export function LegendSheet({ item, onClose }: { item: LegendItem | null; onClose: () => void }) {
+/** Справочник узлов: все роли и отметки с пояснениями, выезжает справа. `item` — текущая подсветка: выделен и прокручен в видимую область. */
+export function LegendSheet({ open, item, onClose }: { open: boolean; item: LegendItem | null; onClose: () => void }) {
   const roleInfo = useRoleInfo()
   const active = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (item) requestAnimationFrame(() => active.current?.scrollIntoView({ block: 'nearest' }))
-  }, [item])
+    if (open && item) requestAnimationFrame(() => active.current?.scrollIntoView({ block: 'nearest' }))
+  }, [open, item])
 
   const entry = (it: LegendItem) => {
     const { hint, graph } = LEGEND[it]
@@ -129,7 +139,7 @@ export function LegendSheet({ item, onClose }: { item: LegendItem | null; onClos
 
   return (
     // Немодальная панель без затемнения: граф за ней можно зумить и двигать, клик мимо её не закрывает — только × или Esc
-    <Sheet open={item !== null} onOpenChange={(open) => !open && onClose()} modal={false} disablePointerDismissal>
+    <Sheet open={open} onOpenChange={(next) => !next && onClose()} modal={false} disablePointerDismissal>
       <SheetContent side="right" overlay={false} className="w-[440px] gap-0 data-[side=right]:sm:max-w-[440px]">
         <SheetHeader className="border-b">
           <SheetTitle className="text-lg">Справочник узлов</SheetTitle>
