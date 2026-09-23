@@ -97,3 +97,20 @@ curl "localhost:8000/search?q=1000000003&limit=3"
 - Когда пайплайн запишет `outputs/`, `meta.mock` станет `false`, роли и кластеры изменятся, контракт — нет.
 
 Вопросы по полям и ошибкам — мне; библиотека графа на твой выбор (в исследовании упоминали Cytoscape.js: стрелки, стили, поиск, layouts).
+
+## Дополнение 16:15 — поля v1 уже в контракте (коммит `ec5f6e3`)
+
+`git pull --rebase --autostash`; клиент в `src/client/` перегенерирован и закоммичен. Все новые поля необязательные, старый код не ломается.
+
+| Где | Поле | Что показывать |
+|---|---|---|
+| `NodeOut` | `priority_raw` (число), `score_terms` (строка «in_deg=24 (P99, +7.7); pass_kzt=3.8M (P99, +7.0)») | в карточке рядом со скором: два факта, давшие больше всего баллов |
+| `NodeOut` | `role_checks` («coordinator:in_deg 24≥3 ✓, out_deg 62≥5 ✓, seeds 9≥2 ✓») | под ролью: какие условия правила выполнены |
+| `NodeOut` | `fast_transit_pairs`, `fast_transit_flag` | бейдж «быстрый транзит: N пар за 0–2 дня» при флаге |
+| `NodeOut` | `next_request` | блок «Что запросить дальше» в карточке |
+| `NodeOut` | `limitations` («входы неполны (seed); порядок внутри дня неизвестен») | серым под карточкой: границы вывода |
+| `NodeOut` | `n_seed_upstream`, `betweenness` | в таблице метрик |
+| `NodeCard` | `pairs: TransferPair[]` — `in_src`, `out_dst`, `in_date`, `out_date`, `in_sum`, `out_sum`, `lag_days`, `chronology_status`, `matched_1to1` | таблица пар вход→выход; `chronology_status` — одна из трёх подписей: «вход раньше выхода», «тот же день, порядок неизвестен», «выход раньше входа»; `matched_1to1` — пара из быстрого транзита, выделить |
+| `MetaResponse` | `method` («v1»), `threshold_score`, `threshold_raw`, `elapsed_s` | плашка «данные пайплайна v1»; плашку `mock` показывать только при `mock: true` |
+
+Скоро (≈16:40, тоже добавлением полей): `in_queue` (0/1, «в очереди проверки») и `n_terms_above_p95` у узла и в топе, `n_in_queue` и `queue_rule` в `/meta`. Роли по-русски для легенды уже в `/meta.roles[].title`.
