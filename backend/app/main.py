@@ -159,12 +159,15 @@ def get_graph(
 
 @app.get("/search", response_model=s.SearchResponse, tags=["graph"])
 def search_nodes(
-    q: str = Query(min_length=1, description="Начало строки gid"),
+    q: str = Query(min_length=1, description="Подстрока gid: начало, середина или хвост номера"),
     limit: int = Query(default=20, ge=1, le=200),
 ) -> s.SearchResponse:
-    """Поиск по началу gid; точное совпадение идёт первым."""
+    """Поиск по подстроке gid (в том числе по хвосту номера); точное совпадение идёт первым."""
     st = get_store()
-    df = st.nodes[st.nodes.gid.str.startswith(q.strip())]
+    q = q.strip()
+    if not q:
+        raise HTTPException(status_code=422, detail="пустой запрос")
+    df = st.nodes[st.nodes.gid.str.contains(q, regex=False)]
     df = df.assign(_exact=(df.gid == q.strip())).sort_values(
         ["_exact", "priority_score", "gid"], ascending=[False, False, True])
     return s.SearchResponse(items=_nodes_out(st, df.gid.head(limit).tolist()), total=len(df))

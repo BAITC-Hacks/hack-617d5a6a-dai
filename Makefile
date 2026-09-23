@@ -7,6 +7,7 @@ OUT  ?= outputs
 
 # venv и зависимости пайплайна и API
 setup:
+	python3 -c 'import sys; v=sys.version_info; assert (3,11) <= (v.major, v.minor) < (3,14), f"нужен Python 3.11–3.13, найден {v.major}.{v.minor}: см. раздел Требования в README"'
 	python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 # три CSV в outputs/

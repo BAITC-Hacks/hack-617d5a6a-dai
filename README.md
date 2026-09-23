@@ -10,7 +10,7 @@
 make setup && make pipeline
 ```
 
-Есть и путь через Docker: `docker compose run --rm pipeline` даёт те же три CSV, `docker compose up --build` поднимает экран на http://localhost:8080 (раздел [Через Docker](#через-docker-альтернатива-нативному-пути)).
+Есть и путь через Docker: `docker compose run --rm --build pipeline` даёт те же три CSV, `docker compose up --build` поднимает экран на http://localhost:8080 (раздел [Через Docker](#через-docker-альтернатива-нативному-пути)).
 
 `make setup` создаёт `.venv` и ставит зависимости из `requirements.txt`. `make pipeline` пересчитывает три CSV из `task/data/*.parquet` в `outputs/` и сразу прогоняет проверку выгрузок. Прогон удался, если последние строки такие:
 
@@ -345,7 +345,7 @@ API_PROXY_TARGET=http://localhost:8001 npm run dev -- --port 5174
 Нужен Docker с Compose v2. Из корня репозитория:
 
 ```bash
-docker compose run --rm pipeline     # три CSV в outputs/
+docker compose run --rm --build pipeline   # три CSV в outputs/ (образ пересобирается при изменении кода)
 docker compose up --build            # экран на http://localhost:8080, API на :8000; остановка — docker compose down
 ```
 
