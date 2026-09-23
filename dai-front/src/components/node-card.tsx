@@ -116,6 +116,7 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
           <span className="h-1.25 overflow-hidden rounded-full bg-muted">
             <span className="block h-full bg-primary" style={{ width: `${Math.round(nd.priority_score * 100)}%` }} />
           </span>
+          <span className="text-xs/snug text-muted-foreground">Шкала внутри выгрузки, не вероятность нарушения</span>
         </div>
         <div className="flex flex-col gap-1.5 px-4 py-3.5">
           <Label>Соответствие правилу роли</Label>
