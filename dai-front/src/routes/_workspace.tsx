@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { AppHeader } from '@/components/app-header'
+import { GidSearch } from '@/components/gid-search'
 import { GraphPanel } from '@/components/graph/graph-panel'
 import { TopList } from '@/components/top-list'
 import { graphQuery, metaQuery, topQuery } from '@/lib/graph-data'
@@ -42,6 +43,7 @@ function Workspace() {
         ? 'grid-cols-[280px_minmax(0,1fr)_360px] min-[1440px]:grid-cols-[344px_minmax(0,1fr)_440px]'
         : 'grid-cols-[280px_minmax(0,1fr)] min-[1440px]:grid-cols-[344px_minmax(0,1fr)]')}>
         <aside className="flex min-h-0 flex-col border-r bg-background">
+          <GidSearch />
           <TopList activeGid={gid} />
         </aside>
         <GraphPanel gid={gid} />
