@@ -1,5 +1,12 @@
 type ValidationItem = { loc: (string | number)[]; msg: string; type: string }
 
+/** Бэкенд не ответил: сеть упала или dev-прокси вернул 502–504. Экран показывает это отдельно от «не найдено». */
+export class BackendUnavailableError extends Error {
+  constructor() {
+    super('Сервер анализа недоступен')
+  }
+}
+
 function getDetail(error: unknown): unknown {
   if (error && typeof error === 'object' && 'detail' in error) {
     return (error as { detail: unknown }).detail

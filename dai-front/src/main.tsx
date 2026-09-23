@@ -29,7 +29,8 @@ async function enableMocks() {
   await worker.start({ onUnhandledRequest: 'bypass' })
 }
 
-enableMocks().then(() => {
+// Service Worker есть только в secure context (localhost/https): по http://IP (dev:host) MSW не стартует — рендерим без моков.
+enableMocks().catch((error) => console.warn('[MSW] моки не запущены', error)).then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
