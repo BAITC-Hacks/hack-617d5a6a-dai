@@ -4,7 +4,7 @@ owner: Иван
 status: active
 updated: 2026-09-23
 tags: [hackalem, граф-денег, метрики, валидация, без-разметки]
-related: ["[[related_work_2026-09-23]]", "[[hypothesis_check_2026-09-23]]", "[[execution_plan_2026-09-23]]", "[[ds_system_design_2026-09-23]]"]
+related: ["[[related_work_2026-09-23]]", "[[hypothesis_check_2026-09-23]]", "[[ds_system_design_2026-09-23]]"]
 ---
 
 # Метрики и проверка качества без разметки

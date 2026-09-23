@@ -1,4 +1,4 @@
-"""Гейт выгрузок по ТЗ §5, §7 (инварианты — docs/execution_plan_2026-09-23.md §3.3).
+"""Гейт выгрузок по ТЗ §5, §7.
 
     python -m pipeline.check --data task/data --out outputs [--require-method v1]
 
