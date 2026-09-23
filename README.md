@@ -4,7 +4,26 @@
 
 ## Состояние
 
-Здесь размещены исходное задание, обезличенные данные, стартовый код организаторов и заготовка интерфейса. Стартовый код создаёт CSV нужной схемы, но **не определяет роли, кластеры и приоритеты**. Его результат не является готовым решением.
+Пайплайн v0 (`pipeline/`) считает по трём parquet роли по опубликованным порогам, кластеры (Louvain на явной ненаправленной проекции), приоритет и обоснование с числами для каждого из 2 248 узлов и записывает три CSV схемы ТЗ; выгрузки проходят 43 проверки `pipeline/check.py`, повторный прогон даёт байт-в-байт тот же результат. Правила v1 и единый скор с порогом — в работе. Стартовый код организаторов в `task/starter/` оставлен без изменений.
+
+## Запуск
+
+Пайплайн, без Docker (Python 3.11–3.13):
+
+```bash
+make setup      # .venv и зависимости из requirements.txt
+make pipeline   # task/data/*.parquet → outputs/nodes_roles.csv, clusters.csv, top_nodes.csv (≈2 с)
+make check      # проверка выгрузок по схеме ТЗ, код возврата 1 при нарушении
+```
+
+То же без make:
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+python -m pipeline.run --data task/data --out outputs
+```
+
+Интерфейс: `make api` (FastAPI на 8000, читает `outputs/`; без выгрузок отдаёт заглушку с пометкой `mock`) и в другом терминале `make web` (http://localhost:5173). Подробнее: [backend/README.md](backend/README.md), [dai-front/README.md](dai-front/README.md). Пороги ролей и порядок их выбора — в `pipeline/rules.py`, они же печатаются в `outputs/run_meta.json`.
 
 ## Основной сценарий (цель)
 
@@ -31,7 +50,7 @@
 
 | Часть | Стек |
 | --- | --- |
-| Пайплайн | Python 3; пока только стартовый код организаторов: pandas, pyarrow, networkx, numpy |
+| Пайплайн | Python 3.11–3.13; pandas, pyarrow, networkx (Louvain, betweenness, PageRank), numpy, scipy; версии закреплены в `requirements.txt` |
 | API | Python 3, FastAPI + uvicorn; до готовности пайплайна отдаёт заглушку по порогам на реальных `gid` (`mock: true`) — [подробнее](backend/README.md) |
 | Интерфейс | React 19, TypeScript, Vite, Tailwind CSS, TanStack Router/Query — [подробнее](dai-front/README.md#стек) |
 
@@ -44,7 +63,7 @@ python -m pip install -r task/starter/requirements.txt
 python task/starter/starter.py --data task/data --out scratch/starter
 ```
 
-`scratch/` — временный вывод для проверки, не сдача. Команда запуска окончательного решения появится здесь вместе с реализацией.
+`scratch/` — временный вывод для проверки, не сдача.
 
 ## Критерии готового решения
 

@@ -1,0 +1,30 @@
+# Обёртки для команды; те же команды есть в README. GNU Make 3.81: рецепты с табуляцией.
+PY   ?= .venv/bin/python
+DATA ?= task/data
+OUT  ?= outputs
+
+.PHONY: setup pipeline check api contract web
+
+# venv и зависимости пайплайна и API
+setup:
+	python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+
+# три CSV в outputs/
+pipeline:
+	$(PY) -m pipeline.run --data $(DATA) --out $(OUT)
+
+# гейт схемы выгрузок по ТЗ; код 1 при нарушении
+check:
+	$(PY) -m pipeline.check --data $(DATA) --out $(OUT)
+
+# API на :8000; после make pipeline — POST /reload
+api:
+	.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+
+# openapi.json → клиент фронта → проверка типов
+contract:
+	$(PY) backend/export_openapi.py && cd dai-front && npm run gen && npm run typecheck
+
+# dev-сервер интерфейса
+web:
+	cd dai-front && npm ci && npm run dev

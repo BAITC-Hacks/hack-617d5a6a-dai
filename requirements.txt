@@ -1,0 +1,9 @@
+# DAI «Граф денег»: зависимости пайплайна (pipeline/) и API (backend/). Версии закреплены.
+fastapi==0.139.0
+uvicorn==0.44.0
+pydantic==2.12.5
+pandas==2.3.3
+pyarrow==20.0.0
+networkx==3.4.2
+scipy==1.16.2          # нужен nx.pagerank (networkx импортирует scipy при вызове)
+numpy>=1.26,<3

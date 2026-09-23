@@ -10,3 +10,4 @@ task/starter/out/
 .env.*
 !.env.example
 .idea
+outputs/run_meta.json
