@@ -295,7 +295,7 @@ npm ci
 npm run dev
 ```
 
-Без `.env.development` клиент не знает адрес API и главная страница не открывается; `make web` копирует его из `.env.example`, если файла ещё нет, затем делает `npm ci` и `npm run dev`.
+Без `.env.development` клиент не знает адрес API. `make web` копирует файл из `.env.example`, если его ещё нет. В образце `VITE_MOCKS=false`, поэтому экран читает рассчитанные CSV через API.
 
 `gid` для проверки — из первой строки `outputs/top_nodes.csv`; команда печатает готовый адрес страницы узла:
 
