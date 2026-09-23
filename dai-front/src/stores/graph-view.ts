@@ -43,8 +43,8 @@ function savedLayout(): GraphView['layout'] {
 
 export const DEFAULT_VIEW: GraphView = {
   highlight: null,
-  mode: 'overview',
-  depth: 1,
+  mode: 'local',
+  depth: 3,
   dirIn: true,
   dirOut: true,
   between: true,

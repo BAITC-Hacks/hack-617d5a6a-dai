@@ -61,13 +61,13 @@ export function GraphPanel({ gid }: { gid: string | null }) {
   if (!gid && focus !== null) setFocus(null)
   if (gid && (index.has(gid) || nodeQ.isSuccess) && focus !== gid) setFocus(gid)
 
-  // Открыли карточку (очередь, клик по графу, ссылка) — сразу показываем окружение узла; закрыли — обратно к общему виду.
-  // Вручную переключить режим при открытой карточке можно — он сменится только при выборе следующего узла.
+  // Открыли карточку (очередь, клик по графу, ссылка) — сразу показываем окружение узла.
+  // Вручную переключить режим можно — он сменится только при выборе следующего узла.
   const prevGid = useRef<string | null>(null)
   useEffect(() => {
     if (gid === prevGid.current) return
     prevGid.current = gid
-    setView({ mode: gid ? 'local' : 'overview' })
+    if (gid) setView({ mode: 'local' })
   }, [gid, setView])
 
   // Один MoneyGraph на смонтированный контейнер; ref-cleanup React 19 уничтожает его при размонтировании.
