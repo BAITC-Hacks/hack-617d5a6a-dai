@@ -251,6 +251,12 @@ def load_store(data_dir: Path = DATA_DIR, out_dir: Path = OUTPUTS_DIR) -> Store:
         df, clusters, top = _load_outputs(out_dir, feat)
         mock, source = False, "outputs"
         run_meta = _load_run_meta(out_dir)
+        # Запас на случай отсутствия run_meta.json (свежий клон без прогона): метод и очередь из самого CSV
+        roles_csv = pd.read_csv(out_dir / "nodes_roles.csv", usecols=lambda c: c in ("method", "in_queue"))
+        if "method" not in run_meta and "method" in roles_csv.columns and roles_csv["method"].notna().any():
+            run_meta["method"] = str(roles_csv["method"].dropna().iloc[0])
+        if "n_in_queue" not in run_meta and "in_queue" in roles_csv.columns:
+            run_meta["n_in_queue"] = int(pd.to_numeric(roles_csv["in_queue"], errors="coerce").fillna(0).sum())
     else:
         df, clusters, top = _mock_outputs(feat, g, edges)
         mock, source = True, "mock"

@@ -1,0 +1,143 @@
+{
+  "method": "v1",
+  "seed": 42,
+  "elapsed_s": 1.227,
+  "stages_s": {
+    "load": 0.035,
+    "sanity_check": 0.005,
+    "build_graph": 0.004,
+    "features.degrees": 0.007,
+    "features.pagerank": 0.022,
+    "features.betweenness": 0.939,
+    "features.n_seed_upstream": 0.005,
+    "features.dates_flags": 0.006,
+    "temporal.fast_transit": 0.036,
+    "clusters.louvain": 0.063,
+    "roles_v1": 0.028,
+    "priority": 0.014,
+    "evidence": 0.059
+  },
+  "run_at": "2026-09-23T16:24:42+05:00",
+  "versions": {
+    "python": "3.11.4",
+    "pandas": "2.3.3",
+    "networkx": "3.4.2",
+    "numpy": "1.26.4"
+  },
+  "n_nodes": 2248,
+  "n_edges": 3119,
+  "n_tx": 4840,
+  "n_seed": 81,
+  "n_isolated": 19,
+  "total_kzt": 365890012.01,
+  "period": [
+    "2026-07-01",
+    "2026-07-31"
+  ],
+  "n_clusters": 89,
+  "louvain": {
+    "projection": "explicit_undirected_sum",
+    "weight": "sum_kzt",
+    "resolution": 1.0,
+    "seed": 42
+  },
+  "thresholds": {
+    "coordinator_min_in_deg": 3,
+    "coordinator_min_out_deg": 5,
+    "coordinator_min_seed_upstream": 3,
+    "coordinator_betweenness_q": 0.99,
+    "coordinator_betweenness_min_deg": 2,
+    "distributor_min_out_deg": 10,
+    "consolidator_min_in_deg": 3,
+    "transit_ratio_low": 0.8,
+    "transit_ratio_high": 1.2,
+    "terminal_min_in_deg": 1,
+    "terminal_max_depth_exclusive": 4,
+    "peripheral_score": 0.3,
+    "coordinator_in_norm": 6,
+    "coordinator_out_norm": 10,
+    "distributor_out_norm": 25,
+    "consolidator_in_norm": 8,
+    "terminal_score": 0.5,
+    "priority_w_pagerank": 0.5,
+    "priority_w_degree": 0.4,
+    "priority_w_seed": 0.1
+  },
+  "role_order": [
+    "coordinator",
+    "distributor",
+    "consolidator",
+    "transit",
+    "terminal",
+    "peripheral"
+  ],
+  "role_counts": {
+    "consolidator": 144,
+    "coordinator": 54,
+    "distributor": 29,
+    "peripheral": 926,
+    "terminal": 1034,
+    "transit": 61
+  },
+  "fast_transit": {
+    "available": true,
+    "ratio_low": 0.8,
+    "ratio_high": 1.2,
+    "lag_min_days": 0,
+    "lag_max_days": 2,
+    "min_pairs": 2,
+    "n_flagged": 54,
+    "pairs_total": 350,
+    "n_nodes_reversed_pair": 109,
+    "n_nodes_same_day_pair": 115
+  },
+  "threshold_raw": 6.0,
+  "threshold_score": 0.145618,
+  "max_priority_raw": 41.2036,
+  "n_above_threshold": 681,
+  "n_two_terms_above_p95": 165,
+  "queue_rule": "в очереди проверки, если не меньше 2 из 7 признаков скора в верхних 5 % (вклад −ln p ≥ −ln 0,05 ≈ 3,0); сумма priority_raw ≥ 6,0 — только справочно",
+  "queue_min_terms_above_p95": 2,
+  "term_p95_contribution": 2.995732,
+  "n_in_queue": 165,
+  "n_terms_above_p95_dist": {
+    "0": 1894,
+    "1": 189,
+    "2": 75,
+    "3": 52,
+    "4": 18,
+    "5": 11,
+    "6": 9
+  },
+  "weights": {
+    "in_kzt": 1.0,
+    "out_kzt": 1.0,
+    "in_deg": 1.0,
+    "out_deg": 1.0,
+    "betweenness": 1.0,
+    "pass_kzt": 1.0,
+    "n_seed_upstream": 1.0,
+    "fast_transit_flag": 1.0
+  },
+  "boundary_zero_terms": [
+    "out_kzt",
+    "out_deg",
+    "pass_kzt"
+  ],
+  "coordinator_betweenness_p99": 0.0061037374549345585,
+  "stages": {
+    "load": 0.035,
+    "sanity_check": 0.005,
+    "build_graph": 0.004,
+    "features.degrees": 0.007,
+    "features.pagerank": 0.022,
+    "features.betweenness": 0.939,
+    "features.n_seed_upstream": 0.005,
+    "features.dates_flags": 0.006,
+    "temporal.fast_transit": 0.036,
+    "clusters.louvain": 0.063,
+    "roles_v1": 0.028,
+    "priority": 0.014,
+    "evidence": 0.059
+  }
+}

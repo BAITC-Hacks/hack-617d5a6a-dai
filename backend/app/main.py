@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Literal
 
 import networkx as nx
+import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -78,6 +79,23 @@ def _cluster_out(row) -> s.ClusterOut:
     )
 
 
+
+def _method_from_csv(st: Store) -> str:
+    """Метод пайплайна, если run_meta.json нет: из колонки method в nodes_roles.csv."""
+    if "method" in st.nodes.columns:
+        vals = st.nodes["method"].dropna().astype(str)
+        if len(vals):
+            return str(vals.iloc[0])
+    return "v0"
+
+
+def _queue_from_csv(st: Store) -> int | None:
+    """Размер очереди проверки, если run_meta.json нет: сумма in_queue из nodes_roles.csv."""
+    if st.mock or "in_queue" not in st.nodes.columns:
+        return None
+    return int(pd.to_numeric(st.nodes["in_queue"], errors="coerce").fillna(0).sum())
+
+
 # ------------------------------------------------------------------ служебное
 
 @app.get("/health", response_model=s.HealthResponse, tags=["meta"])
@@ -100,10 +118,10 @@ def get_meta() -> s.MetaResponse:
         n_transactions=len(st.tx), n_seed=st.n_seed, n_clusters=len(st.clusters),
         period_start=st.period_start, period_end=st.period_end, total_kzt=st.total_kzt,
         roles=[s.RoleInfo(role=r, title=t, description=d) for r, t, d in ROLE_INFO],
-        method=str(rm.get("method") or ("mock" if st.mock else "v0")),
+        method=str(rm.get("method") or ("mock" if st.mock else _method_from_csv(st))),
         threshold_score=_num("threshold_score"), threshold_raw=_num("threshold_raw"),
         elapsed_s=_num("elapsed_s"),
-        n_in_queue=int(rm["n_in_queue"]) if isinstance(rm.get("n_in_queue"), int) else None,
+        n_in_queue=int(rm["n_in_queue"]) if isinstance(rm.get("n_in_queue"), int) else _queue_from_csv(st),
         queue_rule=str(rm["queue_rule"]) if rm.get("queue_rule") else None,
     )
 
