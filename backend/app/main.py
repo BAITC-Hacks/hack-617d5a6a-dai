@@ -1,8 +1,9 @@
 """API «Граф денег»: отдаёт интерфейсу роли, кластеры, приоритеты и связи узлов.
 
-Запуск из каталога backend/:  uvicorn app.main:app --reload --port 8000
+Запуск из корня репозитория:  uvicorn backend.app.main:app --reload --port 8000
+(из backend/ тоже работает:    uvicorn app.main:app --reload --port 8000)
 Схема:                        http://localhost:8000/openapi.json
-Экспорт схемы во фронт:       python export_openapi.py
+Экспорт схемы во фронт:       python backend/export_openapi.py
 
 Имена функций-обработчиков становятся operationId (generate_unique_id_function), а из них —
 имена в сгенерированном клиенте фронта: get_graph → getGraphOptions / handleGetGraph.

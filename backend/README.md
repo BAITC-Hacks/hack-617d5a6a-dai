@@ -4,11 +4,12 @@ FastAPI-сервис, который отдаёт интерфейсу роли,
 
 ## Запуск
 
+Из корня репозитория (Python 3.11–3.13):
+
 ```bash
-cd backend
 python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
 ```
 
 Проверка: `curl localhost:8000/health` → `{"status":"ok","mock":true}`; схема — `localhost:8000/openapi.json`, документация — `localhost:8000/docs`.
@@ -45,8 +46,8 @@ uvicorn app.main:app --reload --port 8000
 Поля только добавляются. После правки схем или маршрутов:
 
 ```bash
-cd backend && python export_openapi.py
-cd ../dai-front && npm run gen && npm run typecheck
+python backend/export_openapi.py
+cd dai-front && npm run gen && npm run typecheck
 ```
 
 Оба результата (`openapi.json` и `src/client/`) коммитятся вместе с изменением бэкенда.

@@ -1,6 +1,6 @@
 # Дину: контракт API и данные для экранов
 
-Дата: 23.09.2026, после коммита `5e6dcd7` в `main`. Папка `handoff/` удаляется к сдаче.
+Дата: 23.09.2026, после коммита `5e6dcd7` в `main`; запуск бэкенда из корня — с 15:40. План на остаток дня: `docs/execution_plan_2026-09-23.md`. Папка `handoff/` удаляется к сдаче.
 
 ## Что уже в репозитории
 
@@ -17,10 +17,9 @@ git pull --rebase --autostash
 Бэкенд (терминал 1):
 
 ```bash
-cd backend
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+python3 -m venv .venv && . .venv/bin/activate      # из корня репозитория, Python 3.11–3.13
+pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
 ```
 
 Фронт (терминал 2):
