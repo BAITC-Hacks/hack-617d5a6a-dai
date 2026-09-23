@@ -75,7 +75,7 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
     <div className="flex flex-col gap-4.5 px-5 pt-5 pb-7">
       <div className="flex flex-col gap-2.5">
         <Label>Клиент</Label>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 pr-8">
           <Gid gid={gid} className="text-[25px] font-medium tracking-tight" />
           <Button variant="outline" className="ml-auto" title="Скопировать gid" onClick={copy}>
             {copied ? 'Скопировано' : 'Копировать'}

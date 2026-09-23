@@ -140,7 +140,7 @@ export function LegendSheet({ open, item, onClose }: { open: boolean; item: Lege
   return (
     // Немодальная панель без затемнения: граф за ней можно зумить и двигать, клик мимо её не закрывает — только × или Esc
     <Sheet open={open} onOpenChange={(next) => !next && onClose()} modal={false} disablePointerDismissal>
-      <SheetContent side="right" overlay={false} className="w-[440px] gap-0 data-[side=right]:sm:max-w-[440px]">
+      <SheetContent side="right" overlay={false} className="dark w-[440px] gap-0 data-[side=right]:sm:max-w-[440px]">
         <SheetHeader className="border-b">
           <SheetTitle className="text-lg">Справочник узлов</SheetTitle>
           <SheetDescription>Роли — гипотезы по правилам с порогами, а не выводы о клиенте. Пороги конкретного узла — в его карточке.</SheetDescription>

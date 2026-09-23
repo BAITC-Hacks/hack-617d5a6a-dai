@@ -39,8 +39,8 @@ function Workspace() {
   return (
     <div className="flex h-svh min-h-[880px] min-w-[1180px] flex-col">
       <AppHeader />
-      <div className={cn('grid min-h-0 flex-1', gid
-        ? 'grid-cols-[280px_minmax(0,1fr)_360px] min-[1440px]:grid-cols-[344px_minmax(0,1fr)_440px]'
+      <div className={cn('dark grid min-h-0 flex-1 bg-background text-foreground', gid
+        ? 'grid-cols-[280px_minmax(0,1fr)_auto] min-[1440px]:grid-cols-[344px_minmax(0,1fr)_auto]'
         : 'grid-cols-[280px_minmax(0,1fr)] min-[1440px]:grid-cols-[344px_minmax(0,1fr)]')}>
         <aside className="flex min-h-0 flex-col border-r bg-background">
           <GidSearch />

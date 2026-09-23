@@ -47,17 +47,14 @@ export function TopList({ activeGid }: { activeGid: string | null }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-col gap-1.5 px-4 pt-4 pb-3">
-        <div className="flex items-baseline gap-2">
-          <h2 className="text-xl font-bold tracking-tight whitespace-nowrap">Кого проверить первым</h2>
-          <div className="ml-auto text-[12.5px] whitespace-nowrap text-muted-foreground">
-            очередь{queue.length > 0 && ` · ${queue.length}`}
-          </div>
+        <h2 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-destructive">
+          <span className="size-2.5 shrink-0 animate-pulse rounded-full bg-destructive shadow-[0_0_10px_var(--color-destructive)]" />
+          Кого проверить первым
+        </h2>
+        <div className="flex items-start gap-3 text-xs/[1.45] text-muted-foreground">
+          {meta?.queue_rule && <p className="line-clamp-2 flex-1">{shortRule(meta.queue_rule)}</p>}
+          <span className="ml-auto font-mono whitespace-nowrap">очередь{queue.length > 0 && ` · ${queue.length}`}</span>
         </div>
-        {meta?.queue_rule && (
-          <p className="line-clamp-2 text-xs/[1.45] text-muted-foreground">
-            {shortRule(meta.queue_rule)}
-          </p>
-        )}
       </div>
       <div ref={listRef} className="min-h-0 flex-1 overflow-auto border-t">
         {isPending &&
@@ -85,7 +82,7 @@ export function TopList({ activeGid }: { activeGid: string | null }) {
               onClick={() => navigate({ to: '/nodes/$gid', params: { gid: n.gid } })}
               className={cn(
                 'grid w-full grid-cols-[26px_minmax(0,1fr)_auto] gap-x-2.5 gap-y-1 border-b border-border/60 px-4 pt-[11px] pb-3 text-left hover:bg-muted/60',
-                active && 'bg-muted shadow-[inset_3px_0_0_var(--color-primary)] hover:bg-muted',
+                active && 'bg-muted shadow-[inset_3px_0_0_var(--color-destructive)] hover:bg-muted',
               )}
             >
               <div className="pt-px font-mono text-sm font-semibold text-muted-foreground">{i + 1}</div>
