@@ -20,6 +20,16 @@ export function useNodeIndex() {
   return useMemo(() => new Map<string, NodeOut>((data?.nodes ?? []).map((n) => [n.gid, n])), [data])
 }
 
+/** Очередь проверки: узлы с in_queue из /graph по убыванию priority_score (/top отдаёт только 50). Номер в очереди = индекс + 1. */
+export function useQueue() {
+  const { data, isPending, error } = useQuery(graphQuery())
+  const queue = useMemo(
+    () => (data?.nodes ?? []).filter((n) => n.in_queue).sort((a, b) => b.priority_score - a.priority_score),
+    [data],
+  )
+  return { queue, isPending, error }
+}
+
 /** Подпись и описание роли из /meta (запасная подпись — пока /meta не пришёл). */
 export function useRoleInfo() {
   const { data } = useQuery(metaQuery())

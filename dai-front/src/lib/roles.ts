@@ -11,7 +11,7 @@ export const ROLE_FALLBACK_TITLE: Record<Role, string> = {
   distributor: 'Распределитель',
   consolidator: 'Консолидатор',
   transit: 'Транзит',
-  terminal: 'Конечный получатель',
+  terminal: 'Получатель без видимых исходящих',
   peripheral: 'Периферия',
 }
 

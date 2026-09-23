@@ -29,6 +29,8 @@ npm run dev                           # http://localhost:5173
 ## Данные
 
 - Источник: API из [`backend/`](../backend/README.md) (порт 8000, в dev через прокси `/api`). Контракт `openapi.json` генерируется из бэкенда. Бэкенд сам обновляет `openapi.json` и `src/client/` в одном коммите со своими изменениями, поэтому после `git pull` запускать `npm run gen` не нужно.
+- Очередь проверки (левая колонка) — узлы с `in_queue: true` из `/graph` по убыванию `priority_score` (`useQueue()` в `src/lib/graph-data.ts`); правило очереди — `queue_rule` из `/meta`. `/top` отдаёт только 50 строк, поэтому очередь из него не строится.
+- Карточка узла (`src/components/node-card.tsx` + `node-card/`): кроме `evidence` показывает `role_checks` чек-листом, `score_terms` / `n_terms_above_p95` / `priority_raw` («почему такой приоритет»), `n_seed_upstream`, `next_request`, `limitations`, бейджи `in_queue` и `fast_transit_flag`. Вкладка «Пары» — `pairs` из `/nodes/{gid}` (вход → выход по дате входа, первые 50 + «Показать все»).
 - Эндпоинты: `/meta`, `/graph`, `/search`, `/nodes/{gid}`, `/nodes/{gid}/subgraph`, `/top`, `/clusters`, `/clusters/{cluster_id}`, `/health`. Хуки — из `@/client/@tanstack/react-query.gen` (`getNodeOptions`, `searchNodesOptions`, `getTopNodesOptions` и т. д.).
 - До готовности пайплайна бэкенд отдаёт заглушку на реальных `gid` (`meta.mock: true`, в `evidence` префикс `mock`). Роли и скоры в ней — простые пороги, не результат анализа.
 - Чтобы работать без бэкенда, регистрируй моки в `src/mocks/browser.ts` через сгенерированные `handle*` из `@/client/msw.gen`.

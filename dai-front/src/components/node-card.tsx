@@ -5,10 +5,13 @@ import type { EdgeOut, NodeCard as NodeCardData, TransferOut } from '@/client/ty
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getErrorMessage } from '@/lib/api-error'
-import { count, formatDayLong, formatKzt, formatScore, gidParts } from '@/lib/format'
-import { errorKind, nodeQuery, topQuery, useNodeIndex, useRoleInfo } from '@/lib/graph-data'
+import { count, formatDayLong, formatKzt, formatScore } from '@/lib/format'
+import { errorKind, nodeQuery, useNodeIndex, useQueue, useRoleInfo } from '@/lib/graph-data'
 import { roleClass } from '@/lib/roles'
 import { cn } from '@/lib/utils'
+import { CaseLink, NextStep, PriorityWhy, RoleChecks } from './node-card/insights'
+import { Pairs } from './node-card/pairs'
+import { Gid, Label, SeedPill } from './node-card/parts'
 
 const tx = (n: number) => count(n, 'перевод', 'перевода', 'переводов')
 
@@ -45,40 +48,13 @@ function CardSkeleton() {
   )
 }
 
-function Gid({ gid, className }: { gid: string; className?: string }) {
-  const p = gidParts(gid)
-  return (
-    <span className={cn('font-mono whitespace-nowrap', className)}>
-      <span className="text-muted-foreground">{p.pre}</span>
-      <span className="font-bold">{p.mid}</span>
-      <span className="text-muted-foreground">{p.suf}</span>
-    </span>
-  )
-}
-
-function SeedPill({ small }: { small?: boolean }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center border-[1.5px] border-primary font-mono font-semibold text-primary',
-        small ? 'rounded-lg px-1.5 text-[10.5px]' : 'h-6.5 rounded-full px-2.5 text-xs',
-      )}
-    >
-      SEED
-    </span>
-  )
-}
-
-const Label = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-[12.5px] font-medium text-muted-foreground">{children}</div>
-)
-
 function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
   const nd = card.node
   const roleInfo = useRoleInfo()
-  const { data: top } = useQuery(topQuery())
-  const rank = top?.items.find((t) => t.gid === gid)?.rank
-  const [tab, setTab] = useState<'cp' | 'tx'>('cp')
+  const { queue } = useQueue()
+  const rank = nd.in_queue ? queue.findIndex((n) => n.gid === gid) + 1 : 0
+  const pairs = card.pairs ?? []
+  const [tab, setTab] = useState<'cp' | 'tx' | 'pairs'>('cp')
   const [copied, setCopied] = useState(false)
 
   const role = roleInfo(nd.role)
@@ -115,9 +91,18 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
               граница выгрузки
             </span>
           )}
-          {rank != null && (
+          {nd.in_queue && (
             <span className="inline-flex h-6.5 items-center rounded-md bg-muted px-2.5 text-[12.5px] font-medium whitespace-nowrap">
-              № {rank} в топ-20
+              {rank > 0 ? `№ ${rank} в очереди` : 'в очереди проверки'}
+            </span>
+          )}
+          {nd.fast_transit_flag && (
+            <span
+              title="Пары вход → выход 1-к-1 с лагом 0–2 дня и близкими суммами (0,8–1,2)"
+              className="inline-flex h-6.5 items-center rounded-md border-[1.5px] px-2.5 text-[12.5px] font-medium whitespace-nowrap"
+            >
+              признаки быстрого транзита
+              {nd.fast_transit_pairs != null && ` · ${count(nd.fast_transit_pairs, 'пара', 'пары', 'пар')}`}
             </span>
           )}
         </div>
@@ -142,16 +127,21 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
         </div>
       </div>
 
+      <PriorityWhy node={nd} />
+
       <div className="flex flex-col gap-2">
         <Label>Основание роли</Label>
         <div className="min-h-29.5 rounded-xl bg-muted px-4 py-3.5 text-[16.5px]/normal font-medium text-pretty wrap-anywhere">
           {nd.evidence}
         </div>
+        {nd.role_checks && <RoleChecks checks={nd.role_checks} />}
         <div className="flex flex-wrap gap-4 text-[13.5px] text-muted-foreground">
           <span>{depthLabel}</span>
           <span className="whitespace-nowrap">кластер {nd.cluster_id}</span>
         </div>
       </div>
+
+      <CaseLink node={nd} />
 
       <div className="grid grid-cols-2 gap-2.5">
         <div className="flex flex-col gap-1 rounded-xl border px-3.5 py-3">
@@ -177,6 +167,8 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
         </div>
       </div>
 
+      <NextStep node={nd} />
+
       {!hasLinks ? (
         <div className="flex flex-col gap-1 rounded-xl bg-muted px-4 py-5.5">
           <div className="font-semibold">Связей в выгрузке нет</div>
@@ -194,8 +186,13 @@ function CardBody({ gid, card }: { gid: string; card: NodeCardData }) {
             <TabButton active={tab === 'tx'} onClick={() => setTab('tx')}>
               Переводы · {card.transfers.length}
             </TabButton>
+            {pairs.length > 0 && (
+              <TabButton active={tab === 'pairs'} onClick={() => setTab('pairs')}>
+                Пары · {pairs.length}
+              </TabButton>
+            )}
           </div>
-          {tab === 'cp' ? <Counterparties card={card} /> : <Transfers gid={gid} card={card} />}
+          {tab === 'cp' ? <Counterparties card={card} /> : tab === 'tx' ? <Transfers gid={gid} card={card} /> : <Pairs pairs={pairs} />}
         </div>
       )}
     </div>
