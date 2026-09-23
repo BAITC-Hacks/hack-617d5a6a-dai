@@ -10,13 +10,9 @@
 make setup && make pipeline
 ```
 
-<<<<<<< Updated upstream
-`make setup` создаёт `.venv` и ставит зависимости из `requirements.txt`. `make pipeline` пересчитывает три CSV из `task/data/*.parquet` в `outputs/` и сразу прогоняет проверку выгрузок. Прогон удался, если последние строки такие:
-=======
 Есть и путь через Docker: `docker compose run --rm pipeline` даёт те же три CSV, `docker compose up --build` поднимает экран на http://localhost:8080 (раздел [Через Docker](#через-docker-альтернатива-нативному-пути)).
 
-`make setup` создаёт `.venv` и ставит зависимости из `requirements.txt`. `make pipeline` за 2 секунды пересчитывает три CSV из `task/data/*.parquet` в `outputs/` и сразу прогоняет проверку выгрузок. Прогон удался, если последние строки такие:
->>>>>>> Stashed changes
+`make setup` создаёт `.venv` и ставит зависимости из `requirements.txt`. `make pipeline` пересчитывает три CSV из `task/data/*.parquet` в `outputs/` и сразу прогоняет проверку выгрузок. Прогон удался, если последние строки такие:
 
 ```text
 проверок 49, провалено 0
