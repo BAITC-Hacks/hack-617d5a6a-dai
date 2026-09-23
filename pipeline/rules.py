@@ -50,7 +50,7 @@ ROLE_RU: dict[str, str] = {
     "consolidator": "консолидатор",
     "transit": "транзит",
     "distributor": "распределитель",
-    "terminal": "конечный получатель",
+    "terminal": "получатель без видимых исходящих",
     "coordinator": "координатор",
     "peripheral": "периферия",
 }
